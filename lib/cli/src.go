@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/joeqian10/neo3-gogogo/rpc"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -17,8 +18,10 @@ import (
 
 // T ...
 type T struct {
-	C   *mongo.Client
-	Ctx context.Context
+	C        *mongo.Client
+	Ctx      context.Context
+	RpcCli   *rpc.RpcClient
+	RpcPorts []string
 }
 
 type Config struct {
