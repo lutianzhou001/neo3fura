@@ -65,5 +65,4 @@ func (me *T) GetRawTransactionByBlockHeight(args struct {
 	}
 	*ret = json.RawMessage(r)
 	return nil
-
 }

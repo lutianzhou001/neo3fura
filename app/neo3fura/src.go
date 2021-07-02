@@ -20,6 +20,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	// "go.mongodb.org/mongo-driver/mongo/readpref"
+	neoRpc "github.com/joeqian10/neo3-gogogo/rpc"
 )
 
 func OpenConfigFile() (Config, error) {
@@ -47,6 +48,9 @@ type Config struct {
 		Database string `yaml:"database"`
 		DBName   string `yaml:"dbname"`
 	} `yaml:"database"`
+	Proxy struct{
+		Uri []string `yaml:"uri"`
+	} `yaml:"proxy"`
 }
 
 func main() {
@@ -66,6 +70,8 @@ func main() {
 	client := &cli.T{
 		C:   c,
 		Ctx: ctx,
+		RpcCli: neoRpc.NewClient(""), // placeholder
+		RpcPorts: cfg.Proxy.Uri,
 	}
 	defer cancel()
 	rpc.Register(&api.T{
