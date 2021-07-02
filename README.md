@@ -1,3 +1,9 @@
+## ONE-CLICK START
+
+``
+./start.sh
+``
+
 ## QUICK START
 
 ``

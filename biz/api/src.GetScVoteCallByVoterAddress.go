@@ -10,9 +10,9 @@ import (
 // this function may be not supported any more, we only support address in the formart of script hash
 func (me *T) GetScVoteCallByVoterAddress(args struct {
 	VoterAddress h160.T
-	Limit  int64
-	Skip   int64
-	Filter map[string]interface{}
+	Limit        int64
+	Skip         int64
+	Filter       map[string]interface{}
 }, ret *json.RawMessage) error {
 	if args.VoterAddress.Valid() == false {
 		return stderr.ErrInvalidArgs

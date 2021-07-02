@@ -6,7 +6,9 @@ import (
 	"sort"
 )
 
-func (me *T) GetNetFeeRange(ret *json.RawMessage) error {
+func (me *T) GetNetFeeRange(args struct {
+	Filter map[string]interface{}
+}, ret *json.RawMessage) error {
 	r1, err := me.Data.Client.QueryOne(struct {
 		Collection string
 		Index      string

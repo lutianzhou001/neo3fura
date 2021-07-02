@@ -48,7 +48,7 @@ type Config struct {
 		Database string `yaml:"database"`
 		DBName   string `yaml:"dbname"`
 	} `yaml:"database"`
-	Proxy struct{
+	Proxy struct {
 		Uri []string `yaml:"uri"`
 	} `yaml:"proxy"`
 }
@@ -68,9 +68,9 @@ func main() {
 		log.Fatalln(err)
 	}
 	client := &cli.T{
-		C:   c,
-		Ctx: ctx,
-		RpcCli: neoRpc.NewClient(""), // placeholder
+		C:        c,
+		Ctx:      ctx,
+		RpcCli:   neoRpc.NewClient(""), // placeholder
 		RpcPorts: cfg.Proxy.Uri,
 	}
 	defer cancel()

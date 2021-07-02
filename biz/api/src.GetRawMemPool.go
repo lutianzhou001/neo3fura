@@ -6,7 +6,9 @@ import (
 	"net/url"
 )
 
-func (me *T) GetRawMemPool(ret *json.RawMessage) error {
+func (me *T) GetRawMemPool(args struct {
+	Filter map[string]interface{}
+}, ret *json.RawMessage) error {
 	rpcCli := me.Data.Client.RpcCli
 	ports := me.Data.Client.RpcPorts
 	results := make([][]string, len(ports))

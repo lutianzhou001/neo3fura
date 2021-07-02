@@ -9,7 +9,7 @@ import (
 
 func (me *T) GetVotesByCandidateAddress(args struct {
 	CandidateAddress h160.T
-	Filter          map[string]interface{}
+	Filter           map[string]interface{}
 }, ret *json.RawMessage) error {
 	if args.CandidateAddress.Valid() == false {
 		return stderr.ErrInvalidArgs
