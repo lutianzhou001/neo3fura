@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"neo3fura/biz/data"
 )
 
@@ -36,6 +37,19 @@ func (me *T) Filter(data map[string]interface{}, filter map[string]interface{}) 
 				res[k] = data[k]
 			}
 		}
+	}
+	return res, nil
+}
+
+func (me *T) Deduplicate(data []map[string]interface{}) ([]map[string]interface{}, error) {
+	set := make(map[string]map[string]interface{})
+	for _, v := range data {
+		con := fmt.Sprintf("%v", v["contract"]) + fmt.Sprintf("%v", v["tokenId"])
+		set[con] = v
+	}
+	res := make([]map[string]interface{}, 0)
+	for _, v := range set {
+		res = append(res, v)
 	}
 	return res, nil
 }
