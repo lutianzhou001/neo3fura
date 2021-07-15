@@ -10,7 +10,7 @@ import (
 func (me *T) GetVmStateByTransactionHash(args struct {
 	TransactionHash h256.T
 	Filter          map[string]interface{}
-	Raw          *string
+	Raw             *map[string]interface{}
 }, ret *json.RawMessage) error {
 	if args.TransactionHash.Valid() == false {
 		return stderr.ErrInvalidArgs
@@ -32,7 +32,16 @@ func (me *T) GetVmStateByTransactionHash(args struct {
 		return err
 	}
 	if args.Raw != nil {
-		*args.Raw = r1["vmstate"].(string)
+		*args.Raw = r1
 	}
+	r1, err = me.Filter(r1, args.Filter)
+	if err != nil {
+		return err
+	}
+	r, err := json.Marshal(r1)
+	if err != nil {
+		return err
+	}
+	*ret = json.RawMessage(r)
 	return nil
 }

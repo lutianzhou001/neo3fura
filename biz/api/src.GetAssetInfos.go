@@ -6,7 +6,7 @@ import (
 )
 
 func (me *T) GetAssetInfos(args struct {
-	Filter    map[string]interface{}
+	Filter map[string]interface{}
 }, ret *json.RawMessage) error {
 	r1, count, err := me.Data.Client.QueryAll(struct {
 		Collection string

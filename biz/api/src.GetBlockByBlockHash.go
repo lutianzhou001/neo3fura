@@ -10,6 +10,7 @@ import (
 func (me *T) GetBlockByBlockHash(args struct {
 	BlockHash h256.T
 	Filter    map[string]interface{}
+	Raw       *map[string]interface{}
 }, ret *json.RawMessage) error {
 	if args.BlockHash.Valid() == false {
 		return stderr.ErrInvalidArgs
@@ -33,6 +34,9 @@ func (me *T) GetBlockByBlockHash(args struct {
 	r1, err = me.Filter(r1, args.Filter)
 	if err != nil {
 		return err
+	}
+	if args.Raw != nil {
+		*args.Raw = r1
 	}
 	r, err := json.Marshal(r1)
 	if err != nil {
