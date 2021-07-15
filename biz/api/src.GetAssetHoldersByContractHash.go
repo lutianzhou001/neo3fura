@@ -49,11 +49,11 @@ func (me *T) GetAssetHoldersByContractHash(args struct {
 		}{
 			Collection: "[Asset~Address(Addresses)]",
 			Index:      "someIndex",
-			Sort:       bson.M{}, 
-			Filter: bson.M{"ParentID": r1["_id"]},
-			Query: []string{"ChildID"},
-			Limit: args.Limit,
-			Skip:  args.Skip},
+			Sort:       bson.M{},
+			Filter:     bson.M{"ParentID": r1["_id"]},
+			Query:      []string{"ChildID"},
+			Limit:      args.Limit,
+			Skip:       args.Skip},
 		ret)
 	if err != nil {
 		return err

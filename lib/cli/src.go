@@ -110,6 +110,52 @@ func (me *T) QueryOne(args struct {
 	return convert, err
 }
 
+func (me *T) QueryAggregate(args struct {
+	Collection string
+	Index      string
+	Sort       bson.M
+	Filter     bson.M
+	Pipeline   []bson.M
+	Query      []string
+}, ret *json.RawMessage) ([]map[string]interface{}, error) {
+	cfg, err := me.OpenConfigFile()
+	if err != nil {
+		return nil, err
+	}
+	var results []map[string]interface{}
+	convert := make([]map[string]interface{}, 0)
+	collection := me.C.Database(cfg.Database.DBName).Collection(args.Collection)
+	op := options.AggregateOptions{}
+
+	cursor, err := collection.Aggregate(me.Ctx, args.Pipeline, &op)
+	if err == mongo.ErrNoDocuments {
+		return nil, errors.New("NOT FOUNT")
+	}
+	if err != nil {
+		return nil, err
+	}
+	if err = cursor.All(me.Ctx, &results); err != nil {
+		return nil, err
+	}
+	for _, item := range results {
+		if len(args.Query) == 0 {
+			convert = append(convert, item)
+		} else {
+			temp := make(map[string]interface{})
+			for _, v := range args.Query {
+				temp[v] = item[v]
+			}
+			convert = append(convert, temp)
+		}
+	}
+	r, err := json.Marshal(convert)
+	if err != nil {
+		return nil, err
+	}
+	*ret = json.RawMessage(r)
+	return convert, nil
+}
+
 func (me *T) QueryDocument(args struct {
 	Collection string
 	Index      string
