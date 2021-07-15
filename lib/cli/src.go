@@ -6,14 +6,15 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
+	"os"
+	"path/filepath"
+
 	"github.com/joeqian10/neo3-gogogo/rpc"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"gopkg.in/yaml.v2"
-	"log"
-	"os"
-	"path/filepath"
 )
 
 // T ...
@@ -107,6 +108,34 @@ func (me *T) QueryOne(args struct {
 	}
 	*ret = json.RawMessage(r)
 	return convert, err
+}
+
+func (me *T) QueryDocument(args struct {
+	Collection string
+	Index      string
+	Sort       bson.M
+	Filter     bson.M
+}, ret *json.RawMessage) (map[string]interface{}, error) {
+	cfg, err := me.OpenConfigFile()
+	if err != nil {
+		return nil, err
+	}
+	co := options.CountOptions{}
+	collection := me.C.Database(cfg.Database.DBName).Collection(args.Collection)
+	count, _ := collection.CountDocuments(me.Ctx, args.Filter, &co)
+
+	if err == mongo.ErrNoDocuments {
+		return nil, errors.New("NOT FOUNT")
+	}
+	convert := make(map[string]interface{})
+	convert["total counts:"] = count
+	r, err := json.Marshal(convert)
+	if err != nil {
+		return nil, err
+	}
+	*ret = json.RawMessage(r)
+	return convert, nil
+
 }
 
 func (me *T) QueryAll(args struct {

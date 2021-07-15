@@ -32,27 +32,18 @@ func (me *T) GetTokenList(args struct {
 		return err
 	}
 	for _, item := range r1 {
-		_, count, err := me.Data.Client.QueryAll(struct {
+		r, err := me.Data.Client.QueryDocument(struct {
 			Collection string
 			Index      string
 			Sort       bson.M
 			Filter     bson.M
-			Query      []string
-			Limit      int64
-			Skip       int64
 		}{
 			Collection: "[Asset~Address(Addresses)]",
 			Index:      "someIndex",
 			Sort:       bson.M{},
 			Filter:     bson.M{"ParentID": item["_id"]},
-			Query:      []string{},
-			Limit:      9223372036854775807,
-			Skip:       0,
 		}, ret)
-		if err != nil {
-			return err
-		}
-		item["total_holders"] = count
+		item["total_holders"] = r["total counts:"]
 		_, err = me.Data.Client.QueryOne(struct {
 			Collection string
 			Index      string

@@ -28,18 +28,18 @@ func (me *T) GetAssetInfoByContractHash(args struct {
 		Filter:     bson.M{"hash": args.ContractHash.Val()},
 		Query:      []string{},
 	}, ret)
-	_, count, err := me.Data.Client.QueryAll(struct {
+	r2, err := me.Data.Client.QueryDocument(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
 		Filter     bson.M
-		Query      []string
-		Limit      int64
-		Skip       int64
 	}{
-		Collection: "[Asset~Address(Addresses)]", Index: "someIndex", Sort: bson.M{}, Filter: bson.M{"ParentID": r1["_id"]}, Query: []string{}, Limit: 9223372036854775807, Skip: 0,
+		Collection: "[Asset~Address(Addresses)]",
+		Index:      "someIndex",
+		Sort:       bson.M{},
+		Filter:     bson.M{"ParentID": r1["_id"]},
 	}, ret)
-	r1["total_holders"] = count
+	r1["total_holders"] = r2["total counts:"]
 	_, err = me.Data.Client.QueryOne(struct {
 		Collection string
 		Index      string
