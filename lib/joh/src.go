@@ -58,8 +58,10 @@ func (me *T) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	}
 
 	sort.Strings(c.Methods.Realized)
+
 	index := sort.SearchStrings(c.Methods.Realized, fmt.Sprintf("%v", request["method"]))
 	if index < len(c.Methods.Realized) && c.Methods.Realized[index] == request["method"] {
+		// can find
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		conn := &rwio.T{R: req.Body, W: w}
@@ -67,6 +69,7 @@ func (me *T) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		codec.Init(conn)
 		rpc.ServeCodec(codec)
 	} else {
+		// can't find
 		me.Handle(c.Proxy.URI[repostMode], w, r)
 		repostMode = (repostMode + 1) % 5
 	}

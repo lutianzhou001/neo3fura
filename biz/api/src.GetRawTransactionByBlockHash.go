@@ -12,6 +12,7 @@ func (me *T) GetRawTransactionByBlockHash(args struct {
 	Limit     int64
 	Skip      int64
 	Filter    map[string]interface{}
+	Raw       *[]map[string]interface{}
 }, ret *json.RawMessage) error {
 	if args.Limit == 0 {
 		args.Limit = 200
@@ -38,6 +39,9 @@ func (me *T) GetRawTransactionByBlockHash(args struct {
 	}, ret)
 	if err != nil {
 		return err
+	}
+	if args.Raw != nil {
+		*args.Raw = r1
 	}
 	r2, err := me.FilterArrayAndAppendCount(r1, count, args.Filter)
 	if err != nil {

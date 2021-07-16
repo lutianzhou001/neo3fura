@@ -17,10 +17,9 @@ import (
 	// "strconv"
 	"time"
 
+	neoRpc "github.com/joeqian10/neo3-gogogo/rpc"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	// "go.mongodb.org/mongo-driver/mongo/readpref"
-	neoRpc "github.com/joeqian10/neo3-gogogo/rpc"
 )
 
 func OpenConfigFile() (Config, error) {

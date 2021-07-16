@@ -55,16 +55,23 @@ func (me *T) Deduplicate(data []map[string]interface{}) ([]map[string]interface{
 }
 
 func (me *T) FilterArrayAndAppendCount(data []map[string]interface{}, count int64, filter map[string]interface{}) (map[string]interface{}, error) {
-	res := make([]map[string]interface{}, 0)
-	for _, item := range data {
-		r, err := me.Filter(item, filter)
-		if err != nil {
-			return nil, err
+	if filter == nil {
+		res2 := make(map[string]interface{})
+		res2["result"] = data
+		res2["totalCount"] = count
+		return res2, nil
+	} else {
+		res := make([]map[string]interface{}, 0)
+		for _, item := range data {
+			r, err := me.Filter(item, filter)
+			if err != nil {
+				return nil, err
+			}
+			res = append(res, r)
 		}
-		res = append(res, r)
+		res2 := make(map[string]interface{})
+		res2["totalCount"] = count
+		res2["result"] = res
+		return res2, nil
 	}
-	res2 := make(map[string]interface{})
-	res2["totalCount"] = count
-	res2["result"] = res
-	return res2, nil
 }

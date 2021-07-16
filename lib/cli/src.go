@@ -1,8 +1,9 @@
 package cli
 
-import "C"
 import (
 	"context"
+	"crypto/sha1"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -80,6 +81,26 @@ func (me *T) QueryOne(args struct {
 	Filter     bson.M
 	Query      []string
 }, ret *json.RawMessage) (map[string]interface{}, error) {
+
+	var kvs string
+
+	kvs = kvs + args.Collection
+
+	for k, v := range args.Sort {
+		kvs = kvs + k + fmt.Sprintf("%v", v)
+	}
+	for k, v := range args.Filter {
+		kvs = kvs + k + fmt.Sprintf("%v", v)
+	}
+	for _, v := range args.Query {
+		kvs = kvs + v
+	}
+
+	h := sha1.New()
+	h.Write([]byte(kvs))
+	str := hex.EncodeToString(h.Sum(nil))
+	fmt.Println(str)
+
 	cfg, err := me.OpenConfigFile()
 	if err != nil {
 		return nil, err
@@ -159,24 +180,3 @@ func (me *T) QueryAll(args struct {
 	*ret = json.RawMessage(r)
 	return convert, count, nil
 }
-
-func (me *T) Mutation(Collection string, Index string, Keys []string, reply interface{}) {
-
-}
-
-// Call ...
-func (me *T) Call(method string, args interface{}, reply interface{}) error {
-	//DBs,err := me.C.ListDatabaseNames()
-	//ctx, cancel = context.WithTimeout(context.Background(), 5*time.Second)
-	//defer cancel()
-	collection := me.C.Database("testing").Collection("numbers")
-	res, err := collection.InsertOne(me.Ctx, bson.D{{"name", "pi"}, {"value", 3.14159}})
-	if err != nil {
-		fmt.Println(err)
-		return err
-	}
-	fmt.Println(res)
-	return nil
-}
-
-//}

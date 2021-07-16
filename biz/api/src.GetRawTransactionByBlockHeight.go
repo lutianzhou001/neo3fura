@@ -12,9 +12,10 @@ func (me *T) GetRawTransactionByBlockHeight(args struct {
 	Limit       int64
 	Skip        int64
 	Filter      map[string]interface{}
+	Raw         *[]map[string]interface{}
 }, ret *json.RawMessage) error {
 	if args.Limit == 0 {
-		args.Limit = 200
+		args.Limit = 500
 	}
 	if args.BlockHeight.Valid() == false {
 		return stderr.ErrInvalidArgs
@@ -54,6 +55,9 @@ func (me *T) GetRawTransactionByBlockHeight(args struct {
 	}, ret)
 	if err != nil {
 		return err
+	}
+	if args.Raw != nil {
+		*args.Raw = r2
 	}
 	r3, err := me.FilterArrayAndAppendCount(r2, count, args.Filter)
 	if err != nil {
