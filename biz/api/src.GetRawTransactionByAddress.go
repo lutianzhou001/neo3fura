@@ -18,6 +18,10 @@ func (me *T) GetRawTransactionByAddress(args struct {
 	if args.Address.Valid() == false {
 		return stderr.ErrInvalidArgs
 	}
+	sender, err := args.Address.ScriptHashToAddress()
+	if err != nil {
+		return nil
+	}
 	r1, count, err := me.Data.Client.QueryAll(struct {
 		Collection string
 		Index      string
@@ -30,7 +34,7 @@ func (me *T) GetRawTransactionByAddress(args struct {
 		Collection: "Transaction",
 		Index:      "someIndex",
 		Sort:       bson.M{},
-		Filter:     bson.M{"sender": args.Address.ScriptHashToAddress()},
+		Filter:     bson.M{"sender": sender},
 		Query:      []string{},
 		Limit:      args.Limit,
 		Skip:       args.Skip,
