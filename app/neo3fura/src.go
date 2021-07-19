@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"gopkg.in/yaml.v2"
 	"log"
 	"neo3fura/biz/api"
@@ -14,12 +13,7 @@ import (
 	"os"
 	"path/filepath"
 
-	// "strconv"
-	"time"
-
 	neoRpc "github.com/joeqian10/neo3-gogogo/rpc"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func OpenConfigFile() (Config, error) {
@@ -57,22 +51,12 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 1000000*time.Hour)
-	c, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://"+cfg.Database.User+":"+cfg.Database.Pass+"@"+cfg.Database.Host+":"+cfg.Database.Port+"/"+cfg.Database.Database))
-	fmt.Println("connected")
-	defer cancel()
-	//address := os.ExpandEnv("${NEODB_ADDRESS}")
-	//poolsize, err := strconv.Atoi(os.ExpandEnv("${NEODB_POOLSIZE}"))
-	if err != nil {
-		log.Fatalln(err)
-	}
+	ctx := context.TODO()
 	client := &cli.T{
-		C:        c,
 		Ctx:      ctx,
 		RpcCli:   neoRpc.NewClient(""), // placeholder
 		RpcPorts: cfg.Proxy.Uri,
 	}
-	defer cancel()
 	rpc.Register(&api.T{
 		Data: &data.T{
 			Client: client,

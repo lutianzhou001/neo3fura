@@ -7,19 +7,20 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/go-redis/redis/v8"
 	"github.com/joeqian10/neo3-gogogo/rpc"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 	"log"
 	"os"
 	"path/filepath"
+	"time"
 )
 
 // T ...
 type T struct {
-	C        *mongo.Client
 	Ctx      context.Context
 	RpcCli   *rpc.RpcClient
 	RpcPorts []string
@@ -34,6 +35,25 @@ type Config struct {
 		Database string `yaml:"database"`
 		DBName   string `yaml:"dbname"`
 	} `yaml:"database"`
+}
+
+func (me *T) getConnection() (uc *mongo.Client, err error) {
+	cfg, err := me.OpenConfigFile()
+	if err != nil {
+		log.Fatalln(err)
+	}
+	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
+	clientOptions := options.Client().ApplyURI("mongodb://" + cfg.Database.User + ":" + cfg.Database.Pass + "@" + cfg.Database.Host + ":" + cfg.Database.Port + "/" + cfg.Database.Database)
+	clientOptions = clientOptions.SetMaxPoolSize(50)
+	userClient, err := mongo.Connect(ctx, clientOptions)
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = userClient.Ping(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+	return userClient, nil
 }
 
 func (me *T) OpenConfigFile() (Config, error) {
@@ -53,7 +73,11 @@ func (me *T) OpenConfigFile() (Config, error) {
 }
 
 func (me *T) ListDatabaseNames() error {
-	databases, err := me.C.ListDatabaseNames(me.Ctx, bson.M{})
+	uc, err := me.getConnection()
+	if err != nil {
+		return err
+	}
+	databases, err := uc.ListDatabaseNames(me.Ctx, bson.M{})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -66,7 +90,11 @@ func (me *T) ListCollections() error {
 	if err != nil {
 		return err
 	}
-	collections, err := me.C.Database(cfg.Database.DBName).ListCollectionNames(me.Ctx, bson.M{})
+	uc, err := me.getConnection()
+	if err != nil {
+		return err
+	}
+	collections, err := uc.Database(cfg.Database.DBName).ListCollectionNames(me.Ctx, bson.M{})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -82,10 +110,11 @@ func (me *T) QueryOne(args struct {
 	Query      []string
 }, ret *json.RawMessage) (map[string]interface{}, error) {
 
+	// connect to redis
+	// if found return conver,ret
+	// if not found
 	var kvs string
-
 	kvs = kvs + args.Collection
-
 	for k, v := range args.Sort {
 		kvs = kvs + k + fmt.Sprintf("%v", v)
 	}
@@ -95,39 +124,73 @@ func (me *T) QueryOne(args struct {
 	for _, v := range args.Query {
 		kvs = kvs + v
 	}
-
 	h := sha1.New()
 	h.Write([]byte(kvs))
-	str := hex.EncodeToString(h.Sum(nil))
-	fmt.Println(str)
+	hash := hex.EncodeToString(h.Sum(nil))
 
-	cfg, err := me.OpenConfigFile()
-	if err != nil {
-		return nil, err
-	}
-	var result map[string]interface{}
-	convert := make(map[string]interface{})
-	collection := me.C.Database(cfg.Database.DBName).Collection(args.Collection)
-	opts := options.FindOne().SetSort(args.Sort)
-	err = collection.FindOne(me.Ctx, args.Filter, opts).Decode(&result)
-	if err == mongo.ErrNoDocuments {
-		return nil, errors.New("NOT FOUND")
-	} else if err != nil {
-		log.Fatal(err)
-	}
-	if len(args.Query) == 0 {
-		convert = result
-	} else {
-		for _, v := range args.Query {
-			convert[v] = result[v]
+	var ctx = context.Background()
+
+	rdb := redis.NewClient(&redis.Options{
+		Addr:     "127.0.0.1:6379",
+		// Addr:     "docker.for.mac.host.internal:6379",
+		Password: "", // no password set
+		DB:       0,  // use default DB
+	})
+
+	val, err := rdb.Get(ctx, hash).Result()
+	if err == redis.Nil {
+		cfg, err := me.OpenConfigFile()
+		if err != nil {
+			return nil, err
 		}
-	}
-	r, err := json.Marshal(convert)
-	if err != nil {
+		var result map[string]interface{}
+		convert := make(map[string]interface{})
+		uc, err := me.getConnection()
+		if err != nil {
+			return nil, err
+		}
+		collection := uc.Database(cfg.Database.DBName).Collection(args.Collection)
+		opts := options.FindOne().SetSort(args.Sort)
+		err = collection.FindOne(me.Ctx, args.Filter, opts).Decode(&result)
+		if err == mongo.ErrNoDocuments {
+			return nil, errors.New("NOT FOUND")
+		} else if err != nil {
+			log.Fatal(err)
+		}
+		if len(args.Query) == 0 {
+			convert = result
+		} else {
+			for _, v := range args.Query {
+				convert[v] = result[v]
+			}
+		}
+		r, err := json.Marshal(convert)
+		if err != nil {
+			return nil, err
+		}
+		err = rdb.Set(ctx, hash, hex.EncodeToString(r), 0).Err()
+		if err != nil {
+			return nil, err
+		}
+		*ret = json.RawMessage(r)
+		return convert, err
+	} else if err != nil {
 		return nil, err
+	} else {
+		// return the data
+		r, err := hex.DecodeString(val)
+		if err != nil {
+			return nil, err
+		}
+		*ret = json.RawMessage(r)
+		convert := make(map[string]interface{})
+		err = json.Unmarshal(r, &convert)
+		if err != nil {
+			return nil, err
+		}
+		return convert, err
 	}
-	*ret = json.RawMessage(r)
-	return convert, err
+	return nil, nil
 }
 
 func (me *T) QueryAll(args struct {
@@ -145,7 +208,11 @@ func (me *T) QueryAll(args struct {
 	}
 	var results []map[string]interface{}
 	convert := make([]map[string]interface{}, 0)
-	collection := me.C.Database(cfg.Database.DBName).Collection(args.Collection)
+	uc, err := me.getConnection()
+	if err != nil {
+		return nil, 0, err
+	}
+	collection := uc.Database(cfg.Database.DBName).Collection(args.Collection)
 	op := options.Find()
 	op.SetSort(args.Sort)
 	op.SetLimit(args.Limit)

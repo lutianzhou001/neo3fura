@@ -5,3 +5,11 @@ services:
     ports:
       - "1926:1926"
     restart: always
+    container_name: service
+    depends_on:
+      - redis
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
+    container_name: cache
