@@ -36,8 +36,8 @@ type Config struct {
 		DBName   string `yaml:"dbname"`
 	} `yaml:"database"`
 	Redis struct {
-		Host     string `yaml:"host"`
-		Port     string `yaml:"port"`
+		Host string `yaml:"host"`
+		Port string `yaml:"port"`
 	} `yaml:"redis"`
 }
 
@@ -140,7 +140,7 @@ func (me *T) QueryOne(args struct {
 	var ctx = context.Background()
 
 	rdb := redis.NewClient(&redis.Options{
-		Addr:   cfg.Redis.Host + ":" + cfg.Redis.Port,
+		Addr: cfg.Redis.Host + ":" + cfg.Redis.Port,
 		// Addr:     "docker.for.mac.host.internal:6379",
 		Password: "", // no password set
 		DB:       0,  // use default DB

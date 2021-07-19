@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"neo3fura/lib/type/h256"
 	"neo3fura/var/stderr"
@@ -30,6 +31,37 @@ func (me *T) GetNep17TransferByTransactionHash(args struct {
 	if err != nil {
 		return err
 	}
+	var raw1 map[string]interface{}
+	var raw2 map[string]interface{}
+
+	err = me.GetVmStateByTransactionHash(struct {
+		TransactionHash h256.T
+		Filter          map[string]interface{}
+		Raw             *map[string]interface{}
+	}{
+		TransactionHash: h256.T(fmt.Sprint(r1["txid"])),
+		Filter:          nil,
+		Raw:             &raw1,
+	}, ret)
+	if err != nil {
+		return err
+	}
+	r1["vmstate"] = raw1["vmstate"].(string)
+
+	err = me.GetBlockByBlockHash(struct {
+		BlockHash h256.T
+		Filter    map[string]interface{}
+		Raw       *map[string]interface{}
+	}{
+		BlockHash: h256.T(fmt.Sprint(r1["blockhash"])),
+		Filter:    nil,
+		Raw:       &raw2,
+	}, ret)
+	if err != nil {
+		return err
+	}
+	r1["timestamp"] = raw2["timestamp"].(float64)
+
 	r1, err = me.Filter(r1, args.Filter)
 	if err != nil {
 		return err
