@@ -12,9 +12,9 @@ type T string
 
 // Valid ...
 func (me T) Valid() bool {
-	if (len(me.Val()) != 42) || (len(me.Val()) != 34) {
+	if (len(me.Val()) != 42) && (len(me.Val()) != 34) {
 		return false
-	} else if len(me.Val()) != 42 {
+	} else if len(me.Val()) != 34 {
 		content := me.Val()[2:len(me.Val())]
 		return re.MatchString(content)
 	} else {

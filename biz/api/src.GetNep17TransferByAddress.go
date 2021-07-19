@@ -70,7 +70,12 @@ func (me *T) GetNep17TransferByAddress(args struct {
 		if err != nil {
 			return err
 		}
-		item["timestamp"] = raw2["timestamp"].(float64)
+		switch raw2["timestamp"].(type) {
+		case int64:
+			item["timestamp"] = raw2["timestamp"].(int64)
+		case float64:
+			item["timestamp"] = raw2["timestamp"].(float64)
+		}
 	}
 	r2, err := me.FilterArrayAndAppendCount(r1, count, args.Filter)
 	if err != nil {
