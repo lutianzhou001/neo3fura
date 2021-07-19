@@ -35,6 +35,10 @@ type Config struct {
 		Database string `yaml:"database"`
 		DBName   string `yaml:"dbname"`
 	} `yaml:"database"`
+	Redis struct {
+		Host     string `yaml:"host"`
+		Port     string `yaml:"port"`
+	}
 }
 
 func (me *T) getConnection() (uc *mongo.Client, err error) {
@@ -113,6 +117,11 @@ func (me *T) QueryOne(args struct {
 	// connect to redis
 	// if found return conver,ret
 	// if not found
+	cfg, err := me.OpenConfigFile()
+	if err != nil {
+		return nil, err
+	}
+
 	var kvs string
 	kvs = kvs + args.Collection
 	for k, v := range args.Sort {
@@ -131,7 +140,7 @@ func (me *T) QueryOne(args struct {
 	var ctx = context.Background()
 
 	rdb := redis.NewClient(&redis.Options{
-		Addr:     "127.0.0.1:6379",
+		Addr:   cfg.Redis.Host + ":" + cfg.Redis.Port,
 		// Addr:     "docker.for.mac.host.internal:6379",
 		Password: "", // no password set
 		DB:       0,  // use default DB
@@ -139,10 +148,6 @@ func (me *T) QueryOne(args struct {
 
 	val, err := rdb.Get(ctx, hash).Result()
 	if err == redis.Nil {
-		cfg, err := me.OpenConfigFile()
-		if err != nil {
-			return nil, err
-		}
 		var result map[string]interface{}
 		convert := make(map[string]interface{})
 		uc, err := me.getConnection()
