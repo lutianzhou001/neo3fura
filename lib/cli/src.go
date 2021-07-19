@@ -38,7 +38,7 @@ type Config struct {
 	Redis struct {
 		Host     string `yaml:"host"`
 		Port     string `yaml:"port"`
-	}
+	} `yaml:"redis"`
 }
 
 func (me *T) getConnection() (uc *mongo.Client, err error) {
