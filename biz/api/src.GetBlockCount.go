@@ -17,7 +17,7 @@ func (me *T) GetBlockCount(args struct {
 		Query      []string
 	}{
 		Collection: "Block",
-		Index:      "someIndex",
+		Index:      "GetBlockCount",
 		Sort:       bson.M{"_id": -1},
 		Filter:     bson.M{},
 		Query:      []string{"index"},

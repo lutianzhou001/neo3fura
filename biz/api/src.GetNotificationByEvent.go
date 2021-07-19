@@ -25,7 +25,7 @@ func (me *T) GetNotificationByEvent(args struct {
 		Skip       int64
 	}{
 		Collection: "Notification",
-		Index:      "someIndex",
+		Index:      "GetNotificationByEvent",
 		Sort:       bson.M{},
 		Filter: bson.M{
 			"eventname": args.Event.Val(),

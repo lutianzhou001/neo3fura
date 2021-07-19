@@ -22,7 +22,7 @@ func (me *T) GetAssetInfoByContractHash(args struct {
 		Query      []string
 	}{
 		Collection: "Asset",
-		Index:      "someIndex",
+		Index:      "GetAssetInfoByContractHash",
 		Sort:       bson.M{},
 		Filter:     bson.M{"hash": args.ContractHash.Val()},
 		Query:      []string{},

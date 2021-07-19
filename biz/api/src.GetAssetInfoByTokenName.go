@@ -22,7 +22,7 @@ func (me *T) GetAssetInfoByTokenName(args struct {
 		Query      []string
 	}{
 		Collection: "Asset",
-		Index:      "someIndex",
+		Index:      "GetAssetInfoByTokenName",
 		Sort:       bson.M{},
 		Filter:     bson.M{"tokenname": args.TokenName.Val()},
 		Query:      []string{},

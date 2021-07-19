@@ -23,7 +23,7 @@ func (me *T) GetBlockByBlockHeight(args struct {
 		Query      []string
 	}{
 		Collection: "Block",
-		Index:      "someIndex",
+		Index:      "GetBlockByBlockHeight",
 		Sort:       bson.M{},
 		Filter:     bson.M{"index": args.BlockHeight},
 		Query:      []string{},

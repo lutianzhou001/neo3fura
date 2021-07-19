@@ -22,7 +22,7 @@ func (me *T) GetContractByContractHash(args struct {
 		Query      []string
 	}{
 		Collection: "Contract",
-		Index:      "someIndex",
+		Index:      "GetContractByContractHash",
 		Sort:       bson.M{"_id": -1},
 		Filter:     bson.M{"hash": args.ContractHash},
 		Query:      []string{},

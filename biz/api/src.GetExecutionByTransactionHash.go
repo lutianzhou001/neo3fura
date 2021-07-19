@@ -22,7 +22,7 @@ func (me *T) GetExecutionByTransactionHash(args struct {
 		Query      []string
 	}{
 		Collection: "Execution",
-		Index:      "someIndex",
+		Index:      "GetExecutionByTransactionHash",
 		Sort:       bson.M{},
 		Filter:     bson.M{"txid": args.TransactionHash.Val()},
 		Query:      []string{},

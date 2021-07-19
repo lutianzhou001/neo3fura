@@ -18,7 +18,7 @@ func (me *T) GetAssetInfos(args struct {
 		Skip       int64
 	}{
 		Collection: "Asset",
-		Index:      "someIndex",
+		Index:      "GetAssetInfos",
 		Sort:       bson.M{},
 		Filter:     bson.M{},
 		Query:      []string{},

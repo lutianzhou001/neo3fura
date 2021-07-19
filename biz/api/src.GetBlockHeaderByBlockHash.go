@@ -23,7 +23,7 @@ func (me *T) GetBlockHeaderByBlockHash(args struct {
 		Query      []string
 	}{
 		Collection: "Header",
-		Index:      "someIndex",
+		Index:      "GetBlockHeaderByBlockHash",
 		Sort:       bson.M{},
 		Filter:     bson.M{"hash": args.BlockHash},
 		Query:      []string{},

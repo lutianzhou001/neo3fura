@@ -31,7 +31,7 @@ func (me *T) GetNep11OwnedByContractHashAddress(args struct {
 		Skip       int64
 	}{
 		Collection: "Nep11TransferNotification",
-		Index:      "someIndex",
+		Index:      "GetNep11OwnedByContractHashAddress",
 		Sort:       bson.M{},
 		Filter:     bson.M{"to": args.Address.Val(), "contract": args.ContractHash.Val()},
 		Query:      []string{},

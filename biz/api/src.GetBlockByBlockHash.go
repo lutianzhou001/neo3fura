@@ -23,7 +23,7 @@ func (me *T) GetBlockByBlockHash(args struct {
 		Query      []string
 	}{
 		Collection: "Block",
-		Index:      "someIndex",
+		Index:      "GetBlockByBlockHash",
 		Sort:       bson.M{},
 		Filter:     bson.M{"hash": args.BlockHash},
 		Query:      []string{},

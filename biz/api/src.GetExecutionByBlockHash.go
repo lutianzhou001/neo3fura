@@ -24,7 +24,7 @@ func (me *T) GetExecutionByBlockHash(args struct {
 		Skip       int64
 	}{
 		Collection: "Execution",
-		Index:      "someIndex",
+		Index:      "GetExecutionByBlockHash",
 		Sort:       bson.M{},
 		Filter:     bson.M{"blockhash": args.BlockHash.Val()},
 		Query:      []string{},

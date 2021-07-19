@@ -23,7 +23,7 @@ func (me *T) GetRawTransactionByTransactionHash(args struct {
 		Query      []string
 	}{
 		Collection: "Transaction",
-		Index:      "someIndex",
+		Index:      "GetRawTransactionByTransactionHash",
 		Sort:       bson.M{},
 		Filter:     bson.M{"hash": args.TransactionHash.Val()},
 		Query:      []string{},

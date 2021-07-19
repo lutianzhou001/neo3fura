@@ -28,7 +28,7 @@ func (me *T) GetNep17TransferByAddress(args struct {
 		Skip       int64
 	}{
 		Collection: "TransferNotification",
-		Index:      "someIndex",
+		Index:      "GetNep17TransferByAddress",
 		Sort:       bson.M{},
 		Filter: bson.M{"$or": []interface{}{
 			bson.M{"from": args.Address.Val()},

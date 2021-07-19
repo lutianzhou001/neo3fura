@@ -28,7 +28,7 @@ func (me *T) GetRawTransactionByBlockHeight(args struct {
 		Query      []string
 	}{
 		Collection: "Block",
-		Index:      "someIndex",
+		Index:      "GetRawTransactionByBlockHeight",
 		Sort:       bson.M{},
 		Filter:     bson.M{"index": args.BlockHeight},
 		Query:      []string{},
@@ -46,7 +46,7 @@ func (me *T) GetRawTransactionByBlockHeight(args struct {
 		Skip       int64
 	}{
 		Collection: "Transaction",
-		Index:      "someIndex",
+		Index:      "GetRawTransactionByBlockHeight",
 		Sort:       bson.M{},
 		Filter:     bson.M{"blockhash": r1["hash"]},
 		Query:      []string{},

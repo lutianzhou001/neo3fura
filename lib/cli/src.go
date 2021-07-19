@@ -10,6 +10,7 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/joeqian10/neo3-gogogo/rpc"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"gopkg.in/yaml.v3"
@@ -124,6 +125,7 @@ func (me *T) QueryOne(args struct {
 
 	var kvs string
 	kvs = kvs + args.Collection
+	kvs = kvs + args.Index
 	for k, v := range args.Sort {
 		kvs = kvs + k + fmt.Sprintf("%v", v)
 	}
@@ -147,6 +149,7 @@ func (me *T) QueryOne(args struct {
 	})
 
 	val, err := rdb.Get(ctx, hash).Result()
+	// if true {
 	if err == redis.Nil {
 		var result map[string]interface{}
 		convert := make(map[string]interface{})
@@ -179,17 +182,19 @@ func (me *T) QueryOne(args struct {
 		}
 		*ret = json.RawMessage(r)
 		return convert, err
-	} else if err != nil {
-		return nil, err
 	} else {
-		// return the data
 		r, err := hex.DecodeString(val)
 		if err != nil {
 			return nil, err
 		}
+
 		*ret = json.RawMessage(r)
 		convert := make(map[string]interface{})
 		err = json.Unmarshal(r, &convert)
+		convert["_id"], err = primitive.ObjectIDFromHex(convert["_id"].(string))
+		if err != nil {
+			return nil, err
+		}
 		if err != nil {
 			return nil, err
 		}

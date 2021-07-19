@@ -22,7 +22,7 @@ func (me *T) GetScVoteCallByTransactionHash(args struct {
 		Query      []string
 	}{
 		Collection: "ScVoteCall",
-		Index:      "someIndex",
+		Index:      "GetScVoteCallByTransactionHash",
 		Sort:       bson.M{},
 		Filter:     bson.M{"txid": args.TransactionHash.Val()},
 		Query:      []string{},

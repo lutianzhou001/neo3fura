@@ -32,7 +32,7 @@ func (me *T) GetNep11BalanceByContractHashAddressTokenId(args struct {
 		Query      []string
 	}{
 		Collection: "Nep11TransferNotification",
-		Index:      "someIndex",
+		Index:      "GetNep11BalanceByContractHashAddressTokenId",
 		Sort:       bson.M{"_id": -1},
 		Filter: bson.M{"contract": args.ContractHash.Val(), "tokenId": args.TokenId.Val(), "$or": []interface{}{
 			bson.M{"from": args.Address.Val()},

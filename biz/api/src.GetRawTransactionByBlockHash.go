@@ -30,7 +30,7 @@ func (me *T) GetRawTransactionByBlockHash(args struct {
 		Skip       int64
 	}{
 		Collection: "Transaction",
-		Index:      "someIndex",
+		Index:      "GetRawTransactionByBlockHash",
 		Sort:       bson.M{},
 		Filter:     bson.M{"blockhash": args.BlockHash.Val()},
 		Query:      []string{},

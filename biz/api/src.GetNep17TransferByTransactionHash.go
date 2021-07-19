@@ -23,7 +23,7 @@ func (me *T) GetNep17TransferByTransactionHash(args struct {
 		Query      []string
 	}{
 		Collection: "TransferNotification",
-		Index:      "someIndex",
+		Index:      "GetNep17TransferByTransactionHash",
 		Sort:       bson.M{},
 		Filter:     bson.M{"txid": args.TransactionHash.Val()},
 		Query:      []string{},

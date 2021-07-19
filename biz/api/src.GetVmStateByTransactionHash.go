@@ -23,7 +23,7 @@ func (me *T) GetVmStateByTransactionHash(args struct {
 		Query      []string
 	}{
 		Collection: "Execution",
-		Index:      "someIndex",
+		Index:      "GetVmStateByTransactionHash",
 		Sort:       bson.M{},
 		Filter:     bson.M{"txid": args.TransactionHash.Val()},
 		Query:      []string{"vmstate"},

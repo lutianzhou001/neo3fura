@@ -27,7 +27,7 @@ func (me *T) GetScCallByContractHash(args struct {
 		Skip       int64
 	}{
 		Collection: "ScCall",
-		Index:      "someIndex",
+		Index:      "GetScCallByContractHash",
 		Sort:       bson.M{},
 		Filter:     bson.M{"contractHash": args.ContractHash.Val()},
 		Query:      []string{},

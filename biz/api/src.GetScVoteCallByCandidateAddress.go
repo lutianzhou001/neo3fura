@@ -27,7 +27,7 @@ func (me *T) GetScVoteCallByCandidateAddress(args struct {
 		Skip       int64
 	}{
 		Collection: "ScVoteCall",
-		Index:      "someIndex",
+		Index:      "GetScVoteCallByCandidateAddress",
 		Sort:       bson.M{},
 		Filter:     bson.M{"candidate": args.CandidateAddress.Val()},
 		Query:      []string{},

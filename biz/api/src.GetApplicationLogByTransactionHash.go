@@ -25,7 +25,7 @@ func (me *T) GetApplicationLogByTransactionHash(args struct {
 		Query      []string
 	}{
 		Collection: "Execution",
-		Index:      "someIndex",
+		Index:      "GetApplicationLogByTransactionHash",
 		Sort:       bson.M{},
 		Filter:     bson.M{"txid": args.TransactionHash.Val()},
 		Query:      []string{},
@@ -41,7 +41,7 @@ func (me *T) GetApplicationLogByTransactionHash(args struct {
 		Query      []string
 		Limit      int64
 		Skip       int64
-	}{Collection: "[Execution~Notification(Notifications)]", Index: "someIndex", Sort: bson.M{}, Filter: bson.M{"ParentID": r1["_id"]}}, ret)
+	}{Collection: "[Execution~Notification(Notifications)]", Index: "GetApplicationLogByTransactionHash", Sort: bson.M{}, Filter: bson.M{"ParentID": r1["_id"]}}, ret)
 	if err != nil {
 		return err
 	}
@@ -53,7 +53,7 @@ func (me *T) GetApplicationLogByTransactionHash(args struct {
 			Sort       bson.M
 			Filter     bson.M
 			Query      []string
-		}{Collection: "Notification", Index: "someIndex", Sort: bson.M{}, Filter: bson.M{"_id": item3["ChildID"]}}, ret)
+		}{Collection: "Notification", Index: "GetApplicationLogByTransactionHash", Sort: bson.M{}, Filter: bson.M{"_id": item3["ChildID"]}}, ret)
 		if err != nil {
 			return err
 		}

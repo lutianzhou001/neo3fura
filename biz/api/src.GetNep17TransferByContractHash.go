@@ -28,7 +28,7 @@ func (me *T) GetNep17TransferByContractHash(args struct {
 		Skip       int64
 	}{
 		Collection: "TransferNotification",
-		Index:      "someIndex",
+		Index:      "GetNep17TransferByContractHash",
 		Sort:       bson.M{},
 		Filter:     bson.M{"contract": args.ContractHash.Val()},
 		Query:      []string{},

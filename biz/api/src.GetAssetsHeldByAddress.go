@@ -26,7 +26,7 @@ func (me *T) GetAssetsHeldByAddress(args struct {
 		Query      []string
 	}{
 		Collection: "Address",
-		Index:      "someIndex",
+		Index:      "GetAssetsHeldByAddress",
 		Sort:       bson.M{},
 		Filter:     bson.M{"address": args.Address.Val()},
 		Query:      []string{"_id"},
@@ -43,7 +43,7 @@ func (me *T) GetAssetsHeldByAddress(args struct {
 			Query      []string
 			Limit      int64
 			Skip       int64
-		}{Collection: "[Asset~Address(Addresses)]", Index: "someIndex", Sort: bson.M{}, Filter: bson.M{"ChildID": r1["_id"]}, Query: []string{"ParentID"}, Limit: args.Limit, Skip: args.Skip}, ret)
+		}{Collection: "[Asset~Address(Addresses)]", Index: "GetAssetsHeldByAddress", Sort: bson.M{}, Filter: bson.M{"ChildID": r1["_id"]}, Query: []string{"ParentID"}, Limit: args.Limit, Skip: args.Skip}, ret)
 	if err != nil {
 		return err
 	}
@@ -55,7 +55,7 @@ func (me *T) GetAssetsHeldByAddress(args struct {
 			Sort       bson.M
 			Filter     bson.M
 			Query      []string
-		}{Collection: "Asset", Index: "someIndex", Sort: bson.M{}, Filter: bson.M{"_id": item["ParentID"]}}, ret)
+		}{Collection: "Asset", Index: "GetAssetsHeldByAddress", Sort: bson.M{}, Filter: bson.M{"_id": item["ParentID"]}}, ret)
 		if err != nil {
 			return err
 		}

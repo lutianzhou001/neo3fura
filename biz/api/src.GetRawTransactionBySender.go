@@ -27,7 +27,7 @@ func (me *T) GetRawTransactionBySender(args struct {
 		Skip       int64
 	}{
 		Collection: "Transaction",
-		Index:      "someIndex",
+		Index:      "GetRawTransactionBySender",
 		Sort:       bson.M{},
 		Filter:     bson.M{"sender": args.Sender.Val()},
 		Query:      []string{},

@@ -26,7 +26,7 @@ func (me *T) GetAssetHoldersByContractHash(args struct {
 		Query      []string
 	}{
 		Collection: "Asset",
-		Index:      "someIndex",
+		Index:      "GetAssetHoldersByContractHash",
 		Sort:       bson.M{},
 		Filter:     bson.M{"hash": args.ContractHash.Val()},
 		Query:      []string{"_id"},
@@ -45,7 +45,7 @@ func (me *T) GetAssetHoldersByContractHash(args struct {
 			Skip       int64
 		}{
 			Collection: "[Asset~Address(Addresses)]",
-			Index:      "someIndex",
+			Index:      "GetAssetHoldersByContractHash",
 			Sort:       bson.M{}, Filter: bson.M{"ParentID": r1["_id"]},
 			Query: []string{"ChildID"},
 			Limit: args.Limit,
@@ -62,7 +62,7 @@ func (me *T) GetAssetHoldersByContractHash(args struct {
 			Sort       bson.M
 			Filter     bson.M
 			Query      []string
-		}{Collection: "Address", Index: "someIndex", Sort: bson.M{}, Filter: bson.M{"_id": item["ChildID"]}}, ret)
+		}{Collection: "Address", Index: "GetAssetHoldersByContractHash", Sort: bson.M{}, Filter: bson.M{"_id": item["ChildID"]}}, ret)
 		if err != nil {
 			return err
 		}

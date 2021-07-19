@@ -29,7 +29,7 @@ func (me *T) GetApplicationLogByBlockHash(args struct {
 		Skip       int64
 	}{
 		Collection: "Execution",
-		Index:      "someIndex",
+		Index:      "GetApplicationLogByBlockHash",
 		Sort:       bson.M{},
 		Filter:     bson.M{"blockhash": args.BlockHash.Val()},
 		Query:      []string{},
@@ -48,7 +48,7 @@ func (me *T) GetApplicationLogByBlockHash(args struct {
 			Query      []string
 			Limit      int64
 			Skip       int64
-		}{Collection: "[Execution~Notification(Notifications)]", Index: "someIndex", Sort: bson.M{}, Filter: bson.M{"ParentID": item2["_id"]}}, ret)
+		}{Collection: "[Execution~Notification(Notifications)]", Index: "GetApplicationLogByBlockHash", Sort: bson.M{}, Filter: bson.M{"ParentID": item2["_id"]}}, ret)
 		if err != nil {
 			return err
 		}
@@ -60,7 +60,7 @@ func (me *T) GetApplicationLogByBlockHash(args struct {
 				Sort       bson.M
 				Filter     bson.M
 				Query      []string
-			}{Collection: "Notification", Index: "someIndex", Sort: bson.M{}, Filter: bson.M{"_id": item3["ChildID"]}}, ret)
+			}{Collection: "Notification", Index: "GetApplicationLogByBlockHash", Sort: bson.M{}, Filter: bson.M{"_id": item3["ChildID"]}}, ret)
 			if err != nil {
 				return err
 			}

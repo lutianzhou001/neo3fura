@@ -32,7 +32,7 @@ func (me *T) GetRawTransactionByAddress(args struct {
 		Skip       int64
 	}{
 		Collection: "Transaction",
-		Index:      "someIndex",
+		Index:      "GetRawTransactionByAddress",
 		Sort:       bson.M{},
 		Filter:     bson.M{"sender": sender},
 		Query:      []string{},

@@ -22,7 +22,7 @@ func (me *T) GetScCallByTransactionHash(args struct {
 		Query      []string
 	}{
 		Collection: "ScCall",
-		Index:      "someIndex",
+		Index:      "GetScCallByTransactionHash",
 		Sort:       bson.M{},
 		Filter:     bson.M{"txid": args.TransactionHash.Val()},
 		Query:      []string{},

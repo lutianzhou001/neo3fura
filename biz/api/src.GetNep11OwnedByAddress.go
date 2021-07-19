@@ -27,7 +27,7 @@ func (me *T) GetNep11OwnedByAddress(args struct {
 		Skip       int64
 	}{
 		Collection: "Nep11TransferNotification",
-		Index:      "someIndex",
+		Index:      "GetNep11OwnedByAddress",
 		Sort:       bson.M{},
 		Filter:     bson.M{"to": args.Address.Val()},
 		Query:      []string{},

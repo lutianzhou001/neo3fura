@@ -16,7 +16,7 @@ func (me *T) GetBestBlockHash(args struct {
 		Query      []string
 	}{
 		Collection: "Block",
-		Index:      "someIndex",
+		Index:      "GetBestBlockHash",
 		Sort:       bson.M{"_id": -1},
 		Filter:     bson.M{},
 		Query:      []string{"hash"},

@@ -22,7 +22,7 @@ func (me *T) GetVotesByCandidateAddress(args struct {
 		Query      []string
 	}{
 		Collection: "Candidate",
-		Index:      "someIndex",
+		Index:      "GetVotesByCandidateAddress",
 		Sort:       bson.M{},
 		Filter:     bson.M{"candidate": args.CandidateAddress.Val()},
 		Query:      []string{},

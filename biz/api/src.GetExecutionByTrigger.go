@@ -50,7 +50,7 @@ func (me *T) GetExecutionByTrigger(args struct {
 		Skip       int64
 	}{
 		Collection: "Execution",
-		Index:      "someIndex",
+		Index:      "GetExecutionByTrigger",
 		Sort:       bson.M{},
 		Filter:     filter,
 		Query:      []string{},

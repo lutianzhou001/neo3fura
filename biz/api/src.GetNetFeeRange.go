@@ -17,7 +17,7 @@ func (me *T) GetNetFeeRange(args struct {
 		Query      []string
 	}{
 		Collection: "Transaction",
-		Index:      "someIndex",
+		Index:      "GetNetFeeRange",
 		Sort:       bson.M{"_id": -1},
 		Filter:     bson.M{},
 		Query:      []string{},
@@ -35,7 +35,7 @@ func (me *T) GetNetFeeRange(args struct {
 		Skip       int64
 	}{
 		Collection: "Transaction",
-		Index:      "someIndex",
+		Index:      "GetNetFeeRange",
 		Sort:       bson.M{},
 		Filter:     bson.M{"blockhash": r1["hash"]},
 		Query:      []string{},
