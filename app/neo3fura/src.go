@@ -62,6 +62,13 @@ func main() {
 			Client: client,
 		},
 	})
+	//var ct api.T
+	//c := cron.New()
+	//spec := "*/1 * * * * ?"
+	//c.AddFunc(spec, func() {
+	//   ct.GetTopTokens()
+	//})
+	//c.Start()
 	listen := os.ExpandEnv("0.0.0.0:1926")
 	log.Println("[LISTEN]", listen)
 	http.ListenAndServe(listen, &joh.T{})

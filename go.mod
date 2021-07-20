@@ -7,6 +7,7 @@ require (
 	github.com/btcsuite/btcutil v1.0.2
 	github.com/go-redis/redis/v8 v8.11.0
 	github.com/joeqian10/neo3-gogogo v0.3.5
+	github.com/robfig/cron v1.2.0 // indirect
 	go.mongodb.org/mongo-driver v1.5.3
 	gopkg.in/yaml.v2 v2.3.0
 	gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c
