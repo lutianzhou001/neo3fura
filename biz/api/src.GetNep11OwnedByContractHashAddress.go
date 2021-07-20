@@ -33,7 +33,7 @@ func (me *T) GetNep11OwnedByContractHashAddress(args struct {
 		Collection: "Nep11TransferNotification",
 		Index:      "GetNep11OwnedByContractHashAddress",
 		Sort:       bson.M{},
-		Filter:     bson.M{"to": args.Address.Val(), "contract": args.ContractHash.Val()},
+		Filter:     bson.M{"to": args.Address.TransferredVal(), "contract": args.ContractHash.Val()},
 		Query:      []string{},
 		Limit:      args.Limit,
 		Skip:       args.Skip,

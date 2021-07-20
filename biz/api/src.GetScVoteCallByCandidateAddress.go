@@ -29,7 +29,7 @@ func (me *T) GetScVoteCallByCandidateAddress(args struct {
 		Collection: "ScVoteCall",
 		Index:      "GetScVoteCallByCandidateAddress",
 		Sort:       bson.M{},
-		Filter:     bson.M{"candidate": args.CandidateAddress.Val()},
+		Filter:     bson.M{"candidate": args.CandidateAddress.TransferredVal()},
 		Query:      []string{},
 		Limit:      args.Limit,
 		Skip:       args.Skip,

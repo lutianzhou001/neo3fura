@@ -29,8 +29,8 @@ func (me *T) GetNep11TransferByAddress(args struct {
 		Index:      "GetNep11TransferByAddress",
 		Sort:       bson.M{},
 		Filter: bson.M{"$or": []interface{}{
-			bson.M{"from": args.Address.Val()},
-			bson.M{"to": args.Address.Val()},
+			bson.M{"from": args.Address.TransferredVal()},
+			bson.M{"to": args.Address.TransferredVal()},
 		}},
 		Query: []string{},
 		Limit: args.Limit,

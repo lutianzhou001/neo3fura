@@ -36,8 +36,8 @@ func (me *T) GetNep11BalanceByContractHashAddress(args struct {
 		Index:      "GetNep11BalanceByContractHashAddress",
 		Sort:       bson.M{"_id": -1},
 		Filter: bson.M{"contract": args.ContractHash.Val(), "$or": []interface{}{
-			bson.M{"from": args.Address.Val()},
-			bson.M{"to": args.Address.Val()},
+			bson.M{"from": args.Address.TransferredVal()},
+			bson.M{"to": args.Address.TransferredVal()},
 		}},
 		Query: []string{},
 		Limit: args.Limit,
@@ -49,7 +49,7 @@ func (me *T) GetNep11BalanceByContractHashAddress(args struct {
 	r2 := make([]map[string]interface{}, 0)
 	for _, item := range r1 {
 		temp := make(map[string]interface{})
-		if item["from"].(string) == args.Address.Val() {
+		if item["from"].(string) == args.Address.TransferredVal() {
 			temp["balance"] = item["frombalance"]
 		} else {
 			temp["balance"] = item["tobalance"]

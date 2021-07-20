@@ -33,7 +33,7 @@ func (me *T) GetScCallByContractHashAddress(args struct {
 		Collection: "ScCall",
 		Index:      "GetScCallByContractHashAddress",
 		Sort:       bson.M{},
-		Filter:     bson.M{"contractHash": args.ContractHash.Val(), "originSender": args.Address.Val()},
+		Filter:     bson.M{"contractHash": args.ContractHash.Val(), "originSender": args.Address.TransferredVal()},
 		Query:      []string{},
 		Limit:      args.Limit,
 		Skip:       args.Skip,

@@ -30,8 +30,8 @@ func (me *T) GetBalanceByContractHashAddress(args struct {
 		Index:      "GetBalanceByContractHashAddress",
 		Sort:       bson.M{"_id": -1},
 		Filter: bson.M{"contract": args.ContractHash.Val(), "$or": []interface{}{
-			bson.M{"from": args.Address.Val()},
-			bson.M{"to": args.Address.Val()},
+			bson.M{"from": args.Address.TransferredVal()},
+			bson.M{"to": args.Address.TransferredVal()},
 		}},
 		Query: []string{},
 	}, ret)
@@ -42,7 +42,7 @@ func (me *T) GetBalanceByContractHashAddress(args struct {
 	r2["latesttx"] = r1
 	// if the reward is from system, the from will be nil;
 	if r1["from"] != nil {
-		if r1["from"].(string) == args.Address.Val() {
+		if r1["from"].(string) == args.Address.TransferredVal() {
 			r2["balance"] = r1["frombalance"]
 		} else {
 			r2["balance"] = r1["tobalance"]

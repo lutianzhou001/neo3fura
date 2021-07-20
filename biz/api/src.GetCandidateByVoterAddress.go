@@ -24,7 +24,7 @@ func (me *T) GetCandidateByVoterAddress(args struct {
 		Collection: "Vote",
 		Index:      "GetCandidateByVoterAddress",
 		Sort:       bson.M{"blockNumber": -1},
-		Filter:     bson.M{"voter": args.VoterAddress.Val()},
+		Filter:     bson.M{"voter": args.VoterAddress.TransferredVal()},
 		Query:      []string{},
 	}, ret)
 	if err != nil {

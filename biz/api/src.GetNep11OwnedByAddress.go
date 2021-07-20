@@ -29,7 +29,7 @@ func (me *T) GetNep11OwnedByAddress(args struct {
 		Collection: "Nep11TransferNotification",
 		Index:      "GetNep11OwnedByAddress",
 		Sort:       bson.M{},
-		Filter:     bson.M{"to": args.Address.Val()},
+		Filter:     bson.M{"to": args.Address.TransferredVal()},
 		Query:      []string{},
 		Limit:      args.Limit,
 		Skip:       args.Skip,

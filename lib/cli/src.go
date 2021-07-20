@@ -191,7 +191,9 @@ func (me *T) QueryOne(args struct {
 		*ret = json.RawMessage(r)
 		convert := make(map[string]interface{})
 		err = json.Unmarshal(r, &convert)
-		convert["_id"], err = primitive.ObjectIDFromHex(convert["_id"].(string))
+		if convert["_id"] != nil {
+			convert["_id"], err = primitive.ObjectIDFromHex(convert["_id"].(string))
+		}
 		if err != nil {
 			return nil, err
 		}
