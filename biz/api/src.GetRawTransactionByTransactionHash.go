@@ -11,6 +11,7 @@ import (
 func (me *T) GetRawTransactionByTransactionHash(args struct {
 	TransactionHash h256.T
 	Filter          map[string]interface{}
+	Raw             *map[string]interface{}
 }, ret *json.RawMessage) error {
 	if args.TransactionHash.Valid() == false {
 		return stderr.ErrInvalidArgs
@@ -65,6 +66,9 @@ func (me *T) GetRawTransactionByTransactionHash(args struct {
 		r1["timestamp"] = raw2["timestamp"].(int64)
 	case float64:
 		r1["timestamp"] = raw2["timestamp"].(float64)
+	}
+	if args.Raw != nil {
+		*args.Raw = r1
 	}
 	r1, err = me.Filter(r1, args.Filter)
 	if err != nil {

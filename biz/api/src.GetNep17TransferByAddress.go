@@ -43,6 +43,7 @@ func (me *T) GetNep17TransferByAddress(args struct {
 	}
 	var raw1 map[string]interface{}
 	var raw2 map[string]interface{}
+	var raw3 map[string]interface{}
 	for _, item := range r1 {
 		err = me.GetVmStateByTransactionHash(struct {
 			TransactionHash h256.T
@@ -57,6 +58,18 @@ func (me *T) GetNep17TransferByAddress(args struct {
 			return err
 		}
 		item["vmstate"] = raw1["vmstate"].(string)
+
+		err = me.GetRawTransactionByTransactionHash(struct {
+			TransactionHash h256.T
+			Filter          map[string]interface{}
+			Raw             *map[string]interface{}
+		}{TransactionHash: h256.T(fmt.Sprint(item["txid"])), Raw: &raw3}, ret)
+
+		if err != nil {
+			return err
+		}
+		item["gasfee"] = raw3["gasfee"].(int64)
+		item["sysfee"] = raw3["sysfee"].(int64)
 
 		err = me.GetBlockByBlockHash(struct {
 			BlockHash h256.T
