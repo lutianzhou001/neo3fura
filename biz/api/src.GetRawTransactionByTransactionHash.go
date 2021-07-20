@@ -61,12 +61,8 @@ func (me *T) GetRawTransactionByTransactionHash(args struct {
 	if err != nil {
 		return err
 	}
-	switch raw2["timestamp"].(type) {
-	case int64:
-		r1["timestamp"] = raw2["timestamp"].(int64)
-	case float64:
-		r1["timestamp"] = raw2["timestamp"].(float64)
-	}
+	r1["timestamp"] = raw2["timestamp"]
+	r1["timestamp"] = raw2["timestamp"]
 	if args.Raw != nil {
 		*args.Raw = r1
 	}

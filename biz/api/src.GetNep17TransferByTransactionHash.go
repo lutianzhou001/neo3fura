@@ -60,13 +60,8 @@ func (me *T) GetNep17TransferByTransactionHash(args struct {
 	if err != nil {
 		return err
 	}
-	switch raw2["timestamp"].(type) {
-	case int64:
-		r1["timestamp"] = raw2["timestamp"].(int64)
-	case float64:
-		r1["timestamp"] = raw2["timestamp"].(float64)
-	}
-
+	r1["timestamp"] = raw2["timestamp"]
+	r1["timestamp"] = raw2["timestamp"]
 	r1, err = me.Filter(r1, args.Filter)
 	if err != nil {
 		return err

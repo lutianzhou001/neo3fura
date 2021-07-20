@@ -59,17 +59,18 @@ func (me *T) GetNep17TransferByAddress(args struct {
 		}
 		item["vmstate"] = raw1["vmstate"].(string)
 
-		err = me.GetRawTransactionByTransactionHash(struct {
-			TransactionHash h256.T
-			Filter          map[string]interface{}
-			Raw             *map[string]interface{}
-		}{TransactionHash: h256.T(fmt.Sprint(item["txid"])), Raw: &raw3}, ret)
-
-		if err != nil {
-			return err
+		if fmt.Sprint(item["txid"]) != "0x0000000000000000000000000000000000000000000000000000000000000000" {
+			err = me.GetRawTransactionByTransactionHash(struct {
+				TransactionHash h256.T
+				Filter          map[string]interface{}
+				Raw             *map[string]interface{}
+			}{TransactionHash: h256.T(fmt.Sprint(item["txid"])), Raw: &raw3}, ret)
+			if err != nil {
+				return err
+			}
+			item["gasfee"] = raw3["gasfee"]
+			item["sysfee"] = raw3["sysfee"]
 		}
-		item["gasfee"] = raw3["gasfee"].(int64)
-		item["sysfee"] = raw3["sysfee"].(int64)
 
 		err = me.GetBlockByBlockHash(struct {
 			BlockHash h256.T
@@ -83,12 +84,8 @@ func (me *T) GetNep17TransferByAddress(args struct {
 		if err != nil {
 			return err
 		}
-		switch raw2["timestamp"].(type) {
-		case int64:
-			item["timestamp"] = raw2["timestamp"].(int64)
-		case float64:
-			item["timestamp"] = raw2["timestamp"].(float64)
-		}
+		item["timestamp"] = raw2["timestamp"]
+		item["timestamp"] = raw2["timestamp"]
 	}
 	r2, err := me.FilterArrayAndAppendCount(r1, count, args.Filter)
 	if err != nil {
