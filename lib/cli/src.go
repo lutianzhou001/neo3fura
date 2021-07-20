@@ -150,7 +150,8 @@ func (me *T) QueryOne(args struct {
 
 	val, err := rdb.Get(ctx, hash).Result()
 	// if true {
-	if err == redis.Nil {
+	// if sort != nil, it may have several results, we have to pick the sorted one
+	if err == redis.Nil || args.Sort != nil {
 		var result map[string]interface{}
 		convert := make(map[string]interface{})
 		uc, err := me.getConnection()
