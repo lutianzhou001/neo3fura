@@ -12,5 +12,5 @@ import (
 // {"id":1,"result":{"address":"ASH41gtWftHvhuYhZz1jj7ee7z9vp9D9wk","asset":"0x602c79718b16e442de58778e148d0b1084e3b2dffd5de6b7b16cee7969282de7","value":"0.00000001"},"error":null}
 // ```
 func (me *T) ListCollections(args struct{}, ret *json.RawMessage) error {
-	return me.Data.Client.ListCollections()
+	return me.Client.ListCollections()
 }

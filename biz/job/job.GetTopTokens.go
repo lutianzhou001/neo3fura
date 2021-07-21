@@ -1,4 +1,4 @@
-package api
+package job
 
 import (
 	"encoding/json"
@@ -6,10 +6,9 @@ import (
 	"sort"
 )
 
-func (me *T) GetTopTokens(args struct {
-	Filter map[string]interface{}
-}, ret *json.RawMessage) error {
-	r1, _, err := me.Data.Client.QueryAll(struct {
+func (me T) GetTopTokens() error {
+	var ret *json.RawMessage
+	r1, _, err := me.Client.QueryAll(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
@@ -28,7 +27,6 @@ func (me *T) GetTopTokens(args struct {
 		return err
 	}
 	r2 := make(map[string]int)
-	r3 := make(map[string]int)
 	for _, item := range r1 {
 		r2[item["contracthash"].(string)] = r2[item["contracthash"].(string)] + 1
 	}
@@ -43,15 +41,18 @@ func (me *T) GetTopTokens(args struct {
 	sort.Slice(kvs, func(i, j int) bool {
 		return kvs[i].Value > kvs[j].Value
 	})
+	var data []interface{}
 	for i, kv := range kvs {
 		if i < 10 {
-			r3[kv.Key] = kv.Value
+			data = append(data, bson.M{kv.Key: kv.Value})
 		}
 	}
-	r, err := json.Marshal(r3)
+	_, err = me.Client.Save(struct {
+		Collection string
+		Data       []interface{}
+	}{Collection: "TopTokens", Data: data})
 	if err != nil {
 		return err
 	}
-	*ret = json.RawMessage(r)
 	return nil
 }

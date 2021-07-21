@@ -22,7 +22,7 @@ func (me *T) GetRawTransactionByAddress(args struct {
 	if err != nil {
 		return nil
 	}
-	r1, count, err := me.Data.Client.QueryAll(struct {
+	r1, count, err := me.Client.QueryAll(struct {
 		Collection string
 		Index      string
 		Sort       bson.M

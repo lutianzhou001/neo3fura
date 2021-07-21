@@ -18,7 +18,7 @@ func (me *T) GetAssetsHeldByAddress(args struct {
 		return stderr.ErrInvalidArgs
 	}
 	var r1 map[string]interface{}
-	r1, err := me.Data.Client.QueryOne(struct {
+	r1, err := me.Client.QueryOne(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
@@ -34,7 +34,7 @@ func (me *T) GetAssetsHeldByAddress(args struct {
 	if err != nil {
 		return err
 	}
-	r2, count, err := me.Data.Client.QueryAll(
+	r2, count, err := me.Client.QueryAll(
 		struct {
 			Collection string
 			Index      string
@@ -49,7 +49,7 @@ func (me *T) GetAssetsHeldByAddress(args struct {
 	}
 	r3 := make([]map[string]interface{}, 0)
 	for _, item := range r2 {
-		r, err := me.Data.Client.QueryOne(struct {
+		r, err := me.Client.QueryOne(struct {
 			Collection string
 			Index      string
 			Sort       bson.M

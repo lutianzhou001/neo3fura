@@ -28,29 +28,94 @@ type T struct {
 }
 
 type Config struct {
-	Database struct {
+	Database_Dev struct {
 		Host     string `yaml:"host"`
 		Port     string `yaml:"port"`
 		User     string `yaml:"user"`
 		Pass     string `yaml:"pass"`
 		Database string `yaml:"database"`
 		DBName   string `yaml:"dbname"`
-	} `yaml:"database"`
+	} `yaml:"database_dev"`
+	Database_Test struct {
+		Host     string `yaml:"host"`
+		Port     string `yaml:"port"`
+		User     string `yaml:"user"`
+		Pass     string `yaml:"pass"`
+		Database string `yaml:"database"`
+		DBName   string `yaml:"dbname"`
+	} `yaml:"database_test"`
+	Database_Staging struct {
+		Host     string `yaml:"host"`
+		Port     string `yaml:"port"`
+		User     string `yaml:"user"`
+		Pass     string `yaml:"pass"`
+		Database string `yaml:"database"`
+		DBName   string `yaml:"dbname"`
+	} `yaml:"database_staging"`
+	Database_LOCAL struct {
+		Host     string `yaml:"host"`
+		Port     string `yaml:"port"`
+		User     string `yaml:"user"`
+		Pass     string `yaml:"pass"`
+		Database string `yaml:"database"`
+		DBName   string `yaml:"dbname"`
+	} `yaml:"database_local"`
 	Redis struct {
 		Host string `yaml:"host"`
 		Port string `yaml:"port"`
 	} `yaml:"redis"`
 }
 
-func (me *T) getConnection() (uc *mongo.Client, err error) {
+func (me *T) chooseDatabase(database string, cfg Config) (co *options.ClientOptions, err error) {
+	switch database {
+	case "DEV":
+		clientOptions := options.Client().ApplyURI("mongodb://" + cfg.Database_Dev.User + ":" + cfg.Database_Dev.Pass + "@" + cfg.Database_Dev.Host + ":" + cfg.Database_Dev.Port + "/" + cfg.Database_Dev.Database)
+		return clientOptions, nil
+	case "TEST":
+		clientOptions := options.Client().ApplyURI("mongodb://" + cfg.Database_Test.User + ":" + cfg.Database_Test.Pass + "@" + cfg.Database_Test.Host + ":" + cfg.Database_Test.Port + "/" + cfg.Database_Test.Database)
+		return clientOptions, nil
+	case "STAGING":
+		clientOptions := options.Client().ApplyURI("mongodb://" + cfg.Database_Staging.User + ":" + cfg.Database_Staging.Pass + "@" + cfg.Database_Staging.Host + ":" + cfg.Database_Staging.Port + "/" + cfg.Database_Staging.Database)
+		return clientOptions, nil
+	case "LOCAL":
+		clientOptions := options.Client().ApplyURI("mongodb://" + cfg.Database_LOCAL.User + ":" + cfg.Database_LOCAL.Pass + "@" + cfg.Database_LOCAL.Host + ":" + cfg.Database_LOCAL.Port + "/" + cfg.Database_LOCAL.Database)
+		return clientOptions, nil
+	default:
+		return nil, err
+	}
+}
+
+func (me *T) getDbName(cfg Config, database string) string {
+	switch database {
+	case "DEV":
+		dbName := cfg.Database_Dev.DBName
+		return dbName
+	case "TEST":
+		dbName := cfg.Database_Test.DBName
+		return dbName
+	case "STAGING":
+		dbName := cfg.Database_Staging.DBName
+		return dbName
+	case "LOCAL":
+		dbName := cfg.Database_LOCAL.DBName
+		return dbName
+	default:
+		return ""
+	}
+}
+
+func (me *T) getConnection(database string) (uc *mongo.Client, err error) {
 	cfg, err := me.OpenConfigFile()
 	if err != nil {
 		log.Fatalln(err)
 	}
 	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
-	clientOptions := options.Client().ApplyURI("mongodb://" + cfg.Database.User + ":" + cfg.Database.Pass + "@" + cfg.Database.Host + ":" + cfg.Database.Port + "/" + cfg.Database.Database)
-	clientOptions = clientOptions.SetMaxPoolSize(50)
-	userClient, err := mongo.Connect(ctx, clientOptions)
+	co, err := me.chooseDatabase(database, cfg)
+	if err != nil {
+		return nil, err
+	}
+	co = co.SetMaxPoolSize(50)
+	userClient, err := mongo.Connect(ctx, co)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -78,7 +143,7 @@ func (me *T) OpenConfigFile() (Config, error) {
 }
 
 func (me *T) ListDatabaseNames() error {
-	uc, err := me.getConnection()
+	uc, err := me.getConnection(os.Getenv("RUNTIME"))
 	if err != nil {
 		return err
 	}
@@ -95,11 +160,12 @@ func (me *T) ListCollections() error {
 	if err != nil {
 		return err
 	}
-	uc, err := me.getConnection()
+	uc, err := me.getConnection(os.Getenv("RUNTIME"))
 	if err != nil {
 		return err
 	}
-	collections, err := uc.Database(cfg.Database.DBName).ListCollectionNames(me.Ctx, bson.M{})
+	dbName := me.getDbName(cfg, os.Getenv("RUNTIME"))
+	collections, err := uc.Database(dbName).ListCollectionNames(me.Ctx, bson.M{})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -142,23 +208,22 @@ func (me *T) QueryOne(args struct {
 	var ctx = context.Background()
 
 	rdb := redis.NewClient(&redis.Options{
-		Addr: cfg.Redis.Host + ":" + cfg.Redis.Port,
-		// Addr:     "docker.for.mac.host.internal:6379",
+		Addr:     cfg.Redis.Host + ":" + cfg.Redis.Port,
 		Password: "", // no password set
 		DB:       0,  // use default DB
 	})
 
 	val, err := rdb.Get(ctx, hash).Result()
-	// if true {
 	// if sort != nil, it may have several results, we have to pick the sorted one
 	if err == redis.Nil || args.Sort != nil {
 		var result map[string]interface{}
 		convert := make(map[string]interface{})
-		uc, err := me.getConnection()
+		uc, err := me.getConnection(os.Getenv("RUNTIME"))
 		if err != nil {
 			return nil, err
 		}
-		collection := uc.Database(cfg.Database.DBName).Collection(args.Collection)
+		dbName := me.getDbName(cfg, os.Getenv("RUNTIME"))
+		collection := uc.Database(dbName).Collection(args.Collection)
 		opts := options.FindOne().SetSort(args.Sort)
 		err = collection.FindOne(me.Ctx, args.Filter, opts).Decode(&result)
 		if err == mongo.ErrNoDocuments {
@@ -198,9 +263,6 @@ func (me *T) QueryOne(args struct {
 		if err != nil {
 			return nil, err
 		}
-		if err != nil {
-			return nil, err
-		}
 		return convert, err
 	}
 	return nil, nil
@@ -215,17 +277,19 @@ func (me *T) QueryAll(args struct {
 	Limit      int64
 	Skip       int64
 }, ret *json.RawMessage) ([]map[string]interface{}, int64, error) {
+	fmt.Println("here")
 	cfg, err := me.OpenConfigFile()
 	if err != nil {
 		return nil, 0, err
 	}
 	var results []map[string]interface{}
 	convert := make([]map[string]interface{}, 0)
-	uc, err := me.getConnection()
+	uc, err := me.getConnection(os.Getenv("RUNTIME"))
 	if err != nil {
 		return nil, 0, err
 	}
-	collection := uc.Database(cfg.Database.DBName).Collection(args.Collection)
+	dbName := me.getDbName(cfg, os.Getenv("RUNTIME"))
+	collection := uc.Database(dbName).Collection(args.Collection)
 	op := options.Find()
 	op.SetSort(args.Sort)
 	op.SetLimit(args.Limit)
@@ -259,4 +323,25 @@ func (me *T) QueryAll(args struct {
 	}
 	*ret = json.RawMessage(r)
 	return convert, count, nil
+}
+
+func (me *T) Save(args struct {
+	Collection string
+	Data       []interface{}
+}) (bool, error) {
+	cfg, err := me.OpenConfigFile()
+	if err != nil {
+		return false, err
+	}
+	uc, err := me.getConnection("LOCAL")
+	if err != nil {
+		return false, err
+	}
+	dbName := me.getDbName(cfg, "LOCAL")
+	collection := uc.Database(dbName).Collection(args.Collection)
+	_, err = collection.InsertMany(me.Ctx, args.Data)
+	if err != nil {
+		return false, err
+	}
+	return true, nil
 }

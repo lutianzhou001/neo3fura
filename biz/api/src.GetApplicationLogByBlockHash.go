@@ -19,7 +19,7 @@ func (me *T) GetApplicationLogByBlockHash(args struct {
 	if args.BlockHash.IsZero() == true {
 		return stderr.ErrZero
 	}
-	r1, count, err := me.Data.Client.QueryAll(struct {
+	r1, count, err := me.Client.QueryAll(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
@@ -40,7 +40,7 @@ func (me *T) GetApplicationLogByBlockHash(args struct {
 		return err
 	}
 	for _, item2 := range r1 {
-		r2, _, err := me.Data.Client.QueryAll(struct {
+		r2, _, err := me.Client.QueryAll(struct {
 			Collection string
 			Index      string
 			Sort       bson.M
@@ -54,7 +54,7 @@ func (me *T) GetApplicationLogByBlockHash(args struct {
 		}
 		notifications := make([]map[string]interface{}, 0)
 		for _, item3 := range r2 {
-			r3, err := me.Data.Client.QueryOne(struct {
+			r3, err := me.Client.QueryOne(struct {
 				Collection string
 				Index      string
 				Sort       bson.M

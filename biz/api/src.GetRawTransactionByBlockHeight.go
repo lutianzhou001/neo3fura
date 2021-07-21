@@ -20,7 +20,7 @@ func (me *T) GetRawTransactionByBlockHeight(args struct {
 	if args.BlockHeight.Valid() == false {
 		return stderr.ErrInvalidArgs
 	}
-	r1, err := me.Data.Client.QueryOne(struct {
+	r1, err := me.Client.QueryOne(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
@@ -36,7 +36,7 @@ func (me *T) GetRawTransactionByBlockHeight(args struct {
 	if err != nil {
 		return err
 	}
-	r2, count, err := me.Data.Client.QueryAll(struct {
+	r2, count, err := me.Client.QueryAll(struct {
 		Collection string
 		Index      string
 		Sort       bson.M

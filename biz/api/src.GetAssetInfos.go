@@ -8,7 +8,7 @@ import (
 func (me *T) GetAssetInfos(args struct {
 	Filter map[string]interface{}
 }, ret *json.RawMessage) error {
-	r1, count, err := me.Data.Client.QueryAll(struct {
+	r1, count, err := me.Client.QueryAll(struct {
 		Collection string
 		Index      string
 		Sort       bson.M

@@ -4,6 +4,12 @@ ENV GO111MODULE="on"
 
 ENV GOPROXY="https://goproxy.cn"
 
+ARG RT
+
+RUN echo $RT
+
+ENV RUNTIME=$RT
+
 RUN mkdir application
 
 COPY . ./application

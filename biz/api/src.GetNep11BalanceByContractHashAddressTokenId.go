@@ -24,7 +24,7 @@ func (me *T) GetNep11BalanceByContractHashAddressTokenId(args struct {
 	if len(args.TokenId.Val()) <= 0 {
 		return stderr.ErrInvalidArgs
 	}
-	r1, err := me.Data.Client.QueryOne(struct {
+	r1, err := me.Client.QueryOne(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
