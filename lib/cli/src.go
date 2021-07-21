@@ -148,10 +148,6 @@ func (me *T) QueryOne(args struct {
 		DB:       0,  // use default DB
 	})
 
-	pong, err := rdb.Ping(ctx).Result()
-	fmt.Println(pong, err)
-
-
 	val, err := rdb.Get(ctx, hash).Result()
 	// if true {
 	// if sort != nil, it may have several results, we have to pick the sorted one
