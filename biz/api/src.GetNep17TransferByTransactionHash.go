@@ -11,22 +11,28 @@ import (
 func (me *T) GetNep17TransferByTransactionHash(args struct {
 	TransactionHash h256.T
 	Filter          map[string]interface{}
+	Limit           int64
+	Skip            int64
 }, ret *json.RawMessage) error {
 	if args.TransactionHash.Valid() == false {
 		return stderr.ErrInvalidArgs
 	}
-	r1, err := me.Data.Client.QueryOne(struct {
+	r1, count, err := me.Data.Client.QueryAll(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
 		Filter     bson.M
 		Query      []string
+		Limit      int64
+		Skip       int64
 	}{
 		Collection: "TransferNotification",
 		Index:      "GetNep17TransferByTransactionHash",
 		Sort:       bson.M{},
 		Filter:     bson.M{"txid": args.TransactionHash.Val()},
 		Query:      []string{},
+		Limit:      args.Limit,
+		Skip:       args.Skip,
 	}, ret)
 	if err != nil {
 		return err
@@ -34,39 +40,40 @@ func (me *T) GetNep17TransferByTransactionHash(args struct {
 	var raw1 map[string]interface{}
 	var raw2 map[string]interface{}
 
-	err = me.GetVmStateByTransactionHash(struct {
-		TransactionHash h256.T
-		Filter          map[string]interface{}
-		Raw             *map[string]interface{}
-	}{
-		TransactionHash: h256.T(fmt.Sprint(r1["txid"])),
-		Filter:          nil,
-		Raw:             &raw1,
-	}, ret)
-	if err != nil {
-		return err
-	}
-	r1["vmstate"] = raw1["vmstate"].(string)
+	for _, item := range r1 {
+		err = me.GetVmStateByTransactionHash(struct {
+			TransactionHash h256.T
+			Filter          map[string]interface{}
+			Raw             *map[string]interface{}
+		}{
+			TransactionHash: h256.T(fmt.Sprint(item["txid"])),
+			Filter:          nil,
+			Raw:             &raw1,
+		}, ret)
+		if err != nil {
+			return err
+		}
+		item["vmstate"] = raw1["vmstate"].(string)
 
-	err = me.GetBlockByBlockHash(struct {
-		BlockHash h256.T
-		Filter    map[string]interface{}
-		Raw       *map[string]interface{}
-	}{
-		BlockHash: h256.T(fmt.Sprint(r1["blockhash"])),
-		Filter:    nil,
-		Raw:       &raw2,
-	}, ret)
+		err = me.GetBlockByBlockHash(struct {
+			BlockHash h256.T
+			Filter    map[string]interface{}
+			Raw       *map[string]interface{}
+		}{
+			BlockHash: h256.T(fmt.Sprint(item["blockhash"])),
+			Filter:    nil,
+			Raw:       &raw2,
+		}, ret)
+		if err != nil {
+			return err
+		}
+		item["timestamp"] = raw2["timestamp"]
+	}
+	r2, err := me.FilterArrayAndAppendCount(r1, count, args.Filter)
 	if err != nil {
 		return err
 	}
-	r1["timestamp"] = raw2["timestamp"]
-	r1["timestamp"] = raw2["timestamp"]
-	r1, err = me.Filter(r1, args.Filter)
-	if err != nil {
-		return err
-	}
-	r, err := json.Marshal(r1)
+	r, err := json.Marshal(r2)
 	if err != nil {
 		return err
 	}
