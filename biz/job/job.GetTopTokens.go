@@ -6,8 +6,10 @@ import (
 	"sort"
 )
 
-func (me T) GetTopTokens() error {
-	var ret *json.RawMessage
+func (me T) GetPopularTokens() error {
+	message := make(json.RawMessage, 0)
+	ret := &message
+	// timeUnix := time.Now().Unix()*1000 - 24*86400*1000
 	r1, _, err := me.Client.QueryAll(struct {
 		Collection string
 		Index      string
@@ -20,7 +22,7 @@ func (me T) GetTopTokens() error {
 		Collection: "Notification",
 		Index:      "GetTopTokens",
 		Sort:       bson.M{},
-		Filter:     bson.M{"timestamp": bson.M{"$gt": 100000000}},
+		Filter:     bson.M{"timestamp": bson.M{"$gt": 1625139587816}},
 		Query:      []string{},
 	}, ret)
 	if err != nil {
@@ -28,7 +30,7 @@ func (me T) GetTopTokens() error {
 	}
 	r2 := make(map[string]int)
 	for _, item := range r1 {
-		r2[item["contracthash"].(string)] = r2[item["contracthash"].(string)] + 1
+		r2[item["contract"].(string)] = r2[item["contract"].(string)] + 1
 	}
 	type kv struct {
 		Key   string
@@ -41,16 +43,17 @@ func (me T) GetTopTokens() error {
 	sort.Slice(kvs, func(i, j int) bool {
 		return kvs[i].Value > kvs[j].Value
 	})
-	var data []interface{}
+	var values []string
 	for i, kv := range kvs {
 		if i < 10 {
-			data = append(data, bson.M{kv.Key: kv.Value})
+			values = append(values, kv.Key)
 		}
 	}
-	_, err = me.Client.Save(struct {
+	data := bson.M{"Populars": values}
+	_, err = me.Client.SaveJob(struct {
 		Collection string
-		Data       []interface{}
-	}{Collection: "TopTokens", Data: data})
+		Data       bson.M
+	}{Collection: "PopularTokens", Data: data})
 	if err != nil {
 		return err
 	}

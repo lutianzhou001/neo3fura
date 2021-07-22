@@ -52,7 +52,7 @@ type Config struct {
 		Database string `yaml:"database"`
 		DBName   string `yaml:"dbname"`
 	} `yaml:"database_staging"`
-	Database_LOCAL struct {
+	Database_Local struct {
 		Host     string `yaml:"host"`
 		Port     string `yaml:"port"`
 		User     string `yaml:"user"`
@@ -78,7 +78,7 @@ func (me *T) chooseDatabase(database string, cfg Config) (co *options.ClientOpti
 		clientOptions := options.Client().ApplyURI("mongodb://" + cfg.Database_Staging.User + ":" + cfg.Database_Staging.Pass + "@" + cfg.Database_Staging.Host + ":" + cfg.Database_Staging.Port + "/" + cfg.Database_Staging.Database)
 		return clientOptions, nil
 	case "LOCAL":
-		clientOptions := options.Client().ApplyURI("mongodb://" + cfg.Database_LOCAL.User + ":" + cfg.Database_LOCAL.Pass + "@" + cfg.Database_LOCAL.Host + ":" + cfg.Database_LOCAL.Port + "/" + cfg.Database_LOCAL.Database)
+		clientOptions := options.Client().ApplyURI("mongodb://" + cfg.Database_Local.Host + ":" + cfg.Database_Local.Port + "/" + cfg.Database_Local.Database)
 		return clientOptions, nil
 	default:
 		return nil, err
@@ -97,7 +97,7 @@ func (me *T) getDbName(cfg Config, database string) string {
 		dbName := cfg.Database_Staging.DBName
 		return dbName
 	case "LOCAL":
-		dbName := cfg.Database_LOCAL.DBName
+		dbName := cfg.Database_Local.DBName
 		return dbName
 	default:
 		return ""
@@ -224,6 +224,7 @@ func (me *T) QueryOne(args struct {
 		}
 		dbName := me.getDbName(cfg, os.Getenv("RUNTIME"))
 		collection := uc.Database(dbName).Collection(args.Collection)
+
 		opts := options.FindOne().SetSort(args.Sort)
 		err = collection.FindOne(me.Ctx, args.Filter, opts).Decode(&result)
 		if err == mongo.ErrNoDocuments {
@@ -324,23 +325,43 @@ func (me *T) QueryAll(args struct {
 	return convert, count, nil
 }
 
-func (me *T) Save(args struct {
+func (me *T) SaveJob(args struct {
 	Collection string
-	Data       []interface{}
+	Data       bson.M
 }) (bool, error) {
 	cfg, err := me.OpenConfigFile()
 	if err != nil {
 		return false, err
 	}
+
 	uc, err := me.getConnection("LOCAL")
 	if err != nil {
 		return false, err
 	}
 	dbName := me.getDbName(cfg, "LOCAL")
 	collection := uc.Database(dbName).Collection(args.Collection)
-	_, err = collection.InsertMany(me.Ctx, args.Data)
-	if err != nil {
-		return false, err
-	}
+	_, err = collection.InsertOne(me.Ctx, args.Data)
 	return true, nil
+}
+
+func (me *T) QueryLastJob(args struct {
+	Collection string
+}) (map[string]interface{}, error) {
+	cfg, err := me.OpenConfigFile()
+	if err != nil {
+		return nil, err
+	}
+	uc, err := me.getConnection("LOCAL")
+	if err != nil {
+		return nil, err
+	}
+	dbName := me.getDbName(cfg, "LOCAL")
+	collection := uc.Database(dbName).Collection("PopularTokens")
+	var result map[string]interface{}
+	opts := options.FindOne().SetSort(bson.M{"_id": -1})
+	err = collection.FindOne(me.Ctx, bson.M{}, opts).Decode(&result)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
 }

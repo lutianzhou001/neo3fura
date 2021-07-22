@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func (me *T) GetAssetInfos(args struct {
@@ -26,11 +27,25 @@ func (me *T) GetAssetInfos(args struct {
 	if err != nil {
 		return err
 	}
-	r2, err := me.FilterArrayAndAppendCount(r1, count, args.Filter)
+	// retrieve all tokens
+	r2, err := me.Client.QueryLastJob(struct{ Collection string }{Collection: "PopularTokens"})
 	if err != nil {
 		return err
 	}
-	r, err := json.Marshal(r2)
+	for _, item := range r1 {
+		populars := r2["Populars"].(primitive.A)
+		for _, v := range populars {
+			if item["hash"] == v {
+				item["isPopular"] = true
+			}
+		}
+		item["isPopular"] = false
+	}
+	r3, err := me.FilterArrayAndAppendCount(r1, count, args.Filter)
+	if err != nil {
+		return err
+	}
+	r, err := json.Marshal(r3)
 	if err != nil {
 		return err
 	}

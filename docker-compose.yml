@@ -20,7 +20,7 @@ services:
   mongo:
     image: mongo
     ports:
-      - "27000:27000"
+      - "27000:27017"
     container_name: job
   mongo-express:
     image: mongo-express
