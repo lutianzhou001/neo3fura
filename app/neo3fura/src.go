@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"github.com/robfig/cron"
 	"gopkg.in/yaml.v2"
 	"log"
@@ -48,6 +49,7 @@ type Config struct {
 }
 
 func main() {
+	fmt.Println("YOUR ENV IS " + os.ExpandEnv("${RUNTIME}"))
 	cfg, err := OpenConfigFile()
 	if err != nil {
 		log.Fatalln(err)

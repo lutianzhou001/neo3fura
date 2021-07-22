@@ -143,7 +143,7 @@ func (me *T) OpenConfigFile() (Config, error) {
 }
 
 func (me *T) ListDatabaseNames() error {
-	uc, err := me.getConnection(os.Getenv("RUNTIME"))
+	uc, err := me.getConnection(os.ExpandEnv("${RUNTIME}"))
 	if err != nil {
 		return err
 	}
@@ -160,11 +160,11 @@ func (me *T) ListCollections() error {
 	if err != nil {
 		return err
 	}
-	uc, err := me.getConnection(os.Getenv("RUNTIME"))
+	uc, err := me.getConnection(os.ExpandEnv("${RUNTIME}"))
 	if err != nil {
 		return err
 	}
-	dbName := me.getDbName(cfg, os.Getenv("RUNTIME"))
+	dbName := me.getDbName(cfg, os.ExpandEnv("${RUNTIME}"))
 	collections, err := uc.Database(dbName).ListCollectionNames(me.Ctx, bson.M{})
 	if err != nil {
 		log.Fatal(err)
@@ -218,11 +218,11 @@ func (me *T) QueryOne(args struct {
 	if err == redis.Nil || args.Sort != nil {
 		var result map[string]interface{}
 		convert := make(map[string]interface{})
-		uc, err := me.getConnection(os.Getenv("RUNTIME"))
+		uc, err := me.getConnection(os.ExpandEnv("${RUNTIME}"))
 		if err != nil {
 			return nil, err
 		}
-		dbName := me.getDbName(cfg, os.Getenv("RUNTIME"))
+		dbName := me.getDbName(cfg, os.ExpandEnv("${RUNTIME}"))
 		collection := uc.Database(dbName).Collection(args.Collection)
 
 		opts := options.FindOne().SetSort(args.Sort)
@@ -284,11 +284,11 @@ func (me *T) QueryAll(args struct {
 	}
 	var results []map[string]interface{}
 	convert := make([]map[string]interface{}, 0)
-	uc, err := me.getConnection(os.Getenv("RUNTIME"))
+	uc, err := me.getConnection(os.ExpandEnv("${RUNTIME}"))
 	if err != nil {
 		return nil, 0, err
 	}
-	dbName := me.getDbName(cfg, os.Getenv("RUNTIME"))
+	dbName := me.getDbName(cfg, os.ExpandEnv("${RUNTIME}"))
 	collection := uc.Database(dbName).Collection(args.Collection)
 	op := options.Find()
 	op.SetSort(args.Sort)
@@ -298,7 +298,7 @@ func (me *T) QueryAll(args struct {
 	count, err := collection.CountDocuments(me.Ctx, args.Filter, &co)
 	cursor, err := collection.Find(me.Ctx, args.Filter, op)
 	if err == mongo.ErrNoDocuments {
-		return nil, 0, errors.New("NOT FOUNT")
+		return nil, 0, errors.New("NOT FOUND")
 	}
 	if err != nil {
 		return nil, 0, err
