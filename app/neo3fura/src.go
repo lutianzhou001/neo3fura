@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"github.com/robfig/cron"
 	"gopkg.in/yaml.v2"
 	"log"
@@ -70,7 +69,6 @@ func main() {
 	c := cron.New()
 	spec := "*/60 * * * * ?"
 	c.AddFunc(spec, func() {
-		fmt.Println("job Start")
 		err = j.GetPopularTokens()
 		if err != nil {
 			log.Fatal(err)
