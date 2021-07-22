@@ -277,7 +277,6 @@ func (me *T) QueryAll(args struct {
 	Limit      int64
 	Skip       int64
 }, ret *json.RawMessage) ([]map[string]interface{}, int64, error) {
-	fmt.Println("here")
 	cfg, err := me.OpenConfigFile()
 	if err != nil {
 		return nil, 0, err
