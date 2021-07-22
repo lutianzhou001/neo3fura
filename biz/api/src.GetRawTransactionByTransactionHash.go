@@ -33,7 +33,6 @@ func (me *T) GetRawTransactionByTransactionHash(args struct {
 		return err
 	}
 	var raw1 map[string]interface{}
-	var raw2 map[string]interface{}
 
 	err = me.GetVmStateByTransactionHash(struct {
 		TransactionHash h256.T
@@ -49,19 +48,6 @@ func (me *T) GetRawTransactionByTransactionHash(args struct {
 	}
 	r1["vmstate"] = raw1["vmstate"].(string)
 
-	err = me.GetBlockByBlockHash(struct {
-		BlockHash h256.T
-		Filter    map[string]interface{}
-		Raw       *map[string]interface{}
-	}{
-		BlockHash: h256.T(fmt.Sprint(r1["blockhash"])),
-		Filter:    nil,
-		Raw:       &raw2,
-	}, ret)
-	if err != nil {
-		return err
-	}
-	r1["timestamp"] = raw2["timestamp"]
 	if args.Raw != nil {
 		*args.Raw = r1
 	}

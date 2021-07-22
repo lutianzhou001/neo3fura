@@ -39,7 +39,6 @@ func (me *T) GetNep17TransferByContractHash(args struct {
 		return err
 	}
 	var raw1 map[string]interface{}
-	var raw2 map[string]interface{}
 	for _, item := range r1 {
 		err = me.GetVmStateByTransactionHash(struct {
 			TransactionHash h256.T
@@ -54,20 +53,6 @@ func (me *T) GetNep17TransferByContractHash(args struct {
 			return err
 		}
 		item["vmstate"] = raw1["vmstate"].(string)
-
-		err = me.GetBlockByBlockHash(struct {
-			BlockHash h256.T
-			Filter    map[string]interface{}
-			Raw       *map[string]interface{}
-		}{
-			BlockHash: h256.T(fmt.Sprint(item["blockhash"])),
-			Filter:    nil,
-			Raw:       &raw2,
-		}, ret)
-		if err != nil {
-			return err
-		}
-		item["timestamp"] = raw2["timestamp"].(int64)
 	}
 	r2, err := me.FilterArrayAndAppendCount(r1, count, args.Filter)
 	if err != nil {

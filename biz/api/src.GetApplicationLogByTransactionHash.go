@@ -33,6 +33,7 @@ func (me *T) GetApplicationLogByTransactionHash(args struct {
 	if err != nil {
 		return err
 	}
+
 	r2, _, err := me.Client.QueryAll(struct {
 		Collection string
 		Index      string
@@ -41,32 +42,15 @@ func (me *T) GetApplicationLogByTransactionHash(args struct {
 		Query      []string
 		Limit      int64
 		Skip       int64
-	}{Collection: "[Execution~Notification(Notifications)]", Index: "GetApplicationLogByTransactionHash", Sort: bson.M{}, Filter: bson.M{"ParentID": r1["_id"]}}, ret)
+	}{Collection: "Notification", Index: "GetApplicationLogByBlockHash", Sort: bson.M{}, Filter: bson.M{"txid": r1["txid"].(string), "blockhash": r1["blockhash"].(string)}}, ret)
 	if err != nil {
 		return err
 	}
-	notifications := make([]map[string]interface{}, 0)
-	for _, item3 := range r2 {
-		r3, err := me.Client.QueryOne(struct {
-			Collection string
-			Index      string
-			Sort       bson.M
-			Filter     bson.M
-			Query      []string
-		}{Collection: "Notification", Index: "GetApplicationLogByTransactionHash", Sort: bson.M{}, Filter: bson.M{"_id": item3["ChildID"]}}, ret)
-		if err != nil {
-			return err
-		}
-		notifications = append(notifications, r3)
-	}
-	if len(notifications) > 0 {
-		r1["notifications"] = notifications
-	} else {
-		r1["notifications"] = []map[string]interface{}{}
-	}
+	r1["notifications"] = r2
+
 	r1, err = me.Filter(r1, args.Filter)
 	if err != nil {
-		return err
+		return nil
 	}
 	r, err := json.Marshal(r1)
 	if err != nil {

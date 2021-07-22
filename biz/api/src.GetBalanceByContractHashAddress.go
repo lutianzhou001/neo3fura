@@ -26,32 +26,16 @@ func (me *T) GetBalanceByContractHashAddress(args struct {
 		Filter     bson.M
 		Query      []string
 	}{
-		Collection: "TransferNotification",
+		Collection: "Address-Asset",
 		Index:      "GetBalanceByContractHashAddress",
 		Sort:       bson.M{"_id": -1},
-		Filter: bson.M{"contract": args.ContractHash.Val(), "$or": []interface{}{
-			bson.M{"from": args.Address.TransferredVal()},
-			bson.M{"to": args.Address.TransferredVal()},
-		}},
-		Query: []string{},
+		Filter:     bson.M{"asset": args.ContractHash.Val(), "address": args.Address.TransferredVal()},
+		Query:      []string{},
 	}, ret)
 	if err != nil {
 		return err
 	}
-	r2 := make(map[string]interface{})
-	r2["latesttx"] = r1
-	// if the reward is from system, the from will be nil;
-	if r1["from"] != nil {
-		if r1["from"].(string) == args.Address.TransferredVal() {
-			r2["balance"] = r1["frombalance"]
-		} else {
-			r2["balance"] = r1["tobalance"]
-		}
-	} else {
-		r2["balance"] = r1["tobalance"]
-	}
-
-	r2, err = me.Filter(r2, args.Filter)
+	r2, err := me.Filter(r1, args.Filter)
 	if err != nil {
 		return err
 	}

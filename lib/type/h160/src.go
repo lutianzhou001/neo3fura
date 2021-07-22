@@ -37,6 +37,16 @@ func (me T) TransferredVal() string {
 	}
 }
 
+// TransferredVal
+func (me T) TransferAddress() string {
+	if len(me.Val()) != 42 {
+		return me.Val()
+	} else {
+		transferredAddress, _ := me.ScriptHashToAddress()
+		return transferredAddress
+	}
+}
+
 func (me T) ToByte() []byte {
 	return []byte(me.Val()[2:len(me.Val())])
 }

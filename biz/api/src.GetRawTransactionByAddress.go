@@ -18,10 +18,6 @@ func (me *T) GetRawTransactionByAddress(args struct {
 	if args.Address.Valid() == false {
 		return stderr.ErrInvalidArgs
 	}
-	sender, err := args.Address.ScriptHashToAddress()
-	if err != nil {
-		return nil
-	}
 	r1, count, err := me.Client.QueryAll(struct {
 		Collection string
 		Index      string
@@ -34,7 +30,7 @@ func (me *T) GetRawTransactionByAddress(args struct {
 		Collection: "Transaction",
 		Index:      "GetRawTransactionByAddress",
 		Sort:       bson.M{},
-		Filter:     bson.M{"sender": sender},
+		Filter:     bson.M{"sender": args.Address.TransferAddress()},
 		Query:      []string{},
 		Limit:      args.Limit,
 		Skip:       args.Skip,
@@ -43,14 +39,13 @@ func (me *T) GetRawTransactionByAddress(args struct {
 		return err
 	}
 	var raw1 map[string]interface{}
-	var raw2 map[string]interface{}
 	for _, item := range r1 {
 		err = me.GetVmStateByTransactionHash(struct {
 			TransactionHash h256.T
 			Filter          map[string]interface{}
 			Raw             *map[string]interface{}
 		}{
-			TransactionHash: h256.T(fmt.Sprint(item["txid"])),
+			TransactionHash: h256.T(fmt.Sprint(item["hash"])),
 			Filter:          nil,
 			Raw:             &raw1,
 		}, ret)
@@ -58,21 +53,6 @@ func (me *T) GetRawTransactionByAddress(args struct {
 			return err
 		}
 		item["vmstate"] = raw1["vmstate"].(string)
-
-		err = me.GetBlockByBlockHash(struct {
-			BlockHash h256.T
-			Filter    map[string]interface{}
-			Raw       *map[string]interface{}
-		}{
-			BlockHash: h256.T(fmt.Sprint(item["blockhash"])),
-			Filter:    nil,
-			Raw:       &raw2,
-		}, ret)
-		if err != nil {
-			return err
-		}
-		item["timestamp"] = raw2["timestamp"]
-		item["timestamp"] = raw2["timestamp"]
 	}
 
 	r2, err := me.FilterArrayAndAppendCount(r1, count, args.Filter)
