@@ -8,7 +8,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func (me *T) GetNep17TransferByContractHash(args struct {
+func (me *T) GetNep11TransferByContractHash(args struct {
 	ContractHash h160.T
 	Limit        int64
 	Skip         int64
@@ -26,7 +26,7 @@ func (me *T) GetNep17TransferByContractHash(args struct {
 		Limit      int64
 		Skip       int64
 	}{
-		Collection: "TransferNotification",
+		Collection: "Nep11TransferNotification",
 		Index:      "someIndex",
 		Sort:       bson.M{"_id": -1},
 		Filter:     bson.M{"contract": args.ContractHash.Val()},
@@ -63,6 +63,7 @@ func (me *T) GetNep17TransferByContractHash(args struct {
 	r, err := json.Marshal(r2)
 	if err != nil {
 		return err
+
 	}
 	*ret = json.RawMessage(r)
 	return nil

@@ -3,9 +3,11 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"go.mongodb.org/mongo-driver/bson"
 	"neo3fura/lib/type/h160"
 	"neo3fura/var/stderr"
+	"strconv"
+
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 func (me *T) GetAssetHoldersByContractHash(args struct {
@@ -29,11 +31,12 @@ func (me *T) GetAssetHoldersByContractHash(args struct {
 		Index:      "someIndex",
 		Sort:       bson.M{},
 		Filter:     bson.M{"hash": args.ContractHash.Val()},
-		Query:      []string{"_id"},
+		Query:      []string{"_id", "totalsupply"},
 	}, ret)
 	if err != nil {
 		return err
 	}
+	supply, err := strconv.Atoi(r1["totalsupply"].(string))
 	r2, count, err := me.Data.Client.QueryAll(
 		struct {
 			Collection string
@@ -46,10 +49,11 @@ func (me *T) GetAssetHoldersByContractHash(args struct {
 		}{
 			Collection: "[Asset~Address(Addresses)]",
 			Index:      "someIndex",
-			Sort:       bson.M{}, Filter: bson.M{"ParentID": r1["_id"]},
-			Query: []string{"ChildID"},
-			Limit: args.Limit,
-			Skip:  args.Skip},
+			Sort:       bson.M{},
+			Filter:     bson.M{"ParentID": r1["_id"]},
+			Query:      []string{"ChildID"},
+			Limit:      args.Limit,
+			Skip:       args.Skip},
 		ret)
 	if err != nil {
 		return err
@@ -87,7 +91,13 @@ func (me *T) GetAssetHoldersByContractHash(args struct {
 		if err != nil {
 			return err
 		}
-		r["balanceinfo"] = raw
+		r["balance"] = raw["balance"]
+		balance, err := strconv.Atoi(raw["balance"].(string))
+		if supply != 0 {
+			r["percentage"] = float64(balance) / float64(supply)
+		} else {
+			r["percentage"] = -1
+		}
 		r3 = append(r3, r)
 	}
 	r4, err := me.FilterArrayAndAppendCount(r3, count, args.Filter)
