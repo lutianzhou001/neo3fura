@@ -33,7 +33,7 @@ func (me T) GetPopularTokens() error {
 		Collection: "Notification",
 		Index:      "GetPopularTokens",
 		Sort:       bson.M{},
-		Filter:     bson.M{"timestamp": bson.M{"$gt": r0["timestamp"].(int64) - 3600*1*1000}},
+		Filter:     bson.M{"timestamp": bson.M{"$gt": r0["timestamp"].(int64) - 3600*24*1000}},
 		Query:      []string{},
 	}, ret)
 	if err != nil {

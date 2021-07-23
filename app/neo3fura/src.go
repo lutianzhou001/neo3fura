@@ -69,7 +69,7 @@ func main() {
 	}
 
 	c := cron.New()
-	spec := "*/60 * * * * ?"
+	spec := "*/3600 * * * * ?"
 	c.AddFunc(spec, func() {
 		err = j.GetPopularTokens()
 		if err != nil {
