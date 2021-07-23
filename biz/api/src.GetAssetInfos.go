@@ -36,10 +36,10 @@ func (me *T) GetAssetInfos(args struct {
 		populars := r2["Populars"].(primitive.A)
 		for _, v := range populars {
 			if item["hash"] == v {
-				item["isPopular"] = true
+				item["ispopular"] = true
 			}
 		}
-		item["isPopular"] = false
+		item["ispopular"] = false
 	}
 	r3, err := me.FilterArrayAndAppendCount(r1, count, args.Filter)
 	if err != nil {
