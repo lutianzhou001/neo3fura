@@ -16,7 +16,6 @@ func (me *T) GetAssetsHeldByAddress(args struct {
 	if args.Address.Valid() == false {
 		return stderr.ErrInvalidArgs
 	}
-	var r1 []map[string]interface{}
 	r1, count, err := me.Client.QueryAll(struct {
 		Collection string
 		Index      string

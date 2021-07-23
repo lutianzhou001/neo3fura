@@ -21,7 +21,6 @@ func (me *T) GetNep11BalanceByContractHashAddress(args struct {
 	if args.Address.Valid() == false {
 		return stderr.ErrInvalidArgs
 	}
-	var r1 []map[string]interface{}
 	var err error
 	r1, count, err := me.Client.QueryAll(struct {
 		Collection string

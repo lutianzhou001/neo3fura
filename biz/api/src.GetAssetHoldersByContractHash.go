@@ -16,7 +16,6 @@ func (me *T) GetAssetHoldersByContractHash(args struct {
 	if args.ContractHash.Valid() == false {
 		return stderr.ErrInvalidArgs
 	}
-	var r1 []map[string]interface{}
 	r1, count, err := me.Client.QueryAll(struct {
 		Collection string
 		Index      string

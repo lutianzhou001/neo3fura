@@ -9,6 +9,7 @@ func (me *T) GetCommittee(args struct {
 	Filter map[string]interface{}
 	Limit  int64
 	Skip   int64
+	Raw    *[]map[string]interface{}
 }, ret *json.RawMessage) error {
 	r1, count, err := me.Client.QueryAll(struct {
 		Collection string
@@ -29,6 +30,9 @@ func (me *T) GetCommittee(args struct {
 	}, ret)
 	if err != nil {
 		return err
+	}
+	if args.Raw != nil {
+		*args.Raw = r1
 	}
 	r2, err := me.FilterArrayAndAppendCount(r1, count, args.Filter)
 	if err != nil {
