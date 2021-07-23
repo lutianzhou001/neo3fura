@@ -3,19 +3,13 @@ package api
 import (
 	"encoding/json"
 	"go.mongodb.org/mongo-driver/bson"
-	"neo3fura/lib/type/h160"
-	"neo3fura/var/stderr"
 )
 
 func (me *T) GetCommittee(args struct {
-	VoterAddress h160.T
 	Filter       map[string]interface{}
 	Limit        int64
 	Skip         int64
 }, ret *json.RawMessage) error {
-	if args.VoterAddress.Valid() == false {
-		return stderr.ErrInvalidArgs
-	}
 	r1, count, err := me.Client.QueryAll(struct {
 		Collection string
 		Index      string
