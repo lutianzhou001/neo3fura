@@ -2,9 +2,10 @@ package api
 
 import (
 	"encoding/json"
-	"go.mongodb.org/mongo-driver/bson"
 	"neo3fura/lib/type/h160"
 	"neo3fura/var/stderr"
+
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 func (me *T) GetNotificationByContractHash(args struct {
@@ -27,7 +28,7 @@ func (me *T) GetNotificationByContractHash(args struct {
 	}{
 		Collection: "Notification",
 		Index:      "someIndex",
-		Sort:       bson.M{},
+		Sort:       bson.M{"timestamp": -1},
 		Filter:     bson.M{"contract": args.ContractHash.Val()},
 		Query:      []string{},
 		Limit:      args.Limit,

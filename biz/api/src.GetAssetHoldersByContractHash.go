@@ -31,7 +31,7 @@ func (me *T) GetAssetHoldersByContractHash(args struct {
 		Index:      "someIndex",
 		Sort:       bson.M{},
 		Filter:     bson.M{"hash": args.ContractHash.Val()},
-		Query:      []string{"_id", "totalsupply"},
+		Query:      []string{"hash", "totalsupply"},
 	}, ret)
 	if err != nil {
 		return err
@@ -47,28 +47,26 @@ func (me *T) GetAssetHoldersByContractHash(args struct {
 			Limit      int64
 			Skip       int64
 		}{
-			Collection: "[Asset~Address(Addresses)]",
+			Collection: "Address-Asset",
 			Index:      "someIndex",
-			Sort:       bson.M{},
-			Filter:     bson.M{"ParentID": r1["_id"]},
-			Query:      []string{"ChildID"},
+			Sort:       bson.M{"balance": -1},
+			Filter:     bson.M{"asset": r1["hash"]},
+			Query:      []string{"address", "balance"},
 			Limit:      args.Limit,
 			Skip:       args.Skip},
 		ret)
 	if err != nil {
 		return err
 	}
-	r3 := make([]map[string]interface{}, 0)
 	for _, item := range r2 {
-		r, err := me.Data.Client.QueryOne(struct {
-			Collection string
-			Index      string
-			Sort       bson.M
-			Filter     bson.M
-			Query      []string
-		}{Collection: "Address", Index: "someIndex", Sort: bson.M{}, Filter: bson.M{"_id": item["ChildID"]}}, ret)
+		balance, err := strconv.Atoi(item["balance"].(string))
 		if err != nil {
 			return err
+		}
+		if supply != 0 {
+			item["percentage"] = float64(balance) / float64(supply)
+		} else {
+			item["percentage"] = -1
 		}
 		var raw map[string]interface{}
 		var filter map[string]interface{}
@@ -84,23 +82,16 @@ func (me *T) GetAssetHoldersByContractHash(args struct {
 			Raw          *map[string]interface{}
 		}{
 			ContractHash: args.ContractHash,
-			Address:      h160.T(fmt.Sprint(r["address"])),
+			Address:      h160.T(fmt.Sprint(item["address"])),
 			Filter:       filter,
 			Raw:          &raw,
 		}, ret)
 		if err != nil {
 			return err
 		}
-		r["balance"] = raw["balance"]
-		balance, err := strconv.Atoi(raw["balance"].(string))
-		if supply != 0 {
-			r["percentage"] = float64(balance) / float64(supply)
-		} else {
-			r["percentage"] = -1
-		}
-		r3 = append(r3, r)
+		item["lasttx"] = raw["latesttx"]
 	}
-	r4, err := me.FilterArrayAndAppendCount(r3, count, args.Filter)
+	r4, err := me.FilterArrayAndAppendCount(r2, count, args.Filter)
 	if err != nil {
 		return err
 	}

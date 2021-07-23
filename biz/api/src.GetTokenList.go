@@ -38,10 +38,10 @@ func (me *T) GetTokenList(args struct {
 			Sort       bson.M
 			Filter     bson.M
 		}{
-			Collection: "[Asset~Address(Addresses)]",
+			Collection: "Address-Asset",
 			Index:      "someIndex",
 			Sort:       bson.M{},
-			Filter:     bson.M{"ParentID": item["_id"]},
+			Filter:     bson.M{"asset": item["hash"]},
 		}, ret)
 		item["total_holders"] = r["total counts:"]
 		_, err = me.Data.Client.QueryOne(struct {
