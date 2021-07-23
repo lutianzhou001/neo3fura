@@ -6,9 +6,9 @@ import (
 )
 
 func (me *T) GetCommittee(args struct {
-	Filter       map[string]interface{}
-	Limit        int64
-	Skip         int64
+	Filter map[string]interface{}
+	Limit  int64
+	Skip   int64
 }, ret *json.RawMessage) error {
 	r1, count, err := me.Client.QueryAll(struct {
 		Collection string
