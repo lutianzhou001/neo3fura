@@ -70,15 +70,21 @@ func main() {
 
 	c := cron.New()
 	spec := "*/3600 * * * * ?"
-	c.AddFunc(spec, func() {
+	err = c.AddFunc(spec, func() {
 		err = j.GetPopularTokens()
 		if err != nil {
 			log.Fatal(err)
 		}
 	})
+	if err != nil {
+		log.Fatal(err)
+	}
 	c.Start()
 
 	listen := os.ExpandEnv("0.0.0.0:1926")
 	log.Println("[LISTEN]", listen)
-	http.ListenAndServe(listen, &joh.T{})
+	err = http.ListenAndServe(listen, &joh.T{})
+	if err != nil {
+		log.Fatal(err)
+	}
 }
