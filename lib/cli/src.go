@@ -6,14 +6,15 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
+	"os"
+	"path/filepath"
+
 	"github.com/joeqian10/neo3-gogogo/rpc"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"gopkg.in/yaml.v2"
-	"log"
-	"os"
-	"path/filepath"
 )
 
 // T ...
@@ -109,6 +110,80 @@ func (me *T) QueryOne(args struct {
 	return convert, err
 }
 
+func (me *T) QueryAggregate(args struct {
+	Collection string
+	Index      string
+	Sort       bson.M
+	Filter     bson.M
+	Pipeline   []bson.M
+	Query      []string
+}, ret *json.RawMessage) ([]map[string]interface{}, error) {
+	cfg, err := me.OpenConfigFile()
+	if err != nil {
+		return nil, err
+	}
+	var results []map[string]interface{}
+	convert := make([]map[string]interface{}, 0)
+	collection := me.C.Database(cfg.Database.DBName).Collection(args.Collection)
+	op := options.AggregateOptions{}
+
+	cursor, err := collection.Aggregate(me.Ctx, args.Pipeline, &op)
+	if err == mongo.ErrNoDocuments {
+		return nil, errors.New("NOT FOUNT")
+	}
+	if err != nil {
+		return nil, err
+	}
+	if err = cursor.All(me.Ctx, &results); err != nil {
+		return nil, err
+	}
+	for _, item := range results {
+		if len(args.Query) == 0 {
+			convert = append(convert, item)
+		} else {
+			temp := make(map[string]interface{})
+			for _, v := range args.Query {
+				temp[v] = item[v]
+			}
+			convert = append(convert, temp)
+		}
+	}
+	r, err := json.Marshal(convert)
+	if err != nil {
+		return nil, err
+	}
+	*ret = json.RawMessage(r)
+	return convert, nil
+}
+
+func (me *T) QueryDocument(args struct {
+	Collection string
+	Index      string
+	Sort       bson.M
+	Filter     bson.M
+}, ret *json.RawMessage) (map[string]interface{}, error) {
+	cfg, err := me.OpenConfigFile()
+	if err != nil {
+		return nil, err
+	}
+	co := options.CountOptions{}
+	collection := me.C.Database(cfg.Database.DBName).Collection(args.Collection)
+	count, _ := collection.CountDocuments(me.Ctx, args.Filter, &co)
+
+	if err == mongo.ErrNoDocuments {
+		return nil, errors.New("NOT FOUNT")
+	}
+	convert := make(map[string]interface{})
+	convert["total counts:"] = count
+	r, err := json.Marshal(convert)
+	if err != nil {
+		return nil, err
+	}
+	*ret = json.RawMessage(r)
+	return convert, nil
+
+}
+
 func (me *T) QueryAll(args struct {
 	Collection string
 	Index      string
@@ -159,6 +234,7 @@ func (me *T) QueryAll(args struct {
 	*ret = json.RawMessage(r)
 	return convert, count, nil
 }
+
 
 func (me *T) Mutation(Collection string, Index string, Keys []string, reply interface{}) {
 
