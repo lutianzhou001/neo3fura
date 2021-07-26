@@ -48,10 +48,15 @@ func (me *T) GetNep11BalanceByContractHashAddress(args struct {
 	r2 := make([]map[string]interface{}, 0)
 	for _, item := range r1 {
 		temp := make(map[string]interface{})
-		if item["from"].(string) == args.Address.TransferredVal() {
-			temp["balance"] = item["frombalance"]
-		} else {
-			temp["balance"] = item["tobalance"]
+		if item["from"] != nil {
+			if item["from"].(string) == args.Address.TransferredVal() {
+				temp["balance"] = item["frombalance"]
+			}
+		}
+		if item["to"] != nil {
+			if item["to"].(string) == args.Address.TransferredVal() {
+				temp["balance"] = item["tobalance"]
+			}
 		}
 		temp["latesttx"] = item
 		r2 = append(r2, temp)
