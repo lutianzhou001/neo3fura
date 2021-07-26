@@ -67,7 +67,7 @@ func (me *T) GetNep17TransferByAddress(args struct {
 			if err != nil {
 				return err
 			}
-			item["gasfee"] = raw3["gasfee"]
+			item["netfee"] = raw3["netfee"]
 			item["sysfee"] = raw3["sysfee"]
 		}
 	}
