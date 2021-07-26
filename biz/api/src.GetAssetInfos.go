@@ -8,6 +8,8 @@ import (
 
 func (me *T) GetAssetInfos(args struct {
 	Filter map[string]interface{}
+	Limit  int64
+	Skip   int64
 }, ret *json.RawMessage) error {
 	r1, count, err := me.Client.QueryAll(struct {
 		Collection string
@@ -23,6 +25,8 @@ func (me *T) GetAssetInfos(args struct {
 		Sort:       bson.M{},
 		Filter:     bson.M{},
 		Query:      []string{},
+		Limit:      args.Limit,
+		Skip:       args.Skip,
 	}, ret)
 	if err != nil {
 		return err

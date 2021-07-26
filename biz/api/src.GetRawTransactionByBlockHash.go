@@ -14,9 +14,6 @@ func (me *T) GetRawTransactionByBlockHash(args struct {
 	Filter    map[string]interface{}
 	Raw       *[]map[string]interface{}
 }, ret *json.RawMessage) error {
-	if args.Limit == 0 {
-		args.Limit = 200
-	}
 	if args.BlockHash.Valid() == false {
 		return stderr.ErrInvalidArgs
 	}
