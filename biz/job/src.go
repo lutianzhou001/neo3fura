@@ -1,8 +1,6 @@
-package data
+package job
 
-import (
-	"neo3fura/lib/cli"
-)
+import "neo3fura/lib/cli"
 
 // T ...
 type T struct {

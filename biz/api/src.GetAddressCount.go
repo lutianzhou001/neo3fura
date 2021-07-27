@@ -5,29 +5,23 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func (me *T) GetBestBlockHash(args struct {
+func (me *T) GetAddressCount(args struct {
 	Filter map[string]interface{}
 }, ret *json.RawMessage) error {
-	r1, err := me.Client.QueryOne(struct {
+	_, count, err := me.Client.QueryAll(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
 		Filter     bson.M
 		Query      []string
-	}{
-		Collection: "Block",
-		Index:      "GetBestBlockHash",
-		Sort:       bson.M{"_id": -1},
-		Filter:     bson.M{},
-		Query:      []string{"hash"},
-	}, ret)
+		Limit      int64
+		Skip       int64
+	}{Collection: "Address"}, ret)
 	if err != nil {
 		return err
 	}
-	r1, err = me.Filter(r1, args.Filter)
-	if err != nil {
-		return err
-	}
+	r1 := make(map[string]interface{})
+	r1["count"] = count
 	r, err := json.Marshal(r1)
 	if err != nil {
 		return err

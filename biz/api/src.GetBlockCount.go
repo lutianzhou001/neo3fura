@@ -9,7 +9,7 @@ func (me *T) GetBlockCount(args struct {
 	Filter map[string]interface{}
 	Raw    *map[string]interface{}
 }, ret *json.RawMessage) error {
-	r1, err := me.Data.Client.QueryOne(struct {
+	r1, err := me.Client.QueryOne(struct {
 		Collection string
 		Index      string
 		Sort       bson.M

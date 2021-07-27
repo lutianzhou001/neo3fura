@@ -24,7 +24,7 @@ func (me *T) GetNep11BalanceByContractHashAddressTokenId(args struct {
 	if len(args.TokenId.Val()) <= 0 {
 		return stderr.ErrInvalidArgs
 	}
-	r1, err := me.Data.Client.QueryOne(struct {
+	r1, err := me.Client.QueryOne(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
@@ -44,10 +44,15 @@ func (me *T) GetNep11BalanceByContractHashAddressTokenId(args struct {
 		return err
 	}
 	r2 := make(map[string]interface{})
-	if r1["from"].(string) == args.Address.TransferredVal() {
-		r2["balance"] = r1["frombalance"]
-	} else {
-		r2["balance"] = r1["tobalance"]
+	if r1["from"] != nil {
+		if r1["from"].(string) == args.Address.TransferredVal() {
+			r2["balance"] = r1["frombalance"]
+		}
+	}
+	if r1["to"] != nil {
+		if r1["to"].(string) == args.Address.TransferredVal() {
+			r2["balance"] = r1["tobalance"]
+		}
 	}
 	r2["latesttx"] = r1
 	r2, err = me.Filter(r2, args.Filter)

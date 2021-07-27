@@ -21,9 +21,8 @@ func (me *T) GetNep11BalanceByContractHashAddress(args struct {
 	if args.Address.Valid() == false {
 		return stderr.ErrInvalidArgs
 	}
-	var r1 []map[string]interface{}
 	var err error
-	r1, count, err := me.Data.Client.QueryAll(struct {
+	r1, count, err := me.Client.QueryAll(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
@@ -49,10 +48,15 @@ func (me *T) GetNep11BalanceByContractHashAddress(args struct {
 	r2 := make([]map[string]interface{}, 0)
 	for _, item := range r1 {
 		temp := make(map[string]interface{})
-		if item["from"].(string) == args.Address.TransferredVal() {
-			temp["balance"] = item["frombalance"]
-		} else {
-			temp["balance"] = item["tobalance"]
+		if item["from"] != nil {
+			if item["from"].(string) == args.Address.TransferredVal() {
+				temp["balance"] = item["frombalance"]
+			}
+		}
+		if item["to"] != nil {
+			if item["to"].(string) == args.Address.TransferredVal() {
+				temp["balance"] = item["tobalance"]
+			}
 		}
 		temp["latesttx"] = item
 		r2 = append(r2, temp)

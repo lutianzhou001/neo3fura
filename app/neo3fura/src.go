@@ -2,10 +2,12 @@ package main
 
 import (
 	"context"
+	"fmt"
+	"github.com/robfig/cron"
 	"gopkg.in/yaml.v2"
 	"log"
 	"neo3fura/biz/api"
-	"neo3fura/biz/data"
+	"neo3fura/biz/job"
 	"neo3fura/lib/cli"
 	"neo3fura/lib/joh"
 	"net/http"
@@ -47,6 +49,7 @@ type Config struct {
 }
 
 func main() {
+	fmt.Println("YOUR ENV IS " + os.ExpandEnv("${RUNTIME}"))
 	cfg, err := OpenConfigFile()
 	if err != nil {
 		log.Fatalln(err)
@@ -58,18 +61,30 @@ func main() {
 		RpcPorts: cfg.Proxy.Uri,
 	}
 	rpc.Register(&api.T{
-		Data: &data.T{
-			Client: client,
-		},
+		Client: client,
 	})
-	//var ct api.T
-	//c := cron.New()
-	//spec := "*/1 * * * * ?"
-	//c.AddFunc(spec, func() {
-	//   ct.GetTopTokens()
-	//})
-	//c.Start()
+
+	j := &job.T{
+		Client: client,
+	}
+
+	c := cron.New()
+	spec := "*/3600 * * * * ?"
+	err = c.AddFunc(spec, func() {
+		err = j.GetPopularTokens()
+		if err != nil {
+			log.Fatal(err)
+		}
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+	c.Start()
+
 	listen := os.ExpandEnv("0.0.0.0:1926")
 	log.Println("[LISTEN]", listen)
-	http.ListenAndServe(listen, &joh.T{})
+	err = http.ListenAndServe(listen, &joh.T{})
+	if err != nil {
+		log.Fatal(err)
+	}
 }

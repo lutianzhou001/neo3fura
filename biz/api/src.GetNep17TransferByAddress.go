@@ -18,7 +18,7 @@ func (me *T) GetNep17TransferByAddress(args struct {
 	if args.Address.Valid() == false {
 		return stderr.ErrInvalidArgs
 	}
-	r1, count, err := me.Data.Client.QueryAll(struct {
+	r1, count, err := me.Client.QueryAll(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
@@ -42,7 +42,6 @@ func (me *T) GetNep17TransferByAddress(args struct {
 		return err
 	}
 	var raw1 map[string]interface{}
-	var raw2 map[string]interface{}
 	var raw3 map[string]interface{}
 	for _, item := range r1 {
 		err = me.GetVmStateByTransactionHash(struct {
@@ -68,24 +67,9 @@ func (me *T) GetNep17TransferByAddress(args struct {
 			if err != nil {
 				return err
 			}
-			item["gasfee"] = raw3["gasfee"]
+			item["netfee"] = raw3["netfee"]
 			item["sysfee"] = raw3["sysfee"]
 		}
-
-		err = me.GetBlockByBlockHash(struct {
-			BlockHash h256.T
-			Filter    map[string]interface{}
-			Raw       *map[string]interface{}
-		}{
-			BlockHash: h256.T(fmt.Sprint(item["blockhash"])),
-			Filter:    nil,
-			Raw:       &raw2,
-		}, ret)
-		if err != nil {
-			return err
-		}
-		item["timestamp"] = raw2["timestamp"]
-		item["timestamp"] = raw2["timestamp"]
 	}
 	r2, err := me.FilterArrayAndAppendCount(r1, count, args.Filter)
 	if err != nil {

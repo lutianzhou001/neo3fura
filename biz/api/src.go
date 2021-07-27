@@ -2,12 +2,12 @@ package api
 
 import (
 	"fmt"
-	"neo3fura/biz/data"
+	"neo3fura/lib/cli"
 )
 
 // T ...
 type T struct {
-	Data *data.T
+	Client *cli.T
 }
 
 // Ping ...

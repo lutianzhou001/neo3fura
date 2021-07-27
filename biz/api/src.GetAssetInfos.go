@@ -3,12 +3,15 @@ package api
 import (
 	"encoding/json"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func (me *T) GetAssetInfos(args struct {
 	Filter map[string]interface{}
+	Limit  int64
+	Skip   int64
 }, ret *json.RawMessage) error {
-	r1, count, err := me.Data.Client.QueryAll(struct {
+	r1, count, err := me.Client.QueryAll(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
@@ -22,15 +25,31 @@ func (me *T) GetAssetInfos(args struct {
 		Sort:       bson.M{},
 		Filter:     bson.M{},
 		Query:      []string{},
+		Limit:      args.Limit,
+		Skip:       args.Skip,
 	}, ret)
 	if err != nil {
 		return err
 	}
-	r2, err := me.FilterArrayAndAppendCount(r1, count, args.Filter)
+	// retrieve all tokens
+	r2, err := me.Client.QueryLastJob(struct{ Collection string }{Collection: "PopularTokens"})
 	if err != nil {
 		return err
 	}
-	r, err := json.Marshal(r2)
+	for _, item := range r1 {
+		populars := r2["Populars"].(primitive.A)
+		for _, v := range populars {
+			if item["hash"] == v {
+				item["ispopular"] = true
+			}
+		}
+		item["ispopular"] = false
+	}
+	r3, err := me.FilterArrayAndAppendCount(r1, count, args.Filter)
+	if err != nil {
+		return err
+	}
+	r, err := json.Marshal(r3)
 	if err != nil {
 		return err
 	}

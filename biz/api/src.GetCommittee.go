@@ -3,20 +3,14 @@ package api
 import (
 	"encoding/json"
 	"go.mongodb.org/mongo-driver/bson"
-	"neo3fura/lib/type/h160"
-	"neo3fura/var/stderr"
 )
 
-// this function may be not supported any more, we only support address in the formart of script hash
-func (me *T) GetScVoteCallByVoterAddress(args struct {
-	VoterAddress h160.T
-	Limit        int64
-	Skip         int64
-	Filter       map[string]interface{}
+func (me *T) GetCommittee(args struct {
+	Filter map[string]interface{}
+	Limit  int64
+	Skip   int64
+	Raw    *[]map[string]interface{}
 }, ret *json.RawMessage) error {
-	if args.VoterAddress.Valid() == false {
-		return stderr.ErrInvalidArgs
-	}
 	r1, count, err := me.Client.QueryAll(struct {
 		Collection string
 		Index      string
@@ -26,16 +20,19 @@ func (me *T) GetScVoteCallByVoterAddress(args struct {
 		Limit      int64
 		Skip       int64
 	}{
-		Collection: "ScVoteCall",
-		Index:      "GetScVoteCallByVoterAddress",
+		Collection: "Candidate",
+		Index:      "GetCommittee",
 		Sort:       bson.M{},
-		Filter:     bson.M{"voter": args.VoterAddress.TransferredVal()},
+		Filter:     bson.M{"isCommittee": true},
 		Query:      []string{},
 		Limit:      args.Limit,
 		Skip:       args.Skip,
 	}, ret)
 	if err != nil {
 		return err
+	}
+	if args.Raw != nil {
+		*args.Raw = r1
 	}
 	r2, err := me.FilterArrayAndAppendCount(r1, count, args.Filter)
 	if err != nil {

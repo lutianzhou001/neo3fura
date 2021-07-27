@@ -19,7 +19,7 @@ func (me *T) GetApplicationLogByBlockHash(args struct {
 	if args.BlockHash.IsZero() == true {
 		return stderr.ErrZero
 	}
-	r1, count, err := me.Data.Client.QueryAll(struct {
+	r1, count, err := me.Client.QueryAll(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
@@ -39,8 +39,8 @@ func (me *T) GetApplicationLogByBlockHash(args struct {
 	if err != nil {
 		return err
 	}
-	for _, item2 := range r1 {
-		r2, _, err := me.Data.Client.QueryAll(struct {
+	for _, item := range r1 {
+		r2, _, err := me.Client.QueryAll(struct {
 			Collection string
 			Index      string
 			Sort       bson.M
@@ -48,36 +48,17 @@ func (me *T) GetApplicationLogByBlockHash(args struct {
 			Query      []string
 			Limit      int64
 			Skip       int64
-		}{Collection: "[Execution~Notification(Notifications)]", Index: "GetApplicationLogByBlockHash", Sort: bson.M{}, Filter: bson.M{"ParentID": item2["_id"]}}, ret)
+		}{Collection: "Notification", Index: "GetApplicationLogByBlockHash", Sort: bson.M{}, Filter: bson.M{"txid": item["txid"].(string), "blockhash": item["blockhash"].(string)}}, ret)
 		if err != nil {
 			return err
 		}
-		notifications := make([]map[string]interface{}, 0)
-		for _, item3 := range r2 {
-			r3, err := me.Data.Client.QueryOne(struct {
-				Collection string
-				Index      string
-				Sort       bson.M
-				Filter     bson.M
-				Query      []string
-			}{Collection: "Notification", Index: "GetApplicationLogByBlockHash", Sort: bson.M{}, Filter: bson.M{"_id": item3["ChildID"]}}, ret)
-			if err != nil {
-				return err
-			}
-			notifications = append(notifications, r3)
-		}
-		if len(notifications) > 0 {
-			item2["notifications"] = notifications
-		} else {
-			item2["notifications"] = []map[string]interface{}{}
-		}
-
+		item["notifications"] = r2
 	}
-	r4, err := me.FilterArrayAndAppendCount(r1, count, args.Filter)
+	r3, err := me.FilterArrayAndAppendCount(r1, count, args.Filter)
 	if err != nil {
 		return nil
 	}
-	r, err := json.Marshal(r4)
+	r, err := json.Marshal(r3)
 	if err != nil {
 		return err
 	}

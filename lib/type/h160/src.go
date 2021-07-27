@@ -32,8 +32,18 @@ func (me T) TransferredVal() string {
 	if len(me.Val()) == 42 {
 		return me.Val()
 	} else {
-		transferredVal, _ := me.AddressToScriptHash()
-		return transferredVal
+		transferredVal, _ := me.addressToScriptHash()
+		return "0x" + transferredVal
+	}
+}
+
+// TransferredVal
+func (me T) TransferAddress() string {
+	if len(me.Val()) != 42 {
+		return me.Val()
+	} else {
+		transferredAddress, _ := me.scriptHashToAddress()
+		return transferredAddress
 	}
 }
 
@@ -42,7 +52,7 @@ func (me T) ToByte() []byte {
 }
 
 // ScriptHashToAddress ...
-func (me T) ScriptHashToAddress() (string, error) {
+func (me T) scriptHashToAddress() (string, error) {
 	// be
 	u, err := helper.UInt160FromString(me.Val())
 	if err != nil {
@@ -52,7 +62,7 @@ func (me T) ScriptHashToAddress() (string, error) {
 }
 
 // AddressToScriptHash
-func (me T) AddressToScriptHash() (string, error) {
+func (me T) addressToScriptHash() (string, error) {
 	// be
 	u, err := crypto.AddressToScriptHash(me.Val(), 0x35)
 	if err != nil {
