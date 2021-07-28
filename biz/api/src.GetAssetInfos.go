@@ -4,13 +4,24 @@ import (
 	"encoding/json"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"neo3fura/lib/type/h160"
+	"neo3fura/var/stderr"
 )
 
 func (me *T) GetAssetInfos(args struct {
-	Filter map[string]interface{}
-	Limit  int64
-	Skip   int64
+	Filter    map[string]interface{}
+	Addresses []h160.T
+	Limit     int64
+	Skip      int64
 }, ret *json.RawMessage) error {
+	f := make([]interface{}, 0)
+	for _, address := range args.Addresses {
+		if address.Valid() == false {
+			return stderr.ErrInvalidArgs
+		} else {
+			f = append(f, bson.M{"hash": address.TransferredVal()})
+		}
+	}
 	r1, count, err := me.Client.QueryAll(struct {
 		Collection string
 		Index      string
@@ -23,7 +34,7 @@ func (me *T) GetAssetInfos(args struct {
 		Collection: "Asset",
 		Index:      "GetAssetInfos",
 		Sort:       bson.M{},
-		Filter:     bson.M{},
+		Filter:     bson.M{"$or": f},
 		Query:      []string{},
 		Limit:      args.Limit,
 		Skip:       args.Skip,
