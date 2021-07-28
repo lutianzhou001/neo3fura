@@ -69,9 +69,13 @@ func main() {
 	}
 
 	c := cron.New()
-	spec := "*/3600 * * * * ?"
+	spec := "0 17 * * * *"
 	err = c.AddFunc(spec, func() {
 		err = j.GetPopularTokens()
+		if err != nil {
+			log.Fatal(err)
+		}
+		err = j.GetHoldersByContractHash()
 		if err != nil {
 			log.Fatal(err)
 		}

@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"neo3fura/lib/type/h160"
 	"neo3fura/var/stderr"
@@ -33,9 +34,21 @@ func (me *T) GetAssetHoldersByContractHash(args struct {
 		Limit:      args.Limit,
 		Skip:       args.Skip,
 	}, ret)
-	if err != nil {
-		return err
+
+	for _, item := range r1 {
+		var raw1 map[string]interface{}
+		err = me.GetAssetInfoByContractHash(struct {
+			ContractHash h160.T
+			Filter       map[string]interface{}
+			Raw          *map[string]interface{}
+		}{ContractHash: args.ContractHash, Raw: &raw1}, ret)
+		if err != nil {
+			return err
+		}
+		fmt.Println(item)
+		// item["percentage"] = item["balance"].(int64) / raw1["totalsupply"].(int64)
 	}
+
 	r2, err := me.FilterArrayAndAppendCount(r1, count, args.Filter)
 	if err != nil {
 		return err

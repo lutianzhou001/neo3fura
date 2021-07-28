@@ -6,9 +6,9 @@ import (
 )
 
 func (me *T) GetAddressList(args struct {
-	Limit     int64
-	Skip      int64
-	Filter    map[string]interface{}
+	Limit  int64
+	Skip   int64
+	Filter map[string]interface{}
 }, ret *json.RawMessage) error {
 	if args.Limit <= 0 {
 		args.Limit = 20

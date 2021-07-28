@@ -356,7 +356,7 @@ func (me *T) QueryLastJob(args struct {
 		return nil, err
 	}
 	dbName := me.getDbName(cfg, "LOCAL")
-	collection := uc.Database(dbName).Collection("PopularTokens")
+	collection := uc.Database(dbName).Collection(args.Collection)
 	var result map[string]interface{}
 	opts := options.FindOne().SetSort(bson.M{"_id": -1})
 	err = collection.FindOne(me.Ctx, bson.M{}, opts).Decode(&result)

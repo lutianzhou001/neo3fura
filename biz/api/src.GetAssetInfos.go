@@ -32,7 +32,6 @@ func (me *T) GetAssetInfos(args struct {
 			f = bson.M{"$or": addresses}
 		}
 	}
-
 	r1, count, err := me.Client.QueryAll(struct {
 		Collection string
 		Index      string
@@ -58,6 +57,10 @@ func (me *T) GetAssetInfos(args struct {
 	if err != nil {
 		return err
 	}
+	r3, err := me.Client.QueryLastJob(struct{ Collection string }{Collection: "Holders"})
+	if err != nil {
+		return err
+	}
 	for _, item := range r1 {
 		populars := r2["Populars"].(primitive.A)
 		for _, v := range populars {
@@ -66,12 +69,21 @@ func (me *T) GetAssetInfos(args struct {
 			}
 		}
 		item["ispopular"] = false
+		holders := r3["Holders"].(primitive.A)
+		for _, h := range holders {
+			m := h.(map[string]interface{})
+			for k, v := range m {
+				if item["hash"] == k {
+					item["holders"] = v
+				}
+			}
+		}
 	}
-	r3, err := me.FilterArrayAndAppendCount(r1, count, args.Filter)
+	r4, err := me.FilterArrayAndAppendCount(r1, count, args.Filter)
 	if err != nil {
 		return err
 	}
-	r, err := json.Marshal(r3)
+	r, err := json.Marshal(r4)
 	if err != nil {
 		return err
 	}

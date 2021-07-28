@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"neo3fura/lib/type/strval"
 	"neo3fura/var/stderr"
 )
@@ -30,6 +31,33 @@ func (me *T) GetAssetInfoByTokenName(args struct {
 	r1, err = me.Filter(r1, args.Filter)
 	if err != nil {
 		return err
+	}
+
+	r2, err := me.Client.QueryLastJob(struct{ Collection string }{Collection: "PopularTokens"})
+	if err != nil {
+		return err
+	}
+	r3, err := me.Client.QueryLastJob(struct{ Collection string }{Collection: "Holders"})
+	if err != nil {
+		return err
+	}
+
+	populars := r2["Populars"].(primitive.A)
+	for _, v := range populars {
+		if r1["hash"] == v {
+			r1["ispopular"] = true
+		}
+	}
+	r1["ispopular"] = false
+
+	holders := r3["Holders"].(primitive.A)
+	for _, h := range holders {
+		m := h.(map[string]interface{})
+		for k, v := range m {
+			if r1["hash"] == k {
+				r1["holders"] = v
+			}
+		}
 	}
 	r, err := json.Marshal(r1)
 	if err != nil {
