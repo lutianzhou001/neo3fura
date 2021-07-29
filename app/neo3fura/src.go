@@ -69,8 +69,9 @@ func main() {
 	}
 
 	c := cron.New()
-	spec := "0 17 * * * *"
+	spec := "0 0/1 * * * *"
 	err = c.AddFunc(spec, func() {
+		fmt.Println("Start job")
 		err = j.GetPopularTokens()
 		if err != nil {
 			log.Fatal(err)
