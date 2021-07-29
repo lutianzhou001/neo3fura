@@ -2,9 +2,10 @@ package api
 
 import (
 	"encoding/json"
-	"go.mongodb.org/mongo-driver/bson"
 	"neo3fura/lib/type/h160"
 	"neo3fura/var/stderr"
+
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 func (me *T) GetNep11BalanceByContractHashAddress(args struct {
@@ -49,12 +50,17 @@ func (me *T) GetNep11BalanceByContractHashAddress(args struct {
 	r2 := make([]map[string]interface{}, 0)
 	for _, item := range r1 {
 		temp := make(map[string]interface{})
-		if item["from"].(string) == args.Address.Val() {
-			temp["balance"] = item["frombalance"]
-		} else {
-			temp["balance"] = item["tobalance"]
-		}
-		temp["latesttx"] = item
+		// if item["from"] != nil {
+		// 	if item["from"].(string) == args.Address.Val() {
+		// 		temp["balance"] = item["frombalance"]
+		// 	} else {
+		// 		temp["balance"] = item["tobalance"]
+		// 	}
+		// } else {
+		// 	temp["balance"] = item["tobalance"]
+		// }
+		temp["tokenid"] = item["tokenId"]
+		temp["time"] = item["timestamp"]
 		r2 = append(r2, temp)
 	}
 	r3, err := me.FilterArrayAndAppendCount(r2, count, args.Filter)

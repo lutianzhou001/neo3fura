@@ -34,10 +34,10 @@ func (me *T) GetAssetInfoByContractHash(args struct {
 		Sort       bson.M
 		Filter     bson.M
 	}{
-		Collection: "[Asset~Address(Addresses)]",
+		Collection: "Address-Asset",
 		Index:      "someIndex",
 		Sort:       bson.M{},
-		Filter:     bson.M{"ParentID": r1["_id"]},
+		Filter:     bson.M{"asset": r1["hash"]},
 	}, ret)
 	r1["total_holders"] = r2["total counts:"]
 	_, err = me.Data.Client.QueryOne(struct {

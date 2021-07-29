@@ -12,7 +12,7 @@ func (me *T) GetContractListByName(args struct {
 	Skip         int64
 }, ret *json.RawMessage) error {
 
-	r1, _, err := me.Data.Client.QueryAll(
+	r1, count, err := me.Data.Client.QueryAll(
 		struct {
 			Collection string
 			Index      string
@@ -33,8 +33,11 @@ func (me *T) GetContractListByName(args struct {
 	if err != nil {
 		return err
 	}
-
-	r, err := json.Marshal(r1)
+	r2, err := me.FilterArrayAndAppendCount(r1, count, args.Filter)
+	if err != nil {
+		return err
+	}
+	r, err := json.Marshal(r2)
 	if err != nil {
 		return err
 	}

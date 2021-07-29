@@ -34,6 +34,7 @@ func (me *T) GetAssetsHeldByAddress(args struct {
 	if err != nil {
 		return err
 	}
+	fmt.Println(r1["_id"])
 	r2, count, err := me.Data.Client.QueryAll(
 		struct {
 			Collection string
@@ -43,10 +44,19 @@ func (me *T) GetAssetsHeldByAddress(args struct {
 			Query      []string
 			Limit      int64
 			Skip       int64
-		}{Collection: "[Asset~Address(Addresses)]", Index: "someIndex", Sort: bson.M{}, Filter: bson.M{"ChildID": r1["_id"]}, Query: []string{"ParentID"}, Limit: args.Limit, Skip: args.Skip}, ret)
+		}{
+			Collection: "Asset-Address",
+			Index: "someIndex",
+			Sort: bson.M{},
+			Filter: bson.M{"_id": r1["_id"]},
+			Query: []string{},
+			Limit: args.Limit,
+			Skip: args.Skip,
+		}, ret)
 	if err != nil {
 		return err
 	}
+	fmt.Println(r2)
 	r3 := make([]map[string]interface{}, 0)
 	for _, item := range r2 {
 		r, err := me.Data.Client.QueryOne(struct {
