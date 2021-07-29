@@ -42,13 +42,14 @@ func (me *T) GetAssetInfoByTokenName(args struct {
 		return err
 	}
 
+	r1["ispopular"] = false
 	populars := r2["Populars"].(primitive.A)
 	for _, v := range populars {
 		if r1["hash"] == v {
 			r1["ispopular"] = true
 		}
 	}
-	r1["ispopular"] = false
+
 
 	holders := r3["Holders"].(primitive.A)
 	for _, h := range holders {

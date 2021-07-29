@@ -63,12 +63,13 @@ func (me *T) GetAssetInfos(args struct {
 	}
 	for _, item := range r1 {
 		populars := r2["Populars"].(primitive.A)
+
+		item["ispopular"] = false
 		for _, v := range populars {
 			if item["hash"] == v {
 				item["ispopular"] = true
 			}
 		}
-		item["ispopular"] = false
 		holders := r3["Holders"].(primitive.A)
 		for _, h := range holders {
 			m := h.(map[string]interface{})
