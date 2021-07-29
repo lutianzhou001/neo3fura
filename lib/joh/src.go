@@ -64,6 +64,8 @@ func (me *T) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		// can find
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
+		remoteIP := GetIP(r)
+		fmt.Println(remoteIP)
 		conn := &rwio.T{R: req.Body, W: w}
 		codec := &scex.T{}
 		codec.Init(conn)
@@ -73,6 +75,14 @@ func (me *T) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		me.Handle(c.Proxy.URI[repostMode], w, r)
 		repostMode = (repostMode + 1) % 5
 	}
+}
+
+func GetIP(r *http.Request) string {
+	forwarded := r.Header.Get("X-FORWARDED_FOR")
+	if forwarded != "" {
+		return forwarded
+	}
+	return r.RemoteAddr
 }
 
 func (me *T) Handle(target string, w http.ResponseWriter, r *http.Request) {
