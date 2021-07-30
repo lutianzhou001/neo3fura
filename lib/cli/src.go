@@ -174,7 +174,7 @@ func (me *T) QueryDocument(args struct {
 		return nil, errors.New("NOT FOUNT")
 	}
 	convert := make(map[string]interface{})
-	convert["total counts:"] = count
+	convert["total counts"] = count
 	r, err := json.Marshal(convert)
 	if err != nil {
 		return nil, err
