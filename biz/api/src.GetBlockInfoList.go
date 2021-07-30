@@ -41,10 +41,10 @@ func (me *T) GetBlockInfoList(args struct {
 			Sort       bson.M
 			Filter     bson.M
 
-		}{  Collection: "[Block~Transaction(Transactions)]",
+		}{  Collection: "Transaction",
 			Index: "someIndex",
 			Sort: bson.M{},
-			Filter: bson.M{"ParentID":item["_id"],
+			Filter: bson.M{"blockhash":item["hash"],
 				}}, ret)
 		if err != nil {
 			return err

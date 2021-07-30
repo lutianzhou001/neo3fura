@@ -68,3 +68,18 @@ func (me *T) FilterArrayAndAppendCount(data []map[string]interface{}, count int6
 	res2["result"] = res
 	return res2, nil
 }
+
+func (me *T) FilterAggragateAndAppendCount(data []map[string]interface{}, count interface{}, filter map[string]interface{}) (map[string]interface{}, error) {
+	res := make([]map[string]interface{}, 0)
+	for _, item := range data {
+	   r, err := me.Filter(item, filter)
+	   if err != nil {
+		  return nil, err
+	   }
+	   res = append(res, r)
+	}
+	res2 := make(map[string]interface{})
+	res2["totalCount"] = count
+	res2["result"] = res
+	return res2, nil
+ }

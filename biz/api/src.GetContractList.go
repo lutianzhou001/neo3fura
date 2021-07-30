@@ -1,8 +1,8 @@
 package api
 
 import (
-"encoding/json"
-"go.mongodb.org/mongo-driver/bson"
+	"encoding/json"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 func (me *T) GetContractList(args struct {
@@ -11,28 +11,51 @@ func (me *T) GetContractList(args struct {
 	Skip         int64
 }, ret *json.RawMessage) error {
 
-	r1, count, err := me.Data.Client.QueryAll(
+	var r1, err = me.Data.Client.QueryAggregate(
 		struct {
 			Collection string
 			Index      string
 			Sort       bson.M
 			Filter     bson.M
+			Pipeline   []bson.M
 			Query      []string
-			Limit      int64
-			Skip       int64
 		}{
 			Collection: "Contract",
 			Index:      "someIndex",
 			Sort:       bson.M{},
-			Filter: bson.M{},
-			Query: []string{"hash","id","name","createtime"},
-			Limit: args.Limit,
-			Skip: args.Skip,
+			Filter:     bson.M{},
+			Pipeline:  []bson.M{
+			bson.M{"$skip":args.Skip},
+			bson.M{"$limit":args.Limit},
+			bson.M{"$lookup": bson.M{
+				"from": "Transaction",
+				"localField": "createTxid",
+				"foreignField": "hash",
+				"as": "Transaction"}},
+			bson.M{"$project":
+				bson.M{"_id":0,"Transaction.sender":1,"hash":1,"createtime":1,"name":1,"id":1}}},
+			Query: []string{},
 		}, ret)
 	if err != nil {
 		return err
 	}
-	r2, err := me.FilterArrayAndAppendCount(r1, count, args.Filter)
+	r3, err := me.Data.Client.QueryDocument(
+		struct {
+			Collection string
+			Index      string
+			Sort       bson.M
+			Filter     bson.M
+
+		}{  Collection: "Contract",
+			Index: "someIndex",
+			Sort: bson.M{},
+			Filter: bson.M{},
+		}, ret)
+	if err != nil {
+		return err
+	}
+	//r1 = append(r1, r3)
+	r2, err := me.FilterAggragateAndAppendCount(r1,r3["total counts"], args.Filter)
 	if err != nil {
 		return err
 	}

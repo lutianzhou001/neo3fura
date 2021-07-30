@@ -43,7 +43,7 @@ func (me *T) GetTokenList(args struct {
 			Sort:       bson.M{},
 			Filter:     bson.M{"asset": item["hash"]},
 		}, ret)
-		item["total_holders"] = r["total counts:"]
+		item["total_holders"] = r["total counts"]
 		_, err = me.Data.Client.QueryOne(struct {
 			Collection string
 			Index      string
