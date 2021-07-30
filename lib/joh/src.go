@@ -64,8 +64,8 @@ func (me *T) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		// can find
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		remoteIP := GetIP(r)
-		fmt.Println(remoteIP)
+		// remoteIP := GetIP(r)
+		// fmt.Println(remoteIP)
 		conn := &rwio.T{R: req.Body, W: w}
 		codec := &scex.T{}
 		codec.Init(conn)

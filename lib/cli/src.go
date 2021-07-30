@@ -224,7 +224,7 @@ func (me *T) QueryOne(args struct {
 		}
 		dbName := me.getDbName(cfg, os.ExpandEnv("${RUNTIME}"))
 		collection := uc.Database(dbName).Collection(args.Collection)
-
+		defer uc.Disconnect(me.Ctx)
 		opts := options.FindOne().SetSort(args.Sort)
 		err = collection.FindOne(me.Ctx, args.Filter, opts).Decode(&result)
 		if err == mongo.ErrNoDocuments {
@@ -296,7 +296,12 @@ func (me *T) QueryAll(args struct {
 	op.SetSkip(args.Skip)
 	co := options.CountOptions{}
 	count, err := collection.CountDocuments(me.Ctx, args.Filter, &co)
+	if err != nil {
+		return nil, 0, err
+	}
 	cursor, err := collection.Find(me.Ctx, args.Filter, op)
+	defer cursor.Close(me.Ctx)
+	defer uc.Disconnect(me.Ctx)
 	if err == mongo.ErrNoDocuments {
 		return nil, 0, errors.New("NOT FOUND")
 	}
