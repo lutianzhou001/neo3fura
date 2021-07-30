@@ -38,41 +38,40 @@ func (me *T) GetBlockInfoByBlockHash(args struct {
 			Sort       bson.M
 			Filter     bson.M
 
-		}{  Collection: "[Block~Transaction(Transactions)]",
+		}{  Collection: "Transaction",
 			Index: "someIndex",
 			Sort: bson.M{},
-			Filter: bson.M{"ParentID":r1["_id"],
+			Filter: bson.M{"blockhash":args.BlockHash,
 			}}, ret)
 	if err != nil {
 		return err
 	}
-	r1["transactionNumber"] = r2["total counts"]
-	r3, err := me.Data.Client.QueryAggregate(struct {
-		Collection string
-		Index      string
-		Sort       bson.M
-		Filter     bson.M
-		Pipeline   []bson.M
-		Query      []string
-	}{
-		Collection: "Transaction",
-		Index:      "someIndex",
-		Pipeline: []bson.M{bson.M{"$match":bson.M{"blockhash":args.BlockHash}},
-			bson.M{"$group":bson.M{"_id":"$blockhash","systemFee":bson.M{"$sum":"$sysfee"},"networkFee":bson.M{"$sum":"$netfee"}}}},
-		Sort:       bson.M{},
-		Filter:     bson.M{},
-		Query:      []string{},
-	}, ret)
-	if err != nil {
-		return err
-	}
-	if len(r3) != 0{
-		r1["totalNetworkFee"] = r3[0]["systemFee"]
-		r1["totalSystemFee"] = r3[0]["networkFee"]
+	if (r2["total counts"] == nil){
+		r1["transactionNumber"] = 0
+		r1["transfersNumber"] = 0
 	}else {
-		r1["totalNetworkFee"] = 0
-		r1["totalSystemFee"] = 0
+		r1["transactionNumber"] = r2["total counts"]
+		r3, err := me.Data.Client.QueryDocument(struct {
+			Collection string
+			Index      string
+			Sort       bson.M
+			Filter     bson.M
+
+		}{  Collection: "TransferNotification",
+			Index: "someIndex",
+			Sort: bson.M{},
+			Filter: bson.M{"blockhash":args.BlockHash,
+			}}, ret)
+		if err != nil {
+			return err
+		}
+		if (r3["total counts"] == nil){
+			r1["transfersNumber"] = 0
+		}else {
+			r1["transfersNumber"] = r3["total counts"]
+		}
 	}
+
 		r, err := json.Marshal(r1)
 	if err != nil {
 		return err

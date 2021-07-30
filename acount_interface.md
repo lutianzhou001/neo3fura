@@ -140,6 +140,46 @@ POST:/GetAccountList:
         "error": null
     }
 
+    GetAddressByAddress:
+    functions: check that if an account is used. 
+    params:{
+        "jsonrpc": "2.0",
+        "id": 1,
+        "params": {
+            "Address":"0x2e9a0e6a68a4acce23ca14408bb4d0b803425194"
+        },
+        "method": "GetAddressByAddress"
+    }
+    return sample
+    {
+        "id": 1,
+        "result": null,
+        "error": "NOT FOUND"
+    }
+
+    GetCandidateByAddress:
+    functions: check if an account is a candidate or not
+    params: {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "params": {
+            "Address":"0x8b915b5abcb81841face2afc42982c08a7e72b81"
+        },
+        "method": "GetCandidateByAddress"
+    }
+    return sample
+    {
+        "id": 1,
+        "result": {
+            "_id": "60f94a13072b13d8f8c3a742",
+            "candidate": "0x8b915b5abcb81841face2afc42982c08a7e72b81",
+            "isCommittee": true,
+            "state": true,
+            "votesOfCandidate": "2000000"
+        },
+        "error": null
+    }
+
 
 ```	
 	
