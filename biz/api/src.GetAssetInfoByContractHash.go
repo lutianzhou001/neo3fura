@@ -39,7 +39,14 @@ func (me *T) GetAssetInfoByContractHash(args struct {
 		Sort:       bson.M{},
 		Filter:     bson.M{"asset": r1["hash"]},
 	}, ret)
-	r1["total_holders"] = r2["total counts:"]
+	if err != nil {
+		return err
+	}
+	if (r2["total counts"] == nil ) {
+		r1["total_holders"] = '0'
+	} else {
+		r1["total_holders"] = r2["total counts"]
+	}
 	_, err = me.Data.Client.QueryOne(struct {
 		Collection string
 		Index      string
