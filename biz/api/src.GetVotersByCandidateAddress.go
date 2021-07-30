@@ -7,7 +7,6 @@ import (
 	"neo3fura/var/stderr"
 )
 
-// this function may be not supported any more, we only support address in the formart of script hash
 func (me *T) GetVotersByCandidateAddress(args struct {
 	CandidateAddress h160.T
 	Limit            int64
