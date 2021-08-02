@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"neo3fura/lib/type/h160"
 	"neo3fura/var/stderr"
+	"errors"
 
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -42,10 +43,19 @@ func (me *T) GetAssetInfoByContractHash(args struct {
 	if err != nil {
 		return err
 	}
+	
+	if r1  == nil {
+		err1 := errors.New("not token")
+		return err1
+	}
+	var ok bool
 	if (r2["total counts"] == nil ) {
-		r1["total_holders"] = '0'
-	} else {
-		r1["total_holders"] = r2["total counts"]
+		r1["total_holders"] = 0
+	} else if(r1 != nil) {
+		if r1["total_holders"], ok = r2["total counts"]; !ok {
+			//do something here
+			return err
+		}
 	}
 	_, err = me.Data.Client.QueryOne(struct {
 		Collection string
