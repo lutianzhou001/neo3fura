@@ -2,8 +2,9 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"math/big"
 	"neo3fura/lib/type/h160"
 	"neo3fura/var/stderr"
 )
@@ -45,8 +46,18 @@ func (me *T) GetAssetHoldersByContractHash(args struct {
 		if err != nil {
 			return err
 		}
-		fmt.Println(item)
-		// item["percentage"] = item["balance"].(int64) / raw1["totalsupply"].(int64)
+		ib, _, err := item["balance"].(primitive.Decimal128).BigInt()
+		if err != nil {
+			return err
+		}
+		it, _, err := raw1["totalsupply"].(primitive.Decimal128).BigInt()
+		if err != nil {
+			return err
+		}
+		ibf := new(big.Float).SetInt(ib)
+		itf := new(big.Float).SetInt(it)
+		dv := new(big.Float).Quo(ibf, itf)
+		item["percentage"] = dv
 	}
 
 	r2, err := me.FilterArrayAndAppendCount(r1, count, args.Filter)
