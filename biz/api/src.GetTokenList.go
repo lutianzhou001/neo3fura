@@ -11,7 +11,7 @@ func (me *T) GetTokenList(args struct {
 	Skip   int64
 	Filter map[string]interface{}
 }, ret *json.RawMessage) error {
-	r1, count, err := me.Data.Client.QueryAll(struct {
+	r1, count, err :=me.Client.QueryAll(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
@@ -32,19 +32,19 @@ func (me *T) GetTokenList(args struct {
 		return err
 	}
 	for _, item := range r1 {
-		r, err := me.Data.Client.QueryDocument(struct {
+		r, err :=me.Client.QueryDocument(struct {
 			Collection string
 			Index      string
 			Sort       bson.M
 			Filter     bson.M
 		}{
-			Collection: "[Asset~Address(Addresses)]",
+			Collection: "Address-Asset",
 			Index:      "someIndex",
 			Sort:       bson.M{},
-			Filter:     bson.M{"ParentID": item["_id"]},
+			Filter:     bson.M{"asset": item["hash"]},
 		}, ret)
-		item["total_holders"] = r["total counts:"]
-		_, err = me.Data.Client.QueryOne(struct {
+		item["total_holders"] = r["total counts"]
+		_, err =me.Client.QueryOne(struct {
 			Collection string
 			Index      string
 			Sort       bson.M

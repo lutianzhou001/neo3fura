@@ -40,7 +40,7 @@ func (me *T) GetExecutionByTrigger(args struct {
 			"trigger": args.Trigger.Val(),
 		}
 	}
-	r1, count, err := me.Data.Client.QueryAll(struct {
+	r1, count, err :=me.Client.QueryAll(struct {
 		Collection string
 		Index      string
 		Sort       bson.M

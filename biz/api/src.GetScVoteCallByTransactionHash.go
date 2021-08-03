@@ -14,7 +14,7 @@ func (me *T) GetScVoteCallByTransactionHash(args struct {
 	if args.TransactionHash.Valid() == false {
 		return stderr.ErrInvalidArgs
 	}
-	r1, err := me.Data.Client.QueryOne(struct {
+	r1, err :=me.Client.QueryOne(struct {
 		Collection string
 		Index      string
 		Sort       bson.M

@@ -17,7 +17,7 @@ func (me *T) GetApplicationLogByTransactionHash(args struct {
 	if args.TransactionHash.IsZero() == true {
 		return stderr.ErrZero
 	}
-	r1, err := me.Data.Client.QueryOne(struct {
+	r1, err :=me.Client.QueryOne(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
@@ -33,7 +33,7 @@ func (me *T) GetApplicationLogByTransactionHash(args struct {
 	if err != nil {
 		return err
 	}
-	r2, _, err := me.Data.Client.QueryAll(struct {
+	r2, _, err :=me.Client.QueryAll(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
@@ -47,7 +47,7 @@ func (me *T) GetApplicationLogByTransactionHash(args struct {
 	}
 	notifications := make([]map[string]interface{}, 0)
 	for _, item3 := range r2 {
-		r3, err := me.Data.Client.QueryOne(struct {
+		r3, err :=me.Client.QueryOne(struct {
 			Collection string
 			Index      string
 			Sort       bson.M

@@ -2,10 +2,9 @@ package api
 
 import (
 	"encoding/json"
+	"go.mongodb.org/mongo-driver/bson"
 	"neo3fura/lib/type/h160"
 	"neo3fura/var/stderr"
-
-	"go.mongodb.org/mongo-driver/bson"
 )
 
 func (me *T) GetNep11TransferByContractHash(args struct {
@@ -17,7 +16,7 @@ func (me *T) GetNep11TransferByContractHash(args struct {
 	if args.ContractHash.Valid() == false {
 		return stderr.ErrInvalidArgs
 	}
-	r1, count, err := me.Data.Client.QueryAll(struct {
+	r1, count, err := me.Client.QueryAll(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
@@ -27,8 +26,8 @@ func (me *T) GetNep11TransferByContractHash(args struct {
 		Skip       int64
 	}{
 		Collection: "Nep11TransferNotification",
-		Index:      "someIndex",
-		Sort:       bson.M{"_id": -1},
+		Index:      "GetNep11TransferByAddress",
+		Sort:       bson.M{"timestamp":-1},
 		Filter:     bson.M{"contract": args.ContractHash.Val()},
 		Query:      []string{},
 		Limit:      args.Limit,
@@ -36,25 +35,6 @@ func (me *T) GetNep11TransferByContractHash(args struct {
 	}, ret)
 	if err != nil {
 		return err
-	}
-	for _, item := range r1 {
-		r, err := me.Data.Client.QueryOne(struct {
-			Collection string
-			Index      string
-			Sort       bson.M
-			Filter     bson.M
-			Query      []string
-		}{
-			Collection: "Block",
-			Index:      "someIndex",
-			Sort:       bson.M{},
-			Filter:     bson.M{"hash": item["blockhash"]},
-			Query:      []string{"timestamp"},
-		}, ret)
-		if err != nil {
-			return err
-		}
-		item["time"] = r["timestamp"]
 	}
 	r2, err := me.FilterArrayAndAppendCount(r1, count, args.Filter)
 	if err != nil {

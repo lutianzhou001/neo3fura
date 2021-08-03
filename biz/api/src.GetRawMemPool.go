@@ -9,8 +9,8 @@ import (
 func (me *T) GetRawMemPool(args struct {
 	Filter map[string]interface{}
 }, ret *json.RawMessage) error {
-	rpcCli := me.Data.Client.RpcCli
-	ports := me.Data.Client.RpcPorts
+	rpcCli :=me.Client.RpcCli
+	ports :=me.Client.RpcPorts
 	results := make([][]string, len(ports))
 	for i, port := range ports {
 		u, err := url.Parse(port)

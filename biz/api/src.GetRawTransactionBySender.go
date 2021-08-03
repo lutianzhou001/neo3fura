@@ -17,7 +17,8 @@ func (me *T) GetRawTransactionBySender(args struct {
 	if args.Sender.Valid() == false {
 		return stderr.ErrInvalidArgs
 	}
-	r1, count, err := me.Data.Client.QueryAll(struct {
+
+	r1, count, err :=me.Client.QueryAll(struct {
 		Collection string
 		Index      string
 		Sort       bson.M

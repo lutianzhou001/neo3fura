@@ -3,10 +3,11 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/robfig/cron"
 	"gopkg.in/yaml.v2"
 	"log"
 	"neo3fura/biz/api"
-	"neo3fura/biz/data"
+	"neo3fura/biz/job"
 	"neo3fura/lib/cli"
 	"neo3fura/lib/joh"
 	"net/http"
@@ -14,12 +15,6 @@ import (
 	"os"
 	"path/filepath"
 
-	// "strconv"
-	"time"
-
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
-	// "go.mongodb.org/mongo-driver/mongo/readpref"
 	neoRpc "github.com/joeqian10/neo3-gogogo/rpc"
 )
 
@@ -54,32 +49,46 @@ type Config struct {
 }
 
 func main() {
+	fmt.Println("YOUR ENV IS " + os.ExpandEnv("${RUNTIME}"))
 	cfg, err := OpenConfigFile()
 	if err != nil {
 		log.Fatalln(err)
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 1000000*time.Hour)
-	c, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://"+cfg.Database.User+":"+cfg.Database.Pass+"@"+cfg.Database.Host+":"+cfg.Database.Port+"/"+cfg.Database.Database))
-	fmt.Println("connected")
-	defer cancel()
-	//address := os.ExpandEnv("${NEODB_ADDRESS}")
-	//poolsize, err := strconv.Atoi(os.ExpandEnv("${NEODB_POOLSIZE}"))
-	if err != nil {
-		log.Fatalln(err)
-	}
+	ctx := context.TODO()
 	client := &cli.T{
-		C:        c,
 		Ctx:      ctx,
 		RpcCli:   neoRpc.NewClient(""), // placeholder
 		RpcPorts: cfg.Proxy.Uri,
 	}
-	defer cancel()
 	rpc.Register(&api.T{
-		Data: &data.T{
-			Client: client,
-		},
+		Client: client,
 	})
+
+	j := &job.T{
+		Client: client,
+	}
+
+	c := cron.New()
+	spec := "0 0/10 * * * *"
+	err = c.AddFunc(spec, func() {
+		err = j.GetPopularTokens()
+		if err != nil {
+			log.Fatal(err)
+		}
+		err = j.GetHoldersByContractHash()
+		if err != nil {
+			log.Fatal(err)
+		}
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+	c.Start()
+
 	listen := os.ExpandEnv("0.0.0.0:1926")
 	log.Println("[LISTEN]", listen)
-	http.ListenAndServe(listen, &joh.T{})
+	err = http.ListenAndServe(listen, &joh.T{})
+	if err != nil {
+		log.Fatal(err)
+	}
 }

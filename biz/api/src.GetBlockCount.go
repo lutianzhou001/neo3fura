@@ -7,8 +7,9 @@ import (
 
 func (me *T) GetBlockCount(args struct {
 	Filter map[string]interface{}
+	Raw    *map[string]interface{}
 }, ret *json.RawMessage) error {
-	r1, err := me.Data.Client.QueryOne(struct {
+	r1, err := me.Client.QueryOne(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
@@ -16,13 +17,16 @@ func (me *T) GetBlockCount(args struct {
 		Query      []string
 	}{
 		Collection: "Block",
-		Index:      "someIndex",
+		Index:      "GetBlockCount",
 		Sort:       bson.M{"_id": -1},
 		Filter:     bson.M{},
 		Query:      []string{"index"},
 	}, ret)
 	if err != nil {
 		return err
+	}
+	if args.Raw != nil {
+		*args.Raw = r1
 	}
 	r1, err = me.Filter(r1, args.Filter)
 	if err != nil {

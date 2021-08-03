@@ -9,7 +9,7 @@ import (
 func (me *T) GetNetFeeRange(args struct {
 	Filter map[string]interface{}
 }, ret *json.RawMessage) error {
-	r1, err := me.Data.Client.QueryOne(struct {
+	r1, err :=me.Client.QueryOne(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
@@ -25,7 +25,7 @@ func (me *T) GetNetFeeRange(args struct {
 	if err != nil {
 		return err
 	}
-	r2, _, err := me.Data.Client.QueryAll(struct {
+	r2, _, err :=me.Client.QueryAll(struct {
 		Collection string
 		Index      string
 		Sort       bson.M

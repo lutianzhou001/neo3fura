@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
 	"neo3fura/lib/type/h160"
 	"neo3fura/var/stderr"
 
@@ -15,7 +16,7 @@ func (me *T) GetAssetInfoByContractHash(args struct {
 	if args.ContractHash.Valid() == false {
 		return stderr.ErrInvalidArgs
 	}
-	r1, err := me.Data.Client.QueryOne(struct {
+	r1, err :=me.Client.QueryOne(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
@@ -28,19 +29,35 @@ func (me *T) GetAssetInfoByContractHash(args struct {
 		Filter:     bson.M{"hash": args.ContractHash.Val()},
 		Query:      []string{},
 	}, ret)
-	r2, err := me.Data.Client.QueryDocument(struct {
+	r2, err :=me.Client.QueryDocument(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
 		Filter     bson.M
 	}{
-		Collection: "[Asset~Address(Addresses)]",
+		Collection: "Address-Asset",
 		Index:      "someIndex",
 		Sort:       bson.M{},
-		Filter:     bson.M{"ParentID": r1["_id"]},
+		Filter:     bson.M{"asset": r1["hash"]},
 	}, ret)
-	r1["total_holders"] = r2["total counts:"]
-	_, err = me.Data.Client.QueryOne(struct {
+	if err != nil {
+		return err
+	}
+	
+	if r1  == nil {
+		err1 := errors.New("not token")
+		return err1
+	}
+	var ok bool
+	if (r2["total counts"] == nil ) {
+		r1["total_holders"] = 0
+	} else if(r1 != nil) {
+		if r1["total_holders"], ok = r2["total counts"]; !ok {
+			//do something here
+			return err
+		}
+	}
+	_, err =me.Client.QueryOne(struct {
 		Collection string
 		Index      string
 		Sort       bson.M

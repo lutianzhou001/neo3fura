@@ -1,7 +1,31 @@
 version: "3.3"
 services:
   web:
-    build: .
+    build:
+      context: .
+      args:
+        RT: ${RUNTIME}
     ports:
       - "1926:1926"
     restart: always
+    container_name: service
+    depends_on:
+      - redis
+      - mongo
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
+    container_name: cache
+  mongo:
+    image: mongo
+    ports:
+      - "27000:27017"
+    container_name: job
+  mongo-express:
+    image: mongo-express
+    ports:
+      - 8081:8081
+    container_name: explorer
+    depends_on:
+      - mongo

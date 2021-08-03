@@ -2,10 +2,11 @@ package api
 
 import (
 	"encoding/json"
-	"neo3fura/lib/type/h160"
-	"neo3fura/var/stderr"
-
+	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
+	"neo3fura/lib/type/h160"
+	"neo3fura/lib/type/h256"
+	"neo3fura/var/stderr"
 )
 
 func (me *T) GetNep17TransferByContractHash(args struct {
@@ -17,7 +18,7 @@ func (me *T) GetNep17TransferByContractHash(args struct {
 	if args.ContractHash.Valid() == false {
 		return stderr.ErrInvalidArgs
 	}
-	r1, count, err := me.Data.Client.QueryAll(struct {
+	r1, count, err := me.Client.QueryAll(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
@@ -27,8 +28,8 @@ func (me *T) GetNep17TransferByContractHash(args struct {
 		Skip       int64
 	}{
 		Collection: "TransferNotification",
-		Index:      "someIndex",
-		Sort:       bson.M{"_id": -1},
+		Index:      "GetNep17TransferByContractHash",
+		Sort:       bson.M{"timestamp":-1},
 		Filter:     bson.M{"contract": args.ContractHash.Val()},
 		Query:      []string{},
 		Limit:      args.Limit,
@@ -37,24 +38,21 @@ func (me *T) GetNep17TransferByContractHash(args struct {
 	if err != nil {
 		return err
 	}
+	var raw1 map[string]interface{}
 	for _, item := range r1 {
-		r, err := me.Data.Client.QueryOne(struct {
-			Collection string
-			Index      string
-			Sort       bson.M
-			Filter     bson.M
-			Query      []string
+		err = me.GetVmStateByTransactionHash(struct {
+			TransactionHash h256.T
+			Filter          map[string]interface{}
+			Raw             *map[string]interface{}
 		}{
-			Collection: "Block",
-			Index:      "someIndex",
-			Sort:       bson.M{},
-			Filter:     bson.M{"hash": item["blockhash"]},
-			Query:      []string{"timestamp"},
+			TransactionHash: h256.T(fmt.Sprint(item["txid"])),
+			Filter:          nil,
+			Raw:             &raw1,
 		}, ret)
 		if err != nil {
 			return err
 		}
-		item["time"] = r["timestamp"]
+		item["vmstate"] = raw1["vmstate"].(string)
 	}
 	r2, err := me.FilterArrayAndAppendCount(r1, count, args.Filter)
 	if err != nil {

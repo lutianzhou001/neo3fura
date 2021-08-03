@@ -3,10 +3,9 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"go.mongodb.org/mongo-driver/bson"
 	"neo3fura/lib/type/h160"
 	"neo3fura/var/stderr"
-
-	"go.mongodb.org/mongo-driver/bson"
 )
 
 func (me *T) GetAssetsHeldByAddress(args struct {
@@ -19,7 +18,7 @@ func (me *T) GetAssetsHeldByAddress(args struct {
 		return stderr.ErrInvalidArgs
 	}
 	var r1 map[string]interface{}
-	r1, err := me.Data.Client.QueryOne(struct {
+	r1, err :=me.Client.QueryOne(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
@@ -35,7 +34,8 @@ func (me *T) GetAssetsHeldByAddress(args struct {
 	if err != nil {
 		return err
 	}
-	r2, count, err := me.Data.Client.QueryAll(
+	fmt.Println(r1["_id"])
+	r2, count, err :=me.Client.QueryAll(
 		struct {
 			Collection string
 			Index      string
@@ -44,13 +44,22 @@ func (me *T) GetAssetsHeldByAddress(args struct {
 			Query      []string
 			Limit      int64
 			Skip       int64
-		}{Collection: "[Asset~Address(Addresses)]", Index: "someIndex", Sort: bson.M{}, Filter: bson.M{"ChildID": r1["_id"]}, Query: []string{"ParentID"}, Limit: args.Limit, Skip: args.Skip}, ret)
+		}{
+			Collection: "Asset-Address",
+			Index: "someIndex",
+			Sort: bson.M{},
+			Filter: bson.M{"_id": r1["_id"]},
+			Query: []string{},
+			Limit: args.Limit,
+			Skip: args.Skip,
+		}, ret)
 	if err != nil {
 		return err
 	}
+	fmt.Println(r2)
 	r3 := make([]map[string]interface{}, 0)
 	for _, item := range r2 {
-		r, err := me.Data.Client.QueryOne(struct {
+		r, err :=me.Client.QueryOne(struct {
 			Collection string
 			Index      string
 			Sort       bson.M

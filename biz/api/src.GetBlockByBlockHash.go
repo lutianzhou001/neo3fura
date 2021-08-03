@@ -10,11 +10,12 @@ import (
 func (me *T) GetBlockByBlockHash(args struct {
 	BlockHash h256.T
 	Filter    map[string]interface{}
+	Raw       *map[string]interface{}
 }, ret *json.RawMessage) error {
 	if args.BlockHash.Valid() == false {
 		return stderr.ErrInvalidArgs
 	}
-	r1, err := me.Data.Client.QueryOne(struct {
+	r1, err :=me.Client.QueryOne(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
