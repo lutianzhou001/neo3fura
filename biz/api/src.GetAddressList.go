@@ -3,18 +3,15 @@ package api
 import (
 	"encoding/json"
 	"go.mongodb.org/mongo-driver/bson"
-	"neo3fura/lib/type/h160"
-	"neo3fura/var/stderr"
 )
 
-func (me *T) GetScVoteCallByCandidateAddress(args struct {
-	CandidateAddress h160.T
-	Limit            int64
-	Skip             int64
-	Filter           map[string]interface{}
+func (me *T) GetAddressList(args struct {
+	Limit  int64
+	Skip   int64
+	Filter map[string]interface{}
 }, ret *json.RawMessage) error {
-	if args.CandidateAddress.Valid() == false {
-		return stderr.ErrInvalidArgs
+	if args.Limit <= 0 {
+		args.Limit = 20
 	}
 	r1, count, err := me.Client.QueryAll(struct {
 		Collection string
@@ -25,11 +22,11 @@ func (me *T) GetScVoteCallByCandidateAddress(args struct {
 		Limit      int64
 		Skip       int64
 	}{
-		Collection: "ScVoteCall",
-		Index:      "GetScVoteCallByCandidateAddress",
-		Sort:       bson.M{},
-		Filter:     bson.M{"candidate": args.CandidateAddress.TransferredVal()},
-		Query:      []string{},
+		Collection: "Address",
+		Index:      "someIndex",
+		Sort:       bson.M{"firstusetime": -1},
+		Filter:     bson.M{},
+		Query:      []string{"_id", "address", "firstusetime"},
 		Limit:      args.Limit,
 		Skip:       args.Skip,
 	}, ret)

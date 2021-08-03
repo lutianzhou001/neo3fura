@@ -7,13 +7,13 @@ import (
 	"neo3fura/var/stderr"
 )
 
-func (me *T) GetScVoteCallByCandidateAddress(args struct {
-	CandidateAddress h160.T
-	Limit            int64
-	Skip             int64
-	Filter           map[string]interface{}
+func (me *T) GetNep11TransferByContractHash(args struct {
+	ContractHash h160.T
+	Limit        int64
+	Skip         int64
+	Filter       map[string]interface{}
 }, ret *json.RawMessage) error {
-	if args.CandidateAddress.Valid() == false {
+	if args.ContractHash.Valid() == false {
 		return stderr.ErrInvalidArgs
 	}
 	r1, count, err := me.Client.QueryAll(struct {
@@ -25,10 +25,10 @@ func (me *T) GetScVoteCallByCandidateAddress(args struct {
 		Limit      int64
 		Skip       int64
 	}{
-		Collection: "ScVoteCall",
-		Index:      "GetScVoteCallByCandidateAddress",
+		Collection: "Nep11TransferNotification",
+		Index:      "GetNep11TransferByAddress",
 		Sort:       bson.M{},
-		Filter:     bson.M{"candidate": args.CandidateAddress.TransferredVal()},
+		Filter:     bson.M{"contract": args.ContractHash.Val()},
 		Query:      []string{},
 		Limit:      args.Limit,
 		Skip:       args.Skip,
@@ -43,6 +43,7 @@ func (me *T) GetScVoteCallByCandidateAddress(args struct {
 	r, err := json.Marshal(r2)
 	if err != nil {
 		return err
+
 	}
 	*ret = json.RawMessage(r)
 	return nil
