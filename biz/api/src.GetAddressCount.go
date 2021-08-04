@@ -8,20 +8,20 @@ import (
 func (me *T) GetAddressCount(args struct {
 	Filter map[string]interface{}
 }, ret *json.RawMessage) error {
-	_, count, err := me.Client.QueryAll(struct {
+	r1, err :=me.Client.QueryDocument(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
 		Filter     bson.M
-		Query      []string
-		Limit      int64
-		Skip       int64
-	}{Collection: "Address"}, ret)
+	}{
+		Collection: "Address",
+		Index:      "GetAddressCount",
+		Sort:       bson.M{},
+		Filter:     bson.M{},
+	}, ret)
 	if err != nil {
 		return err
 	}
-	r1 := make(map[string]interface{})
-	r1["count"] = count
 	r, err := json.Marshal(r1)
 	if err != nil {
 		return err

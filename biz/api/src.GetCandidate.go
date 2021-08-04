@@ -20,7 +20,7 @@ func (me *T) GetCandidate(args struct {
 		Skip       int64
 	}{
 		Collection: "Candidate",
-		Index:      "someIndex",
+		Index:      "GetCandidate",
 		Sort:       bson.M{"votesOfCandidate":-1},
 		Filter:     bson.M{},
 		Query:      []string{},

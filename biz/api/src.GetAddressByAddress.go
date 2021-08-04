@@ -23,9 +23,9 @@ func (me *T) GetAddressByAddress(args struct {
 		Query      []string
 	}{
 		Collection: "Address",
-		Index:      "someIndex",
+		Index:      "GetAddressByAddress",
 		Sort:       bson.M{},
-		Filter:     bson.M{"address": args.Address.Val()},
+		Filter:     bson.M{"address": args.Address.TransferredVal()},
 		Query:      []string{"_id", "address", "firstusetime"},
 	}, ret)
 

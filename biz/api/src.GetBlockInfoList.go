@@ -22,7 +22,7 @@ func (me *T) GetBlockInfoList(args struct {
 			Skip       int64
 		}{
 			Collection: "Block",
-			Index:      "someIndex",
+			Index:      "GetBlockInfoList",
 			Sort:       bson.M{"index":-1},
 			Filter: bson.M{},
 			Query: []string{"_id","index","size","timestamp","hash"},
@@ -42,7 +42,7 @@ func (me *T) GetBlockInfoList(args struct {
 			Filter     bson.M
 
 		}{  Collection: "Transaction",
-			Index: "someIndex",
+			Index: "GetBlockInfoList",
 			Sort: bson.M{},
 			Filter: bson.M{"blockhash":item["hash"],
 				}}, ret)
@@ -50,9 +50,9 @@ func (me *T) GetBlockInfoList(args struct {
 			return err
 		}
 		if (r3["total counts"] == nil){
-			item["transactionNumber"] = 0
+			item["transactioncount"] = 0
 		}else {
-			item["transactionNumber"] = r3["total counts"]
+			item["transactioncount"] = r3["total counts"]
 		}
 
 		//delete(item,"_id")

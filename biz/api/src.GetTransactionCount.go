@@ -15,8 +15,8 @@ func (me *T) GetTransactionCount(args struct{
 		Filter     bson.M
 	}{
 		Collection: "Transaction",
-		Index:      "someIndex",
-		Sort:       bson.M{"_id": -1},
+		Index:      "GetTransactionCount",
+		Sort:       bson.M{},
 		Filter:     bson.M{},
 	}, ret)
 	if err != nil {

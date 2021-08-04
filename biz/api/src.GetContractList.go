@@ -21,7 +21,7 @@ func (me *T) GetContractList(args struct {
 			Query      []string
 		}{
 			Collection: "Contract",
-			Index:      "someIndex",
+			Index:      "GetContractList",
 			Sort:       bson.M{},
 			Filter:     bson.M{},
 			Pipeline:  []bson.M{

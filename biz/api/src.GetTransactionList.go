@@ -21,7 +21,7 @@ func (me *T) GetTransactionList(args struct {
 		Skip       int64
 	}{
 		Collection: "Transaction",
-		Index:      "someIndex",
+		Index:      "GetTransactionList",
 		Sort:       bson.M{"blocktime":-1},
 		Filter:     bson.M{},
 		Query:      []string{},

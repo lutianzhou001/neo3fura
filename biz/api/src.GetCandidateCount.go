@@ -15,8 +15,8 @@ func (me *T) GetCandidateCount(args struct{
 		Filter     bson.M
 	}{
 		Collection: "Candidate",
-		Index:      "someIndex",
-		Sort:       bson.M{"_id": -1},
+		Index:      "GetCandidateCount",
+		Sort:       bson.M{},
 		Filter:     bson.M{},
 	}, ret)
 	if err != nil {

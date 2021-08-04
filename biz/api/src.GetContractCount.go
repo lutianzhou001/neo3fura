@@ -15,8 +15,8 @@ func (me *T) GetContractCount(args struct{
 		Filter     bson.M
 	}{
 		Collection: "Contract",
-		Index:      "someIndex",
-		Sort:       bson.M{"_id": -1},
+		Index:      "GetContractCount",
+		Sort:       bson.M{},
 		Filter:     bson.M{},
 	}, ret)
 	if err != nil {

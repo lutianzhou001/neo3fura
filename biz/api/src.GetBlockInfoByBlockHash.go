@@ -23,8 +23,8 @@ func (me *T) GetBlockInfoByBlockHash(args struct {
 			Query      []string
 		}{
 			Collection: "Block",
-			Index:      "someIndex",
-			Sort:       bson.M{"index":-1},
+			Index:      "GetBlockInfoByBlockHash",
+			Sort:       bson.M{},
 			Filter: bson.M{"hash": args.BlockHash},
 			Query: []string{},
 		}, ret)
@@ -39,7 +39,7 @@ func (me *T) GetBlockInfoByBlockHash(args struct {
 			Filter     bson.M
 
 		}{  Collection: "Transaction",
-			Index: "someIndex",
+			Index: "GetBlockInfoByBlockHash",
 			Sort: bson.M{},
 			Filter: bson.M{"blockhash":args.BlockHash,
 			}}, ret)
@@ -47,10 +47,10 @@ func (me *T) GetBlockInfoByBlockHash(args struct {
 		return err
 	}
 	if (r2["total counts"] == nil){
-		r1["transactionNumber"] = 0
-		r1["transfersNumber"] = 0
+		r1["transactioncount"] = 0
+		r1["transfercount"] = 0
 	}else {
-		r1["transactionNumber"] = r2["total counts"]
+		r1["transactioncount"] = r2["total counts"]
 		r3, err :=me.Client.QueryDocument(struct {
 			Collection string
 			Index      string
@@ -58,7 +58,7 @@ func (me *T) GetBlockInfoByBlockHash(args struct {
 			Filter     bson.M
 
 		}{  Collection: "TransferNotification",
-			Index: "someIndex",
+			Index: "GetBlockInfoByBlockHash",
 			Sort: bson.M{},
 			Filter: bson.M{"blockhash":args.BlockHash,
 			}}, ret)
@@ -66,9 +66,9 @@ func (me *T) GetBlockInfoByBlockHash(args struct {
 			return err
 		}
 		if (r3["total counts"] == nil){
-			r1["transfersNumber"] = 0
+			r1["transactioncount"] = 0
 		}else {
-			r1["transfersNumber"] = r3["total counts"]
+			r1["transactioncount"] = r3["total counts"]
 		}
 	}
 

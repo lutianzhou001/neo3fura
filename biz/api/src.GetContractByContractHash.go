@@ -38,7 +38,7 @@ func (me *T) GetContractByContractHash(args struct {
 			Filter     bson.M
 
 		}{  Collection: "ScCall",
-			Index: "someIndex",
+			Index: "GetContractByContractHash",
 			Sort: bson.M{},
 			Filter: bson.M{"contractHash":args.ContractHash,
 			}}, ret)
@@ -46,10 +46,10 @@ func (me *T) GetContractByContractHash(args struct {
 		return err
 	}
 	if (r2["total counts"] == nil){
-		r1["totalSccall"] = 0
+		r1["totalsccall"] = 0
 
 	}else {
-		r1["totalSccall"] = r2["total counts"]
+		r1["totalsccall"] = r2["total counts"]
 	}
 	if( r1["createTxid"] != "0x0000000000000000000000000000000000000000000000000000000000000000" ){
 		r3, err :=me.Client.QueryOne(struct {
@@ -60,7 +60,7 @@ func (me *T) GetContractByContractHash(args struct {
 			Query      []string
 		}{
 			Collection: "Transaction",
-			Index:      "someIndex",
+			Index:      "GetContractByContractHash",
 			Sort:       bson.M{},
 			Filter:     bson.M{"hash": r1["createTxid"]},
 			Query:      []string{"sender"},

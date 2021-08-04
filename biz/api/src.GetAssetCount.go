@@ -15,8 +15,8 @@ func (me *T) GetAssetCount(args struct{
 		Filter     bson.M
 	}{
 		Collection: "Asset",
-		Index:      "someIndex",
-		Sort:       bson.M{"_id": -1},
+		Index:      "GetAssetCount",
+		Sort:       bson.M{},
 		Filter:     bson.M{},
 	}, ret)
 	if err != nil {
