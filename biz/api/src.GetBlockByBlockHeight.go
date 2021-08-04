@@ -15,7 +15,7 @@ func (me *T) GetBlockByBlockHeight(args struct {
 	if args.BlockHeight.Valid() == false {
 		return stderr.ErrInvalidArgs
 	}
-	r1, err :=me.Client.QueryOne(struct {
+	r1, err := me.Client.QueryOne(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
@@ -23,13 +23,16 @@ func (me *T) GetBlockByBlockHeight(args struct {
 		Query      []string
 	}{
 		Collection: "Block",
-		Index:      "someIndex",
+		Index:      "GetBlockByBlockHeight",
 		Sort:       bson.M{},
 		Filter:     bson.M{"index": args.BlockHeight},
 		Query:      []string{},
 	}, ret)
 	if err != nil {
 		return err
+	}
+	if args.Raw != nil {
+		*args.Raw = r1
 	}
 	r1, err = me.Filter(r1, args.Filter)
 	if err != nil {

@@ -14,7 +14,7 @@ func (me *T) GetExecutionByBlockHash(args struct {
 	if args.BlockHash.Valid() == false {
 		return stderr.ErrInvalidArgs
 	}
-	r1, count, err :=me.Client.QueryAll(struct {
+	r1, count, err := me.Client.QueryAll(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
@@ -24,7 +24,7 @@ func (me *T) GetExecutionByBlockHash(args struct {
 		Skip       int64
 	}{
 		Collection: "Execution",
-		Index:      "someIndex",
+		Index:      "GetExecutionByBlockHash",
 		Sort:       bson.M{},
 		Filter:     bson.M{"blockhash": args.BlockHash.Val()},
 		Query:      []string{},

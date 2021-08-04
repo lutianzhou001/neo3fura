@@ -8,7 +8,7 @@ import (
 func (me *T) GetBestBlockHash(args struct {
 	Filter map[string]interface{}
 }, ret *json.RawMessage) error {
-	r1, err :=me.Client.QueryOne(struct {
+	r1, err := me.Client.QueryOne(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
@@ -16,7 +16,7 @@ func (me *T) GetBestBlockHash(args struct {
 		Query      []string
 	}{
 		Collection: "Block",
-		Index:      "someIndex",
+		Index:      "GetBestBlockHash",
 		Sort:       bson.M{"_id": -1},
 		Filter:     bson.M{},
 		Query:      []string{"hash"},

@@ -29,7 +29,7 @@ func (me *T) GetNep17TransferByContractHash(args struct {
 	}{
 		Collection: "TransferNotification",
 		Index:      "GetNep17TransferByContractHash",
-		Sort:       bson.M{"timestamp":-1},
+		Sort:       bson.M{},
 		Filter:     bson.M{"contract": args.ContractHash.Val()},
 		Query:      []string{},
 		Limit:      args.Limit,

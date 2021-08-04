@@ -7,7 +7,6 @@ import (
 	"neo3fura/var/stderr"
 )
 
-// this function may be not supported any more, we only support address in the formart of script hash
 func (me *T) GetVotersByCandidateAddress(args struct {
 	CandidateAddress h160.T
 	Limit            int64
@@ -17,7 +16,7 @@ func (me *T) GetVotersByCandidateAddress(args struct {
 	if args.CandidateAddress.Valid() == false {
 		return stderr.ErrInvalidArgs
 	}
-	r1, count, err :=me.Client.QueryAll(struct {
+	r1, count, err := me.Client.QueryAll(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
@@ -27,9 +26,9 @@ func (me *T) GetVotersByCandidateAddress(args struct {
 		Skip       int64
 	}{
 		Collection: "Vote",
-		Index:      "someIndex",
+		Index:      "GetVotersByCandidateAddress",
 		Sort:       bson.M{},
-		Filter:     bson.M{"candidate": args.CandidateAddress.Val()},
+		Filter:     bson.M{"candidate": args.CandidateAddress.TransferredVal()},
 		Query:      []string{},
 		Limit:      args.Limit,
 		Skip:       args.Skip,

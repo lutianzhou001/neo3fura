@@ -24,33 +24,23 @@ func (me *T) GetNep11BalanceByContractHashAddressTokenId(args struct {
 	if len(args.TokenId.Val()) <= 0 {
 		return stderr.ErrInvalidArgs
 	}
-	r1, err :=me.Client.QueryOne(struct {
+	r1, err := me.Client.QueryOne(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
 		Filter     bson.M
 		Query      []string
 	}{
-		Collection: "Nep11TransferNotification",
-		Index:      "someIndex",
+		Collection: "Address-Asset",
+		Index:      "GetNep11BalanceByContractHashAddressTokenId",
 		Sort:       bson.M{"_id": -1},
-		Filter: bson.M{"contract": args.ContractHash.Val(), "tokenId": args.TokenId.Val(), "$or": []interface{}{
-			bson.M{"from": args.Address.Val()},
-			bson.M{"to": args.Address.Val()},
-		}},
-		Query: []string{},
+		Filter:     bson.M{"asset": args.ContractHash.Val(), "address": args.Address.TransferredVal(), "tokenid": args.TokenId},
+		Query:      []string{},
 	}, ret)
 	if err != nil {
 		return err
 	}
-	r2 := make(map[string]interface{})
-	if r1["from"].(string) == args.Address.Val() {
-		r2["balance"] = r1["frombalance"]
-	} else {
-		r2["balance"] = r1["tobalance"]
-	}
-	r2["latesttx"] = r1
-	r2, err = me.Filter(r2, args.Filter)
+	r2, err := me.Filter(r1, args.Filter)
 	if err != nil {
 		return err
 	}

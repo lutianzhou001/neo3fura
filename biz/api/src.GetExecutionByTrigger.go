@@ -40,7 +40,7 @@ func (me *T) GetExecutionByTrigger(args struct {
 			"trigger": args.Trigger.Val(),
 		}
 	}
-	r1, count, err :=me.Client.QueryAll(struct {
+	r1, count, err := me.Client.QueryAll(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
@@ -50,7 +50,7 @@ func (me *T) GetExecutionByTrigger(args struct {
 		Skip       int64
 	}{
 		Collection: "Execution",
-		Index:      "someIndex",
+		Index:      "GetExecutionByTrigger",
 		Sort:       bson.M{},
 		Filter:     filter,
 		Query:      []string{},

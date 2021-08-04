@@ -42,8 +42,7 @@ func (me *T) GetAssetHoldersByContractHash(args struct {
 			ContractHash h160.T
 			Filter       map[string]interface{}
 			Raw          *map[string]interface{}
-		}{ContractHash: args.ContractHash,
-			Raw: &raw1}, ret)
+		}{ContractHash: args.ContractHash, Raw: &raw1}, ret)
 		if err != nil {
 			return err
 		}

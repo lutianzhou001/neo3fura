@@ -14,7 +14,7 @@ func (me *T) GetScVoteCallByTransactionHash(args struct {
 	if args.TransactionHash.Valid() == false {
 		return stderr.ErrInvalidArgs
 	}
-	r1, err :=me.Client.QueryOne(struct {
+	r1, err := me.Client.QueryOne(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
@@ -22,7 +22,7 @@ func (me *T) GetScVoteCallByTransactionHash(args struct {
 		Query      []string
 	}{
 		Collection: "ScVoteCall",
-		Index:      "someIndex",
+		Index:      "GetScVoteCallByTransactionHash",
 		Sort:       bson.M{},
 		Filter:     bson.M{"txid": args.TransactionHash.Val()},
 		Query:      []string{},

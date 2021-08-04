@@ -15,7 +15,7 @@ func (me *T) GetBlockByBlockHash(args struct {
 	if args.BlockHash.Valid() == false {
 		return stderr.ErrInvalidArgs
 	}
-	r1, err :=me.Client.QueryOne(struct {
+	r1, err := me.Client.QueryOne(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
@@ -23,7 +23,7 @@ func (me *T) GetBlockByBlockHash(args struct {
 		Query      []string
 	}{
 		Collection: "Block",
-		Index:      "someIndex",
+		Index:      "GetBlockByBlockHash",
 		Sort:       bson.M{},
 		Filter:     bson.M{"hash": args.BlockHash},
 		Query:      []string{},
@@ -34,6 +34,9 @@ func (me *T) GetBlockByBlockHash(args struct {
 	r1, err = me.Filter(r1, args.Filter)
 	if err != nil {
 		return err
+	}
+	if args.Raw != nil {
+		*args.Raw = r1
 	}
 	r, err := json.Marshal(r1)
 	if err != nil {

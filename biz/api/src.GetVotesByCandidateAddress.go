@@ -14,7 +14,7 @@ func (me *T) GetVotesByCandidateAddress(args struct {
 	if args.CandidateAddress.Valid() == false {
 		return stderr.ErrInvalidArgs
 	}
-	r1, err :=me.Client.QueryOne(struct {
+	r1, err := me.Client.QueryOne(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
@@ -22,9 +22,9 @@ func (me *T) GetVotesByCandidateAddress(args struct {
 		Query      []string
 	}{
 		Collection: "Candidate",
-		Index:      "someIndex",
+		Index:      "GetVotesByCandidateAddress",
 		Sort:       bson.M{},
-		Filter:     bson.M{"candidate": args.CandidateAddress.Val()},
+		Filter:     bson.M{"candidate": args.CandidateAddress.TransferredVal()},
 		Query:      []string{},
 	}, ret)
 	if err != nil {

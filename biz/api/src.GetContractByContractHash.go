@@ -14,7 +14,7 @@ func (me *T) GetContractByContractHash(args struct {
 	if args.ContractHash.Valid() == false {
 		return stderr.ErrInvalidArgs
 	}
-	r1, err :=me.Client.QueryOne(struct {
+	r1, err := me.Client.QueryOne(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
@@ -22,9 +22,9 @@ func (me *T) GetContractByContractHash(args struct {
 		Query      []string
 	}{
 		Collection: "Contract",
-		Index:      "someIndex",
-		Sort:       bson.M{},
-		Filter:     bson.M{"hash": args.ContractHash.Val()},
+		Index:      "GetContractByContractHash",
+		Sort:       bson.M{"_id": -1},
+		Filter:     bson.M{"hash": args.ContractHash},
 		Query:      []string{},
 	}, ret)
 	if err != nil {

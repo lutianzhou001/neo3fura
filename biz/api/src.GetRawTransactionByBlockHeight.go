@@ -14,29 +14,13 @@ func (me *T) GetRawTransactionByBlockHeight(args struct {
 	Filter      map[string]interface{}
 	Raw         *[]map[string]interface{}
 }, ret *json.RawMessage) error {
-	if args.Limit == 0 {
-		args.Limit = 200
+	if args.BlockHeight.Valid() == false {
+		return stderr.ErrInvalidArgs
 	}
 	if args.BlockHeight.Valid() == false {
 		return stderr.ErrInvalidArgs
 	}
-	r1, err :=me.Client.QueryOne(struct {
-		Collection string
-		Index      string
-		Sort       bson.M
-		Filter     bson.M
-		Query      []string
-	}{
-		Collection: "Block",
-		Index:      "someIndex",
-		Sort:       bson.M{},
-		Filter:     bson.M{"index": args.BlockHeight},
-		Query:      []string{},
-	}, ret)
-	if err != nil {
-		return err
-	}
-	r2, count, err :=me.Client.QueryAll(struct {
+	r1, count, err := me.Client.QueryAll(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
@@ -46,9 +30,9 @@ func (me *T) GetRawTransactionByBlockHeight(args struct {
 		Skip       int64
 	}{
 		Collection: "Transaction",
-		Index:      "someIndex",
+		Index:      "GetRawTransactionByBlockHeight",
 		Sort:       bson.M{},
-		Filter:     bson.M{"blockhash": r1["hash"]},
+		Filter:     bson.M{"blockIndex": args.BlockHeight.Val()},
 		Query:      []string{},
 		Limit:      args.Limit,
 		Skip:       args.Skip,
@@ -56,7 +40,10 @@ func (me *T) GetRawTransactionByBlockHeight(args struct {
 	if err != nil {
 		return err
 	}
-	r3, err := me.FilterArrayAndAppendCount(r2, count, args.Filter)
+	if args.Raw != nil {
+		*args.Raw = r1
+	}
+	r3, err := me.FilterArrayAndAppendCount(r1, count, args.Filter)
 	if err != nil {
 		return err
 	}

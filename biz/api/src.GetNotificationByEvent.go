@@ -15,7 +15,7 @@ func (me *T) GetNotificationByEvent(args struct {
 	if args.Limit == 0 {
 		args.Limit = 200
 	}
-	r1, count, err :=me.Client.QueryAll(struct {
+	r1, count, err := me.Client.QueryAll(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
@@ -25,7 +25,7 @@ func (me *T) GetNotificationByEvent(args struct {
 		Skip       int64
 	}{
 		Collection: "Notification",
-		Index:      "someIndex",
+		Index:      "GetNotificationByEvent",
 		Sort:       bson.M{},
 		Filter: bson.M{
 			"eventname": args.Event.Val(),
