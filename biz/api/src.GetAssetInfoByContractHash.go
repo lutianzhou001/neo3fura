@@ -2,21 +2,21 @@ package api
 
 import (
 	"encoding/json"
-	"errors"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"neo3fura/lib/type/h160"
 	"neo3fura/var/stderr"
-
-	"go.mongodb.org/mongo-driver/bson"
 )
 
 func (me *T) GetAssetInfoByContractHash(args struct {
 	ContractHash h160.T
 	Filter       map[string]interface{}
+	Raw          *map[string]interface{}
 }, ret *json.RawMessage) error {
 	if args.ContractHash.Valid() == false {
 		return stderr.ErrInvalidArgs
 	}
-	r1, err :=me.Client.QueryOne(struct {
+	r1, err := me.Client.QueryOne(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
@@ -24,58 +24,51 @@ func (me *T) GetAssetInfoByContractHash(args struct {
 		Query      []string
 	}{
 		Collection: "Asset",
-		Index:      "someIndex",
+		Index:      "GetAssetInfoByContractHash",
 		Sort:       bson.M{},
 		Filter:     bson.M{"hash": args.ContractHash.Val()},
 		Query:      []string{},
 	}, ret)
-	r2, err :=me.Client.QueryDocument(struct {
-		Collection string
-		Index      string
-		Sort       bson.M
-		Filter     bson.M
-	}{
-		Collection: "Address-Asset",
-		Index:      "someIndex",
-		Sort:       bson.M{},
-		Filter:     bson.M{"asset": r1["hash"]},
-	}, ret)
 	if err != nil {
 		return err
 	}
-	
-	if r1  == nil {
-		err1 := errors.New("not token")
-		return err1
+	if args.Raw != nil {
+		*args.Raw = r1
 	}
-	var ok bool
-	if (r2["total counts"] == nil ) {
-		r1["total_holders"] = 0
-	} else if(r1 != nil) {
-		if r1["total_holders"], ok = r2["total counts"]; !ok {
-			//do something here
-			return err
+
+	r2, err := me.Client.QueryLastJob(struct{ Collection string }{Collection: "PopularTokens"})
+	if err != nil {
+		return err
+	}
+	r3, err := me.Client.QueryLastJob(struct{ Collection string }{Collection: "Holders"})
+	if err != nil {
+		return err
+	}
+
+	r1["ispopular"] = false
+	populars := r2["Populars"].(primitive.A)
+	for _, v := range populars {
+		if r1["hash"] == v {
+			r1["ispopular"] = true
 		}
 	}
-	_, err =me.Client.QueryOne(struct {
-		Collection string
-		Index      string
-		Sort       bson.M
-		Filter     bson.M
-		Query      []string
-	}{
-		Collection: "TransferNotification", Index: "someIndex", Sort: bson.M{}, Filter: bson.M{"contract": r1["hash"]}, Query: []string{},
-	}, ret)
-	if err != nil {
-		r1["standard"] = "NEP11"
-	} else {
-		r1["standard"] = "NEP17"
+
+
+	holders := r3["Holders"].(primitive.A)
+	for _, h := range holders {
+		m := h.(map[string]interface{})
+		for k, v := range m {
+			if r1["hash"] == k {
+				r1["holders"] = v
+			}
+		}
 	}
-	delete(r1, "_id")
+
 	r1, err = me.Filter(r1, args.Filter)
 	if err != nil {
 		return err
 	}
+
 	r, err := json.Marshal(r1)
 	if err != nil {
 		return err
