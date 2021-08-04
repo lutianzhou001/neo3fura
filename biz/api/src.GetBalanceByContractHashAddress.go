@@ -29,7 +29,7 @@ func (me *T) GetBalanceByContractHashAddress(args struct {
 		Collection: "Address-Asset",
 		Index:      "GetBalanceByContractHashAddress",
 		Sort:       bson.M{"_id": -1},
-		Filter:     bson.M{"asset": args.ContractHash.Val(), "address": args.Address.TransferredVal()},
+		Filter:     bson.M{"asset": args.ContractHash.Val(), "address": args.Address.TransferredVal(), "balance": bson.M{"$gt": 0}},
 		Query:      []string{},
 	}, ret)
 	if err != nil {
