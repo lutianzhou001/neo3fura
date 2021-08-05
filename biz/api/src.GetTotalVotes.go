@@ -23,7 +23,7 @@ func (me *T) GetTotalVotes(args struct {
 
 	}{
 		Collection: "Candidate",
-		Index:      "someIndex",
+		Index:      "GetTotalVotes",
 		Sort:       bson.M{},
 		Filter:     bson.M{},
 		Query:      []string{"votesOfCandidate"},
@@ -40,7 +40,7 @@ func (me *T) GetTotalVotes(args struct {
 		if err != nil {
 			return err
 		}
-		r["totalVotes"] = ib.Uint64() + r["totalVotes"]
+		r["totalvotes"] = ib.Uint64() + r["totalvotes"]
 	}
 	r2, err := json.Marshal(r)
 	if err != nil {
