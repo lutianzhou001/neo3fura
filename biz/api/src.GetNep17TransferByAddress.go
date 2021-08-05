@@ -29,7 +29,7 @@ func (me *T) GetNep17TransferByAddress(args struct {
 	}{
 		Collection: "TransferNotification",
 		Index:      "GetNep17TransferByAddress",
-		Sort:       bson.M{"timestamp":-1},
+		Sort:       bson.M{"_id":-1},
 		Filter: bson.M{"$or": []interface{}{
 			bson.M{"from": args.Address.TransferredVal()},
 			bson.M{"to": args.Address.TransferredVal()},
