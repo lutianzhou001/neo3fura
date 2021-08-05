@@ -7,11 +7,15 @@ import (
 
 func (me *T) GetBlockInfoList(args struct {
 	Filter map[string]interface{}
-	Limit        int64
-	Skip         int64
+	Limit  int64
+	Skip   int64
 }, ret *json.RawMessage) error {
 
-	r1, count, err :=me.Client.QueryAll(
+	if args.Limit == 0 {
+		args.Limit = 20
+	}
+
+	r1, count, err := me.Client.QueryAll(
 		struct {
 			Collection string
 			Index      string
@@ -23,39 +27,36 @@ func (me *T) GetBlockInfoList(args struct {
 		}{
 			Collection: "Block",
 			Index:      "GetBlockInfoList",
-			Sort:       bson.M{"index":-1},
-			Filter: bson.M{},
-			Query: []string{"_id","index","size","timestamp","hash"},
-			Limit: args.Limit,
-			Skip: args.Skip,
+			Sort:       bson.M{"_id": -1},
+			Filter:     bson.M{},
+			Query:      []string{"_id", "index", "size", "timestamp", "hash"},
+			Limit:      args.Limit,
+			Skip:       args.Skip,
 		}, ret)
 	if err != nil {
 		return err
 	}
 	r2 := make([]map[string]interface{}, 0)
 	for _, item := range r1 {
-		r3, err :=me.Client.QueryDocument(
+		r3, err := me.Client.QueryDocument(
 			struct {
-			Collection string
-			Index      string
-			Sort       bson.M
-			Filter     bson.M
-
-		}{  Collection: "Transaction",
-			Index: "GetBlockInfoList",
-			Sort: bson.M{},
-			Filter: bson.M{"blockhash":item["hash"],
-				}}, ret)
+				Collection string
+				Index      string
+				Sort       bson.M
+				Filter     bson.M
+			}{Collection: "Transaction",
+				Index:  "GetBlockInfoList",
+				Sort:   bson.M{},
+				Filter: bson.M{"blockhash": item["hash"]}}, ret)
 		if err != nil {
 			return err
 		}
-		if (r3["total counts"] == nil){
+		if r3["total counts"] == nil {
 			item["transactioncount"] = 0
-		}else {
+		} else {
 			item["transactioncount"] = r3["total counts"]
 		}
 
-		//delete(item,"_id")
 		r2 = append(r2, item)
 
 	}
@@ -67,5 +68,3 @@ func (me *T) GetBlockInfoList(args struct {
 	*ret = json.RawMessage(r)
 	return nil
 }
-
-

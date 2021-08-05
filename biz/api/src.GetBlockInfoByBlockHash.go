@@ -8,13 +8,13 @@ import (
 )
 
 func (me *T) GetBlockInfoByBlockHash(args struct {
-	BlockHash    h256.T
-	Filter map[string]interface{}
+	BlockHash h256.T
+	Filter    map[string]interface{}
 }, ret *json.RawMessage) error {
 	if args.BlockHash.Valid() == false {
 		return stderr.ErrInvalidArgs
 	}
-	r1, err :=me.Client.QueryOne(
+	r1, err := me.Client.QueryOne(
 		struct {
 			Collection string
 			Index      string
@@ -25,54 +25,50 @@ func (me *T) GetBlockInfoByBlockHash(args struct {
 			Collection: "Block",
 			Index:      "GetBlockInfoByBlockHash",
 			Sort:       bson.M{},
-			Filter: bson.M{"hash": args.BlockHash},
-			Query: []string{},
+			Filter:     bson.M{"hash": args.BlockHash},
+			Query:      []string{},
 		}, ret)
 	if err != nil {
 		return err
 	}
-	r2, err :=me.Client.QueryDocument(
+	r2, err := me.Client.QueryDocument(
 		struct {
 			Collection string
 			Index      string
 			Sort       bson.M
 			Filter     bson.M
-
-		}{  Collection: "Transaction",
-			Index: "GetBlockInfoByBlockHash",
-			Sort: bson.M{},
-			Filter: bson.M{"blockhash":args.BlockHash,
-			}}, ret)
+		}{Collection: "Transaction",
+			Index:  "GetBlockInfoByBlockHash",
+			Sort:   bson.M{},
+			Filter: bson.M{"blockhash": args.BlockHash}}, ret)
 	if err != nil {
 		return err
 	}
-	if (r2["total counts"] == nil){
+	if r2["total counts"] == nil {
 		r1["transactioncount"] = 0
 		r1["transfercount"] = 0
-	}else {
+	} else {
 		r1["transactioncount"] = r2["total counts"]
-		r3, err :=me.Client.QueryDocument(struct {
+		r3, err := me.Client.QueryDocument(struct {
 			Collection string
 			Index      string
 			Sort       bson.M
 			Filter     bson.M
-
-		}{  Collection: "TransferNotification",
-			Index: "GetBlockInfoByBlockHash",
-			Sort: bson.M{},
-			Filter: bson.M{"blockhash":args.BlockHash,
-			}}, ret)
+		}{Collection: "TransferNotification",
+			Index:  "GetBlockInfoByBlockHash",
+			Sort:   bson.M{},
+			Filter: bson.M{"blockhash": args.BlockHash}}, ret)
 		if err != nil {
 			return err
 		}
-		if (r3["total counts"] == nil){
+		if r3["total counts"] == nil {
 			r1["transactioncount"] = 0
-		}else {
+		} else {
 			r1["transactioncount"] = r3["total counts"]
 		}
 	}
 
-		r, err := json.Marshal(r1)
+	r, err := json.Marshal(r1)
 	if err != nil {
 		return err
 	}

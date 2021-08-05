@@ -14,7 +14,7 @@ func (me *T) GetNep11TransferByTransactionHash(args struct {
 	if args.TransactionHash.Valid() == false {
 		return stderr.ErrInvalidArgs
 	}
-	r1, err :=me.Client.QueryOne(struct {
+	r1, err := me.Client.QueryOne(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
@@ -31,7 +31,7 @@ func (me *T) GetNep11TransferByTransactionHash(args struct {
 		return err
 	}
 
-	r,err :=me.Client.QueryOne(struct {
+	r, err := me.Client.QueryOne(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
@@ -47,14 +47,13 @@ func (me *T) GetNep11TransferByTransactionHash(args struct {
 	if err != nil {
 		return err
 	}
-	if err == nil  {
+	if err == nil {
 		r1["tokenname"] = r["tokenname"]
-	}else if err.Error() == "NOT FOUND" {
-		r1["tokenname"]  = ""
-	}else {
+	} else if err.Error() == "NOT FOUND" {
+		r1["tokenname"] = ""
+	} else {
 		return err
 	}
-
 
 	r1, err = me.Filter(r1, args.Filter)
 	if err != nil {

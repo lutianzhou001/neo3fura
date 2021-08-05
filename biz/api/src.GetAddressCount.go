@@ -8,7 +8,7 @@ import (
 func (me *T) GetAddressCount(args struct {
 	Filter map[string]interface{}
 }, ret *json.RawMessage) error {
-	r1, err :=me.Client.QueryDocument(struct {
+	r1, err := me.Client.QueryDocument(struct {
 		Collection string
 		Index      string
 		Sort       bson.M

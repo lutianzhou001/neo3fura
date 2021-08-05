@@ -4,15 +4,12 @@ import (
 	"encoding/json"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-
 )
 
 func (me *T) GetTotalVotes(args struct {
-	Limit  int64
-	Skip   int64
 	Filter map[string]interface{}
 }, ret *json.RawMessage) error {
-	r1,_,err := me.Client.QueryAll(struct {
+	r1, _, err := me.Client.QueryAll(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
@@ -20,22 +17,18 @@ func (me *T) GetTotalVotes(args struct {
 		Query      []string
 		Limit      int64
 		Skip       int64
-
 	}{
 		Collection: "Candidate",
 		Index:      "GetTotalVotes",
 		Sort:       bson.M{},
 		Filter:     bson.M{},
 		Query:      []string{"votesOfCandidate"},
-		Limit:      args.Limit,
-		Skip:       args.Skip,
-
 	}, ret)
 	if err != nil {
 		return err
 	}
-	r := map[string] uint64{}
-	for _,item:= range r1{
+	r := map[string]uint64{}
+	for _, item := range r1 {
 		ib, _, err := item["votesOfCandidate"].(primitive.Decimal128).BigInt()
 		if err != nil {
 			return err

@@ -6,11 +6,11 @@ import (
 )
 
 func (me *T) GetCandidate(args struct {
-	Limit            int64
-	Skip             int64
-	Filter       map[string]interface{}
+	Limit  int64
+	Skip   int64
+	Filter map[string]interface{}
 }, ret *json.RawMessage) error {
-	r1, count, err :=me.Client.QueryAll(struct {
+	r1, count, err := me.Client.QueryAll(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
@@ -21,7 +21,7 @@ func (me *T) GetCandidate(args struct {
 	}{
 		Collection: "Candidate",
 		Index:      "GetCandidate",
-		Sort:       bson.M{"votesOfCandidate":-1},
+		Sort:       bson.M{"votesOfCandidate": -1},
 		Filter:     bson.M{},
 		Query:      []string{},
 		Limit:      args.Limit,

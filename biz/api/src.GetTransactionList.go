@@ -11,7 +11,10 @@ func (me *T) GetTransactionList(args struct {
 	Skip   int64
 	Filter map[string]interface{}
 }, ret *json.RawMessage) error {
-	r1, count, err :=me.Client.QueryAll(struct {
+	if args.Limit == 0 {
+		args.Limit = 500
+	}
+	r1, count, err := me.Client.QueryAll(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
@@ -22,7 +25,7 @@ func (me *T) GetTransactionList(args struct {
 	}{
 		Collection: "Transaction",
 		Index:      "GetTransactionList",
-		Sort:       bson.M{"blocktime":-1},
+		Sort:       bson.M{"blocktime": -1},
 		Filter:     bson.M{},
 		Query:      []string{},
 		Limit:      args.Limit,
@@ -42,4 +45,3 @@ func (me *T) GetTransactionList(args struct {
 	*ret = json.RawMessage(r)
 	return nil
 }
-
