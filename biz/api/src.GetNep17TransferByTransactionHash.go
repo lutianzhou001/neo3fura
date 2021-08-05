@@ -66,11 +66,18 @@ func (me *T) GetNep17TransferByTransactionHash(args struct {
 			Filter:     bson.M{"hash": item["contract"]},
 			Query:      []string{"tokenname","decimals"},
 		}, ret)
-		if err != nil {
+		if err == nil {
+			item["tokenname"] = r["tokenname"]
+			item["decimals"] = r["decimals"]
+
+		}else if err.Error() == "NOT FOUND"{
+			item["tokenname"] = ""
+			item["decimals"] = ""
+		}else {
 			return err
 		}
-		item["tokenname"] = r["tokenname"]
-		item["decimals"] = r["decimals"]
+
+
 	}
 	r2, err := me.FilterArrayAndAppendCount(r1, count, args.Filter)
 	if err != nil {
