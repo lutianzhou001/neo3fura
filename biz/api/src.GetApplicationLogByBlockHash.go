@@ -19,7 +19,7 @@ func (me *T) GetApplicationLogByBlockHash(args struct {
 	if args.BlockHash.IsZero() == true {
 		return stderr.ErrZero
 	}
-	r1, count, err := me.Client.QueryAll(struct {
+	r1, count, err :=me.Client.QueryAll(struct {
 		Collection string
 		Index      string
 		Sort       bson.M

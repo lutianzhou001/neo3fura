@@ -5,7 +5,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func (me *T) GetAddressCount(args struct {
+func (me *T) GetContractCount(args struct{
 	Filter map[string]interface{}
 }, ret *json.RawMessage) error {
 	r1, err :=me.Client.QueryDocument(struct {
@@ -14,8 +14,8 @@ func (me *T) GetAddressCount(args struct {
 		Sort       bson.M
 		Filter     bson.M
 	}{
-		Collection: "Address",
-		Index:      "GetAddressCount",
+		Collection: "Contract",
+		Index:      "GetContractCount",
 		Sort:       bson.M{},
 		Filter:     bson.M{},
 	}, ret)
@@ -29,3 +29,4 @@ func (me *T) GetAddressCount(args struct {
 	*ret = json.RawMessage(r)
 	return nil
 }
+

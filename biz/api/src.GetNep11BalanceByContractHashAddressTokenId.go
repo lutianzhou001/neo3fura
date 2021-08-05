@@ -31,31 +31,16 @@ func (me *T) GetNep11BalanceByContractHashAddressTokenId(args struct {
 		Filter     bson.M
 		Query      []string
 	}{
-		Collection: "Nep11TransferNotification",
+		Collection: "Address-Asset",
 		Index:      "GetNep11BalanceByContractHashAddressTokenId",
 		Sort:       bson.M{"_id": -1},
-		Filter: bson.M{"contract": args.ContractHash.Val(), "tokenId": args.TokenId.Val(), "$or": []interface{}{
-			bson.M{"from": args.Address.TransferredVal()},
-			bson.M{"to": args.Address.TransferredVal()},
-		}},
-		Query: []string{},
+		Filter:     bson.M{"asset": args.ContractHash.Val(), "address": args.Address.TransferredVal(), "tokenid": args.TokenId},
+		Query:      []string{},
 	}, ret)
 	if err != nil {
 		return err
 	}
-	r2 := make(map[string]interface{})
-	if r1["from"] != nil {
-		if r1["from"].(string) == args.Address.TransferredVal() {
-			r2["balance"] = r1["frombalance"]
-		}
-	}
-	if r1["to"] != nil {
-		if r1["to"].(string) == args.Address.TransferredVal() {
-			r2["balance"] = r1["tobalance"]
-		}
-	}
-	r2["latesttx"] = r1
-	r2, err = me.Filter(r2, args.Filter)
+	r2, err := me.Filter(r1, args.Filter)
 	if err != nil {
 		return err
 	}

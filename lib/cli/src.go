@@ -370,3 +370,90 @@ func (me *T) QueryLastJob(args struct {
 	}
 	return result, nil
 }
+
+
+func (me *T) QueryAggregate(args struct {
+	Collection string
+	Index      string
+	Sort       bson.M
+	Filter     bson.M
+	Pipeline   []bson.M
+	Query      []string
+}, ret *json.RawMessage) ([]map[string]interface{}, error) {
+	cfg, err := me.OpenConfigFile()
+	if err != nil {
+		return nil, err
+	}
+	var results []map[string]interface{}
+	convert := make([]map[string]interface{}, 0)
+	uc, err := me.getConnection(os.ExpandEnv("${RUNTIME}"))
+	if err != nil {
+		return nil, err
+	}
+	dbName := me.getDbName(cfg, os.ExpandEnv("${RUNTIME}"))
+	collection := uc.Database(dbName).Collection(args.Collection)
+	op := options.AggregateOptions{}
+
+	cursor, err := collection.Aggregate(me.Ctx, args.Pipeline, &op)
+	if err == mongo.ErrNoDocuments {
+		return nil, errors.New("NOT FOUNT")
+	}
+	if err != nil {
+		return nil, err
+	}
+	if err = cursor.All(me.Ctx, &results); err != nil {
+		return nil, err
+	}
+	for _, item := range results {
+		if len(args.Query) == 0 {
+			convert = append(convert, item)
+		} else {
+			temp := make(map[string]interface{})
+			for _, v := range args.Query {
+				temp[v] = item[v]
+			}
+			convert = append(convert, temp)
+		}
+	}
+	r, err := json.Marshal(convert)
+	if err != nil {
+		return nil, err
+	}
+	*ret = json.RawMessage(r)
+	return convert, nil
+}
+
+func (me *T) QueryDocument(args struct {
+	Collection string
+	Index      string
+	Sort       bson.M
+	Filter     bson.M
+}, ret *json.RawMessage) (map[string]interface{}, error) {
+	cfg, err := me.OpenConfigFile()
+	if err != nil {
+		return nil, err
+	}
+	co := options.CountOptions{}
+	uc, err := me.getConnection(os.ExpandEnv("${RUNTIME}"))
+	if err != nil {
+		return nil, err
+	}
+	dbName := me.getDbName(cfg, os.ExpandEnv("${RUNTIME}"))
+	collection := uc.Database(dbName).Collection(args.Collection)
+	count, _ := collection.CountDocuments(me.Ctx, args.Filter, &co)
+
+	if err == mongo.ErrNoDocuments {
+		return nil, errors.New("NOT FOUNT")
+	}
+	convert := make(map[string]interface{})
+	convert["total counts"] = count
+	r, err := json.Marshal(convert)
+	if err != nil {
+		return nil, err
+	}
+	*ret = json.RawMessage(r)
+	return convert, nil
+
+}
+
+
