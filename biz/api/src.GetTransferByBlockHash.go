@@ -49,7 +49,7 @@ func (me *T) GetTransferByBlockHash(args struct {
 		Collection: "Nep11TransferNotification",
 		Index:      "GetNep11TransferByAddress",
 		Sort:       bson.M{},
-		Filter:     bson.M{"timestamp": r1["timestamp"]},
+		Filter:     bson.M{"timestamp": r1["timestamp"],"txid":"0x0000000000000000000000000000000000000000000000000000000000000000"},
 		Query:      []string{},
 	}, ret)
 	if err2 != nil {
@@ -68,7 +68,7 @@ func (me *T) GetTransferByBlockHash(args struct {
 		Collection: "TransferNotification",
 		Index:      "GetNep17TransferByAddress",
 		Sort:       bson.M{},
-		Filter:     bson.M{"timestamp": r1["timestamp"]},
+		Filter:     bson.M{"timestamp": r1["timestamp"],"txid":"0x0000000000000000000000000000000000000000000000000000000000000000"},
 		Query:      []string{},
 	}, ret)
 

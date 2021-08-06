@@ -53,7 +53,7 @@ func (me *T) GetNep17TransferByTransactionHash(args struct {
 			return err
 		}
 		item["vmstate"] = raw1["vmstate"].(string)
-		r, err :=me.Client.QueryOne(struct {
+		r, _ :=me.Client.QueryOne(struct {
 			Collection string
 			Index      string
 			Sort       bson.M
@@ -61,23 +61,14 @@ func (me *T) GetNep17TransferByTransactionHash(args struct {
 			Query      []string
 		}{
 			Collection: "Asset",
-			Index:      "GetNep17TransferByTransactionHash",
+			Index:      "someIndex",
 			Sort:       bson.M{},
 			Filter:     bson.M{"hash": item["contract"]},
 			Query:      []string{"tokenname","decimals"},
 		}, ret)
-		if err == nil {
-			item["tokenname"] = r["tokenname"]
-			item["decimals"] = r["decimals"]
 
-		}else if err.Error() == "NOT FOUND"{
-			item["tokenname"] = ""
-			item["decimals"] = ""
-		}else {
-			return err
-		}
-
-
+		item["tokenname"] = r["tokenname"]
+		item["decimals"] = r["decimals"]
 	}
 	r2, err := me.FilterArrayAndAppendCount(r1, count, args.Filter)
 	if err != nil {

@@ -27,7 +27,7 @@ func (me *T) GetNep11TransferByContractHash(args struct {
 	}{
 		Collection: "Nep11TransferNotification",
 		Index:      "GetNep11TransferByAddress",
-		Sort:       bson.M{"_id":-1},
+		Sort:       bson.M{"timestamp":-1},
 		Filter:     bson.M{"contract": args.ContractHash.Val()},
 		Query:      []string{},
 		Limit:      args.Limit,
