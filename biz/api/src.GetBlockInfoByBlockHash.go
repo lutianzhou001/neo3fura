@@ -68,9 +68,9 @@ func (me *T) GetBlockInfoByBlockHash(args struct {
 		return err2
 	}
 	if r2["total counts"] == nil{
-		r1["transfer11count"] = 0
+		r1["nep11count"] = 0
 	}else {
-		r1["transfer11count"] = r2["total counts"]
+		r1["nep11count"] = r2["total counts"]
 	}
 	r3, err3 := me.Client.QueryDocument(struct {
 		Collection string
@@ -87,9 +87,9 @@ func (me *T) GetBlockInfoByBlockHash(args struct {
 		return err3
 	}
 	if r3["total counts"] == nil{
-		r1["transfer17count"] = 0
+		r1["nep17count"] = 0
 	}else {
-		r1["transfer17count"] = r3["total counts"]
+		r1["nep17count"] = r3["total counts"]
 	}
 
 		r, err := json.Marshal(r1)
