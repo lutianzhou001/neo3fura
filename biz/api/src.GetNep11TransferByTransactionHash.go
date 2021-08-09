@@ -39,18 +39,19 @@ func (me *T) GetNep11TransferByTransactionHash(args struct {
 		Query      []string
 	}{
 		Collection: "Asset",
-		Index:      "someIndex",
+		Index:      "GetNep11TransferByTransactionHash",
 		Sort:       bson.M{},
 		Filter:     bson.M{"hash": r1["contract"]},
 		Query:      []string{"tokenname"},
 	}, ret)
-
 	if err == nil {
 		r1["tokenname"] = r["tokenname"]
 		r1["decimals"] = r["decimals"]
-	} else {
+	} else if err.Error() == "NOT FOUND"{
 		r1["tokenname"] = ""
-		r1["decimals"] = r[""]
+		r1["decimals"] = ""
+	}else{
+		return err
 	}
 
 	r1, err = me.Filter(r1, args.Filter)
