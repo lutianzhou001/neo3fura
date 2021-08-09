@@ -12,6 +12,7 @@ func (me *T) GetTransferByBlockHash(args struct {
 	Limit       int64
 	Skip        int64
 	Filter      map[string]interface{}
+	IsExtra     bool
 }, ret *json.RawMessage) error {
 	if args.BlockHash.Valid() == false {
 		return stderr.ErrInvalidArgs
@@ -28,13 +29,19 @@ func (me *T) GetTransferByBlockHash(args struct {
 		Query      []string
 	}{
 		Collection: "Block",
-		Index:      "GetBlockByBlockHeight",
+		Index:      "GetTransferByBlockHash",
 		Sort:       bson.M{},
 		Filter:     bson.M{"hash": args.BlockHash},
 		Query:      []string{},
 	}, ret)
 	if err != nil {
 		return err
+	}
+	var filter bson.M
+    if args.IsExtra == true{
+    	filter = bson.M{"timestamp": r1["timestamp"],"txid":"0x0000000000000000000000000000000000000000000000000000000000000000"}
+	} else{
+		filter = bson.M{"timestamp": r1["timestamp"]}
 	}
 
 	r2, _, err2 := me.Client.QueryAll(struct {
@@ -47,9 +54,9 @@ func (me *T) GetTransferByBlockHash(args struct {
 		Skip       int64
 	}{
 		Collection: "Nep11TransferNotification",
-		Index:      "GetNep11TransferByAddress",
+		Index:      "GetTransferByBlockHash",
 		Sort:       bson.M{},
-		Filter:     bson.M{"timestamp": r1["timestamp"],"txid":"0x0000000000000000000000000000000000000000000000000000000000000000"},
+		Filter:     filter,
 		Query:      []string{},
 	}, ret)
 	if err2 != nil {
@@ -66,9 +73,9 @@ func (me *T) GetTransferByBlockHash(args struct {
 		Skip       int64
 	}{
 		Collection: "TransferNotification",
-		Index:      "GetNep17TransferByAddress",
+		Index:      "GetTransferByBlockHash",
 		Sort:       bson.M{},
-		Filter:     bson.M{"timestamp": r1["timestamp"],"txid":"0x0000000000000000000000000000000000000000000000000000000000000000"},
+		Filter:     filter,
 		Query:      []string{},
 	}, ret)
 
