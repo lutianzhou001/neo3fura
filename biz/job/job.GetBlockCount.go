@@ -2,6 +2,7 @@ package job
 
 import (
 	"encoding/json"
+
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -29,7 +30,7 @@ func (me T) GetBlockCount() error {
 	_, err = me.Client.SaveJob(struct {
 		Collection string
 		Data       bson.M
-	}{Collection: "BlockInfoList", Data: data})
+	}{Collection: "BlockCount", Data: data})
 	if err != nil {
 		return err
 	}
