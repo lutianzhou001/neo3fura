@@ -1,19 +1,14 @@
-package api
+package job
 
 import (
 	"encoding/json"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func (me *T) GetTransactionList(args struct {
-	Limit  int64
-	Skip   int64
-	Filter map[string]interface{}
-}, ret *json.RawMessage) error {
-	if args.Limit == 0 {
-		args.Limit = 500
-	}
-	r1, count, err := me.Client.QueryAll(struct {
+func (me T) GetTransactionList() error {
+	message := make(json.RawMessage, 0)
+	ret := &message
+	r1, _, err := me.Client.QueryAll(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
@@ -27,20 +22,19 @@ func (me *T) GetTransactionList(args struct {
 		Sort:       bson.M{"blocktime": -1},
 		Filter:     bson.M{},
 		Query:      []string{},
-		Limit:      args.Limit,
-		Skip:       args.Skip,
+		Limit:      10,
+		Skip:       0,
 	}, ret)
 	if err != nil {
 		return err
 	}
-	r2, err := me.FilterArrayAndAppendCount(r1, count, args.Filter)
+	data := bson.M{"TransactionList": r1}
+	_, err = me.Client.SaveJob(struct {
+		Collection string
+		Data       bson.M
+	}{Collection: "TransactionList", Data: data})
 	if err != nil {
 		return err
 	}
-	r, err := json.Marshal(r2)
-	if err != nil {
-		return err
-	}
-	*ret = json.RawMessage(r)
 	return nil
 }
