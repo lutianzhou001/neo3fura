@@ -7,7 +7,7 @@ import (
 	"neo3fura/var/stderr"
 )
 
-func (me *T) GetTransferByBlockHash(args struct {
+func (me *T) GetExtraTransferByBlockHash(args struct {
 	BlockHash h256.T
 	Limit       int64
 	Skip        int64
@@ -28,7 +28,7 @@ func (me *T) GetTransferByBlockHash(args struct {
 		Query      []string
 	}{
 		Collection: "Block",
-		Index:      "GetTransferByBlockHash",
+		Index:      "GetExtraTransferByBlockHash",
 		Sort:       bson.M{},
 		Filter:     bson.M{"hash": args.BlockHash},
 		Query:      []string{},
@@ -46,9 +46,9 @@ func (me *T) GetTransferByBlockHash(args struct {
 		Skip       int64
 	}{
 		Collection: "Nep11TransferNotification",
-		Index:      "GetTransferByBlockHash",
+		Index:      "GetExtraTransferByBlockHash",
 		Sort:       bson.M{},
-		Filter:     bson.M{"timestamp": r1["timestamp"]},
+		Filter:     bson.M{"timestamp": r1["timestamp"],"txid":"0x0000000000000000000000000000000000000000000000000000000000000000"},
 		Query:      []string{},
 	}, ret)
 	if err2 != nil {
@@ -65,9 +65,9 @@ func (me *T) GetTransferByBlockHash(args struct {
 		Skip       int64
 	}{
 		Collection: "TransferNotification",
-		Index:      "GetTransferByBlockHash",
+		Index:      "GetExtraTransferByBlockHash",
 		Sort:       bson.M{},
-		Filter:     bson.M{"timestamp": r1["timestamp"]},
+		Filter:     bson.M{"timestamp": r1["timestamp"],"txid":"0x0000000000000000000000000000000000000000000000000000000000000000"},
 		Query:      []string{},
 	}, ret)
 

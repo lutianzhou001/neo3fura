@@ -76,8 +76,6 @@ func (me *T) GetNep17TransferByTransactionHash(args struct {
 		}else {
 			return err
 		}
-
-
 	}
 	r2, err := me.FilterArrayAndAppendCount(r1, count, args.Filter)
 	if err != nil {

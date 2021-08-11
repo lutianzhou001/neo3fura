@@ -31,7 +31,7 @@ func (me *T) GetBlockInfoByBlockHash(args struct {
 	if err != nil {
 		return err
 	}
-	r2, err :=me.Client.QueryDocument(
+	r4, err :=me.Client.QueryDocument(
 		struct {
 			Collection string
 			Index      string
@@ -46,30 +46,50 @@ func (me *T) GetBlockInfoByBlockHash(args struct {
 	if err != nil {
 		return err
 	}
-	if (r2["total counts"] == nil){
+	if r4["total counts"] == nil {
 		r1["transactioncount"] = 0
-		r1["transfercount"] = 0
-	}else {
-		r1["transactioncount"] = r2["total counts"]
-		r3, err :=me.Client.QueryDocument(struct {
-			Collection string
-			Index      string
-			Sort       bson.M
-			Filter     bson.M
+	}else{
+		r1["transactioncount"] = r4["total counts"]
+	}
 
-		}{  Collection: "TransferNotification",
-			Index: "GetBlockInfoByBlockHash",
-			Sort: bson.M{},
-			Filter: bson.M{"blockhash":args.BlockHash,
-			}}, ret)
-		if err != nil {
-			return err
-		}
-		if (r3["total counts"] == nil){
-			r1["transactioncount"] = 0
-		}else {
-			r1["transactioncount"] = r3["total counts"]
-		}
+	r2,  err2 := me.Client.QueryDocument(struct {
+		Collection string
+		Index      string
+		Sort       bson.M
+		Filter     bson.M
+	}{
+		Collection: "Nep11TransferNotification",
+		Index:      "GetNep11TransferByAddress",
+		Sort:       bson.M{},
+		Filter:     bson.M{"timestamp": r1["timestamp"]},
+
+	}, ret)
+	if err2 != nil {
+		return err2
+	}
+	if r2["total counts"] == nil{
+		r1["nep11count"] = 0
+	}else {
+		r1["nep11count"] = r2["total counts"]
+	}
+	r3, err3 := me.Client.QueryDocument(struct {
+		Collection string
+		Index      string
+		Sort       bson.M
+		Filter     bson.M
+	}{
+		Collection: "TransferNotification",
+		Index:      "GetNep17TransferByAddress",
+		Sort:       bson.M{},
+		Filter:     bson.M{"timestamp": r1["timestamp"]},
+	}, ret)
+	if err3 != nil {
+		return err3
+	}
+	if r3["total counts"] == nil{
+		r1["nep17count"] = 0
+	}else {
+		r1["nep17count"] = r3["total counts"]
 	}
 
 		r, err := json.Marshal(r1)

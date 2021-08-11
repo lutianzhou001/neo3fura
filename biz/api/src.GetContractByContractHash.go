@@ -65,10 +65,11 @@ func (me *T) GetContractByContractHash(args struct {
 			Filter:     bson.M{"hash": r1["createTxid"]},
 			Query:      []string{"sender"},
 		}, ret)
+
+			r1["sender"] = r3["sender"]
 		if err != nil {
 			return err
 		}
-		r1["sender"] = r3["sender"]
 	}else {
 		r1["sender"] = nil
 	}
