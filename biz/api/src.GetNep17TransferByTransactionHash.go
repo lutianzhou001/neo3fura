@@ -3,9 +3,10 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"go.mongodb.org/mongo-driver/bson"
 	"neo3fura/lib/type/h256"
 	"neo3fura/var/stderr"
+
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 func (me *T) GetNep17TransferByTransactionHash(args struct {
@@ -76,7 +77,6 @@ func (me *T) GetNep17TransferByTransactionHash(args struct {
 		} else {
 			return err
 		}
-
 	}
 	r2, err := me.FilterArrayAndAppendCount(r1, count, args.Filter)
 	if err != nil {

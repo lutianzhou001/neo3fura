@@ -2,9 +2,10 @@ package api
 
 import (
 	"encoding/json"
-	"go.mongodb.org/mongo-driver/bson"
 	"neo3fura/lib/type/h160"
 	"neo3fura/var/stderr"
+
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 func (me *T) GetContractByContractHash(args struct {
@@ -63,10 +64,11 @@ func (me *T) GetContractByContractHash(args struct {
 			Filter:     bson.M{"hash": r1["createTxid"]},
 			Query:      []string{"sender"},
 		}, ret)
+
+		r1["sender"] = r3["sender"]
 		if err != nil {
 			return err
 		}
-		r1["sender"] = r3["sender"]
 	} else {
 		r1["sender"] = nil
 	}
