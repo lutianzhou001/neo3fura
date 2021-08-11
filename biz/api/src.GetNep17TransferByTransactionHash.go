@@ -3,21 +3,22 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"go.mongodb.org/mongo-driver/bson"
 	"neo3fura/lib/type/h256"
 	"neo3fura/var/stderr"
+
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 func (me *T) GetNep17TransferByTransactionHash(args struct {
 	TransactionHash h256.T
-	Limit        int64
-	Skip         int64
+	Limit           int64
+	Skip            int64
 	Filter          map[string]interface{}
 }, ret *json.RawMessage) error {
 	if args.TransactionHash.Valid() == false {
 		return stderr.ErrInvalidArgs
 	}
-	r1, count, err :=me.Client.QueryAll(struct {
+	r1, count, err := me.Client.QueryAll(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
@@ -53,7 +54,7 @@ func (me *T) GetNep17TransferByTransactionHash(args struct {
 			return err
 		}
 		item["vmstate"] = raw1["vmstate"].(string)
-		r, err :=me.Client.QueryOne(struct {
+		r, err := me.Client.QueryOne(struct {
 			Collection string
 			Index      string
 			Sort       bson.M
@@ -64,16 +65,16 @@ func (me *T) GetNep17TransferByTransactionHash(args struct {
 			Index:      "GetNep17TransferByTransactionHash",
 			Sort:       bson.M{},
 			Filter:     bson.M{"hash": item["contract"]},
-			Query:      []string{"tokenname","decimals"},
+			Query:      []string{"tokenname", "decimals"},
 		}, ret)
 		if err == nil {
 			item["tokenname"] = r["tokenname"]
 			item["decimals"] = r["decimals"]
 
-		}else if err.Error() == "NOT FOUND"{
+		} else if err.Error() == "NOT FOUND" {
 			item["tokenname"] = ""
 			item["decimals"] = ""
-		}else {
+		} else {
 			return err
 		}
 	}

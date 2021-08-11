@@ -53,7 +53,6 @@ func (me *T) GetAssetInfoByContractHash(args struct {
 		}
 	}
 
-
 	holders := r3["Holders"].(primitive.A)
 	for _, h := range holders {
 		m := h.(map[string]interface{})

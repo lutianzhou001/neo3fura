@@ -82,16 +82,17 @@ func (me *T) FilterAggragateAndAppendCount(data []map[string]interface{}, count 
 		res2["totalCount"] = count
 		return res2, nil
 	} else {
-	res := make([]map[string]interface{}, 0)
-	for _, item := range data {
-	   r, err := me.Filter(item, filter)
-	   if err != nil {
-		  return nil, err
-	   }
-	   res = append(res, r)
+		res := make([]map[string]interface{}, 0)
+		for _, item := range data {
+			r, err := me.Filter(item, filter)
+			if err != nil {
+				return nil, err
+			}
+			res = append(res, r)
+		}
+		res2 := make(map[string]interface{})
+		res2["totalCount"] = count
+		res2["result"] = res
+		return res2, nil
 	}
-	res2 := make(map[string]interface{})
-	res2["totalCount"] = count
-	res2["result"] = res
-	return res2, nil}
- }
+}

@@ -9,9 +9,9 @@ import (
 
 func (me *T) GetTransferByBlockHash(args struct {
 	BlockHash h256.T
-	Limit       int64
-	Skip        int64
-	Filter      map[string]interface{}
+	Limit     int64
+	Skip      int64
+	Filter    map[string]interface{}
 }, ret *json.RawMessage) error {
 	if args.BlockHash.Valid() == false {
 		return stderr.ErrInvalidArgs

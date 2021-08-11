@@ -6,11 +6,11 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func (me *T) GetAssetInfosByName (args struct {
+func (me *T) GetAssetInfosByName(args struct {
 	Name   string
 	Filter map[string]interface{}
-	Limit        int64
-	Skip         int64
+	Limit  int64
+	Skip   int64
 }, ret *json.RawMessage) error {
 	r1, count, err := me.Client.QueryAll(struct {
 		Collection string
@@ -24,8 +24,8 @@ func (me *T) GetAssetInfosByName (args struct {
 		Collection: "Asset",
 		Index:      "GetAssetInfos",
 		Sort:       bson.M{},
-		Filter:     bson.M{"tokenname": bson.M{"$regex":args.Name, "$options": "$i"}},
-		Query:       []string{"hash", "tokenname", "symbol", "_id"},
+		Filter:     bson.M{"tokenname": bson.M{"$regex": args.Name, "$options": "$i"}},
+		Query:      []string{"hash", "tokenname", "symbol", "_id"},
 		Limit:      args.Limit,
 		Skip:       args.Skip,
 	}, ret)

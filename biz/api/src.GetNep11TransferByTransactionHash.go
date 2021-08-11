@@ -2,9 +2,10 @@ package api
 
 import (
 	"encoding/json"
-	"go.mongodb.org/mongo-driver/bson"
 	"neo3fura/lib/type/h256"
 	"neo3fura/var/stderr"
+
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 func (me *T) GetNep11TransferByTransactionHash(args struct {
@@ -14,7 +15,7 @@ func (me *T) GetNep11TransferByTransactionHash(args struct {
 	if args.TransactionHash.Valid() == false {
 		return stderr.ErrInvalidArgs
 	}
-	r1, err :=me.Client.QueryOne(struct {
+	r1, err := me.Client.QueryOne(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
@@ -31,7 +32,7 @@ func (me *T) GetNep11TransferByTransactionHash(args struct {
 		return err
 	}
 
-	r,err :=me.Client.QueryOne(struct {
+	r, err := me.Client.QueryOne(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
@@ -47,10 +48,10 @@ func (me *T) GetNep11TransferByTransactionHash(args struct {
 	if err == nil {
 		r1["tokenname"] = r["tokenname"]
 		r1["decimals"] = r["decimals"]
-	} else if err.Error() == "NOT FOUND"{
+	} else if err.Error() == "NOT FOUND" {
 		r1["tokenname"] = ""
 		r1["decimals"] = ""
-	}else{
+	} else {
 		return err
 	}
 

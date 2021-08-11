@@ -9,8 +9,6 @@ import (
 
 func (me *T) GetAddressInfoByAddress(args struct {
 	Address h160.T
-	Limit   int64
-	Skip    int64
 	Filter  map[string]interface{}
 }, ret *json.RawMessage) error {
 	if args.Address.Valid() == false {
@@ -46,8 +44,6 @@ func (me *T) GetAddressInfoByAddress(args struct {
 		Sort:       bson.M{},
 		Filter:     bson.M{"sender": args.Address.TransferAddress()},
 		Query:      []string{},
-		Limit:      args.Limit,
-		Skip:       args.Skip,
 	}, ret)
 	if err != nil {
 		return err

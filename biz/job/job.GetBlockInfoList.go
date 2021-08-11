@@ -1,21 +1,15 @@
-package api
+package job
 
 import (
 	"encoding/json"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func (me *T) GetBlockInfoList(args struct {
-	Filter map[string]interface{}
-	Limit  int64
-	Skip   int64
-}, ret *json.RawMessage) error {
+func (me T) GetBlockInfoList() error {
+	message := make(json.RawMessage, 0)
+	ret := &message
 
-	if args.Limit == 0 {
-		args.Limit = 20
-	}
-
-	r1, count, err := me.Client.QueryAll(
+	r1, _, err := me.Client.QueryAll(
 		struct {
 			Collection string
 			Index      string
@@ -30,12 +24,13 @@ func (me *T) GetBlockInfoList(args struct {
 			Sort:       bson.M{"_id": -1},
 			Filter:     bson.M{},
 			Query:      []string{"_id", "index", "size", "timestamp", "hash"},
-			Limit:      args.Limit,
-			Skip:       args.Skip,
+			Limit:      10,
+			Skip:       0,
 		}, ret)
 	if err != nil {
 		return err
 	}
+
 	r2 := make([]map[string]interface{}, 0)
 	for _, item := range r1 {
 		r3, err := me.Client.QueryDocument(
@@ -58,11 +53,14 @@ func (me *T) GetBlockInfoList(args struct {
 		}
 		r2 = append(r2, item)
 	}
-	r4, err := me.FilterArrayAndAppendCount(r2, count, args.Filter)
-	r, err := json.Marshal(r4)
+
+	data := bson.M{"BlockInfoList": r2}
+	_, err = me.Client.SaveJob(struct {
+		Collection string
+		Data       bson.M
+	}{Collection: "BlockInfoList", Data: data})
 	if err != nil {
 		return err
 	}
-	*ret = json.RawMessage(r)
 	return nil
 }

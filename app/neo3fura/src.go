@@ -72,13 +72,17 @@ func main() {
 	spec := "0 0/10 * * * *"
 	err = c.AddFunc(spec, func() {
 		err = j.GetPopularTokens()
-		if err != nil {
-			log.Fatal(err)
-		}
 		err = j.GetHoldersByContractHash()
-		if err != nil {
-			log.Fatal(err)
-		}
+		err = j.GetNewAddresses()
+		err = j.GetActiveAddresses()
+		err = j.GetAddressCount()
+		err = j.GetContractCount()
+		err = j.GetCandidateCount()
+		err = j.GetTransactionList()
+		err = j.GetTransactionCount()
+		err = j.GetBlockCount()
+		err = j.GetBlockInfoList()
+		err = j.GetAddressCount()
 	})
 	if err != nil {
 		log.Fatal(err)

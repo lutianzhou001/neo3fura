@@ -1,13 +1,14 @@
-package api
+package job
 
 import (
 	"encoding/json"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func (me *T) GetTransactionCount(args struct {
-	Filter map[string]interface{}
-}, ret *json.RawMessage) error {
+func (me T) GetTransactionCount() error {
+	message := make(json.RawMessage, 0)
+	ret := &message
+
 	r1, err := me.Client.QueryDocument(struct {
 		Collection string
 		Index      string
@@ -22,10 +23,14 @@ func (me *T) GetTransactionCount(args struct {
 	if err != nil {
 		return err
 	}
-	r, err := json.Marshal(r1)
+
+	data := bson.M{"TransactionCount": r1}
+	_, err = me.Client.SaveJob(struct {
+		Collection string
+		Data       bson.M
+	}{Collection: "TransactionCount", Data: data})
 	if err != nil {
 		return err
 	}
-	*ret = json.RawMessage(r)
 	return nil
 }

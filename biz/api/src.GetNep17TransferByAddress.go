@@ -18,7 +18,7 @@ func (me *T) GetNep17TransferByAddress(args struct {
 	if args.Address.Valid() == false {
 		return stderr.ErrInvalidArgs
 	}
-	r1, count, err :=me.Client.QueryAll(struct {
+	r1, count, err := me.Client.QueryAll(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
@@ -29,7 +29,7 @@ func (me *T) GetNep17TransferByAddress(args struct {
 	}{
 		Collection: "TransferNotification",
 		Index:      "GetNep17TransferByAddress",
-		Sort:       bson.M{"_id":-1},
+		Sort:       bson.M{"_id": -1},
 		Filter: bson.M{"$or": []interface{}{
 			bson.M{"from": args.Address.TransferredVal()},
 			bson.M{"to": args.Address.TransferredVal()},

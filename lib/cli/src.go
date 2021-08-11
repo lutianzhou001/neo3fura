@@ -371,7 +371,6 @@ func (me *T) QueryLastJob(args struct {
 	return result, nil
 }
 
-
 func (me *T) QueryAggregate(args struct {
 	Collection string
 	Index      string
@@ -455,5 +454,3 @@ func (me *T) QueryDocument(args struct {
 	return convert, nil
 
 }
-
-
