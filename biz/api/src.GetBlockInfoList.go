@@ -59,7 +59,7 @@ func (me *T) GetBlockInfoList(args struct {
 		r2 = append(r2, item)
 
 	}
-	r4, err := me.FilterArrayAndAppendCount(r1, count, args.Filter)
+	r4, err := me.FilterArrayAndAppendCount(r2, count, args.Filter)
 	r, err := json.Marshal(r4)
 	if err != nil {
 		return err
