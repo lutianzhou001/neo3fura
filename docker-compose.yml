@@ -1,0 +1,101 @@
+version: "3.3"
+services:
+  neofura_http:
+    build:
+      context: "./neo3fura_http"
+      args:
+        RT: ${RUNTIME}
+    ports:
+      - "1926:1926"
+    networks:
+      - network
+    restart: always
+    container_name: service_http_${RUNTIME}
+    depends_on:
+      - redis
+      - mongosetup
+
+  neofura_ws:
+    build:
+      context: "./neo3fura_ws"
+      args:
+        RT: ${RUNTIME}
+    ports:
+      - "2026:2026"
+    networks:
+      - network
+    restart: always
+    container_name: service_ws_${RUNTIME}
+    depends_on:
+      - redis
+      - mongosetup
+
+  redis:
+    image: redis
+    networks:
+      - network
+    ports:
+      - "6379:6379"
+    container_name: cache_${RUNTIME}
+
+  mongodb1:
+    image: mongo
+    restart: always
+    container_name: mongodb1_${RUNTIME}
+    volumes:
+    - mongodata1:/data/db
+    networks:
+      - network
+    ports:
+      - "27001:27017"
+    expose:
+      - "27017"
+    entrypoint: [ "/usr/bin/mongod", "--replSet", "rsmongo", "--bind_ip_all", "--wiredTigerCacheSizeGB", "1"]
+
+  mongodb2:
+    image: mongo
+    restart: always
+    networks:
+      - network
+    container_name: mongodb2_${RUNTIME}
+    volumes:
+    - mongodata2:/data/db
+    ports:
+      - "27002:27017"
+    expose:
+      - "27017"
+    entrypoint: [ "/usr/bin/mongod", "--replSet", "rsmongo", "--bind_ip_all", "--wiredTigerCacheSizeGB", "1"]
+      
+  mongodb3:
+    image: mongo
+    restart: always
+    networks:
+      - network
+    container_name: mongodb3_${RUNTIME}
+    volumes:
+    - mongodata3:/data/db
+    ports:
+      - "27003:27017"
+    expose:
+      - "27017"
+    entrypoint: [ "/usr/bin/mongod", "--replSet", "rsmongo", "--bind_ip_all", "--wiredTigerCacheSizeGB", "1" ]
+
+  mongosetup:
+    image: "mongo-setup"
+    build: "./neo3fura_http/mongo-setup"
+    networks:
+      - network
+    container_name: mongosetup_${RUNTIME}
+    depends_on:
+        - mongodb1
+    volumes:
+        - mongostatus:/data/
+
+volumes:
+    mongodata1:
+    mongodata2:
+    mongodata3:
+    mongostatus:
+
+networks:
+  network:
