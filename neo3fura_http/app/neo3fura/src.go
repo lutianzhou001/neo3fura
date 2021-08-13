@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/robfig/cron"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"gopkg.in/yaml.v2"
 	"log"
 	"neo3fura_http/biz/api"
@@ -55,7 +57,13 @@ func main() {
 		log.Fatalln(err)
 	}
 	ctx := context.TODO()
+
+	co := intializeMongoOnlineClient(ctx)
+	cl := intializeMongoLocalClient(ctx)
+
 	client := &cli.T{
+		C_online: co,
+		C_local:  cl,
 		Ctx:      ctx,
 		RpcCli:   neoRpc.NewClient(""), // placeholder
 		RpcPorts: cfg.Proxy.Uri,
@@ -96,4 +104,42 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func intializeMongoOnlineClient(ctx context.Context) *mongo.Client {
+	rt := os.ExpandEnv("${RUNTIME}")
+	var clientOptions *options.ClientOptions
+	switch rt {
+	case "DEV":
+		clientOptions = options.Client().ApplyURI("mongodb://" + cfg.Database_Dev.User + ":" + cfg.Database_Dev.Pass + "@" + cfg.Database_Dev.Host + ":" + cfg.Database_Dev.Port + "/" + cfg.Database_Dev.Database)
+	case "TEST":
+		clientOptions = options.Client().ApplyURI("mongodb://" + cfg.Database_Test.User + ":" + cfg.Database_Test.Pass + "@" + cfg.Database_Test.Host + ":" + cfg.Database_Test.Port + "/" + cfg.Database_Test.Database)
+	case "STAGING":
+		clientOptions = options.Client().ApplyURI("mongodb://" + cfg.Database_Staging.User + ":" + cfg.Database_Staging.Pass + "@" + cfg.Database_Staging.Host + ":" + cfg.Database_Staging.Port + "/" + cfg.Database_Staging.Database)
+	default:
+		log.Fatal("err")
+	}
+	co, err := mongo.Connect(ctx, clientOptions)
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = co.Ping(ctx, nil)
+	if err != nil {
+		log.Fatal("err")
+	}
+	return co
+}
+
+func intializeMongoLocalClient(ctx context.Context) *mongo.Client {
+	var clientOptions *options.ClientOptions
+	clientOptions = options.Client().ApplyURI("mongodb://" + cfg.Database_Local.Host + ":" + cfg.Database_Local.Port + "/" + cfg.Database_Local.Database)
+	cl, err := mongo.Connect(ctx, clientOptions)
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = cl.Ping(ctx, nil)
+	if err != nil {
+		log.Fatal("err")
+	}
+	return cl
 }

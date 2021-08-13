@@ -22,6 +22,8 @@ import (
 
 // T ...
 type T struct {
+	C_online *mongo.Client
+	C_local  *mongo.Client
 	Ctx      context.Context
 	RpcCli   *rpc.RpcClient
 	RpcPorts []string
@@ -64,66 +66,6 @@ type Config struct {
 		Host string `yaml:"host"`
 		Port string `yaml:"port"`
 	} `yaml:"redis"`
-}
-
-func (me *T) chooseDatabase(database string, cfg Config) (co *options.ClientOptions, err error) {
-	switch database {
-	case "DEV":
-		clientOptions := options.Client().ApplyURI("mongodb://" + cfg.Database_Dev.User + ":" + cfg.Database_Dev.Pass + "@" + cfg.Database_Dev.Host + ":" + cfg.Database_Dev.Port + "/" + cfg.Database_Dev.Database)
-		return clientOptions, nil
-	case "TEST":
-		clientOptions := options.Client().ApplyURI("mongodb://" + cfg.Database_Test.User + ":" + cfg.Database_Test.Pass + "@" + cfg.Database_Test.Host + ":" + cfg.Database_Test.Port + "/" + cfg.Database_Test.Database)
-		return clientOptions, nil
-	case "STAGING":
-		clientOptions := options.Client().ApplyURI("mongodb://" + cfg.Database_Staging.User + ":" + cfg.Database_Staging.Pass + "@" + cfg.Database_Staging.Host + ":" + cfg.Database_Staging.Port + "/" + cfg.Database_Staging.Database)
-		return clientOptions, nil
-	case "LOCAL":
-		clientOptions := options.Client().ApplyURI("mongodb://" + cfg.Database_Local.Host + ":" + cfg.Database_Local.Port + "/" + cfg.Database_Local.Database)
-		return clientOptions, nil
-	default:
-		return nil, err
-	}
-}
-
-func (me *T) getDbName(cfg Config, database string) string {
-	switch database {
-	case "DEV":
-		dbName := cfg.Database_Dev.DBName
-		return dbName
-	case "TEST":
-		dbName := cfg.Database_Test.DBName
-		return dbName
-	case "STAGING":
-		dbName := cfg.Database_Staging.DBName
-		return dbName
-	case "LOCAL":
-		dbName := cfg.Database_Local.DBName
-		return dbName
-	default:
-		return ""
-	}
-}
-
-func (me *T) getConnection(database string) (uc *mongo.Client, err error) {
-	cfg, err := me.OpenConfigFile()
-	if err != nil {
-		log.Fatalln(err)
-	}
-	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
-	co, err := me.chooseDatabase(database, cfg)
-	if err != nil {
-		return nil, err
-	}
-	co = co.SetMaxPoolSize(50)
-	userClient, err := mongo.Connect(ctx, co)
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = userClient.Ping(ctx, nil)
-	if err != nil {
-		return nil, err
-	}
-	return userClient, nil
 }
 
 func (me *T) OpenConfigFile() (Config, error) {
@@ -218,6 +160,8 @@ func (me *T) QueryOne(args struct {
 	if err == redis.Nil || args.Sort != nil {
 		var result map[string]interface{}
 		convert := make(map[string]interface{})
+
+
 		uc, err := me.getConnection(os.ExpandEnv("${RUNTIME}"))
 		if err != nil {
 			return nil, err
@@ -225,6 +169,8 @@ func (me *T) QueryOne(args struct {
 		dbName := me.getDbName(cfg, os.ExpandEnv("${RUNTIME}"))
 		collection := uc.Database(dbName).Collection(args.Collection)
 		defer uc.Disconnect(me.Ctx)
+
+
 		opts := options.FindOne().SetSort(args.Sort)
 		err = collection.FindOne(me.Ctx, args.Filter, opts).Decode(&result)
 		if err == mongo.ErrNoDocuments {
