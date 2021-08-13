@@ -13,7 +13,12 @@ import (
 )
 
 var add = flag.String("addr", "0.0.0.0:2026", "http service address")
-var upgrader = websocket.Upgrader{} // use default options
+var upgrader = websocket.Upgrader{
+	// 解决跨域问题
+	CheckOrigin: func(r *http.Request) bool {
+		return true
+	},
+} // use default options
 
 func mainpage(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("DETECT CONNECTION")
