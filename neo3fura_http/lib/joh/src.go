@@ -15,6 +15,7 @@ import (
 	"net/url"
 	"path/filepath"
 	"sort"
+
 	// "sort"
 )
 
@@ -50,30 +51,30 @@ func (me *T) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		log.Printf("Error decoding in JOSN: %v", err)
 		http.Error(w, "can't decoding in JSON", http.StatusBadRequest)
-	}
-
-	c, err := me.OpenConfigFile()
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	sort.Strings(c.Methods.Realized)
-
-	index := sort.SearchStrings(c.Methods.Realized, fmt.Sprintf("%v", request["method"]))
-	if index < len(c.Methods.Realized) && c.Methods.Realized[index] == request["method"] {
-		// can find
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		// remoteIP := GetIP(r)
-		// fmt.Println(remoteIP)
-		conn := &rwio.T{R: req.Body, W: w}
-		codec := &scex.T{}
-		codec.Init(conn)
-		rpc.ServeCodec(codec)
 	} else {
-		// can't find
-		me.Handle(c.Proxy.URI[repostMode], w, r)
-		repostMode = (repostMode + 1) % 5
+		c, err := me.OpenConfigFile()
+		if err != nil {
+			log.Fatalln(err)
+		}
+
+		sort.Strings(c.Methods.Realized)
+
+		index := sort.SearchStrings(c.Methods.Realized, fmt.Sprintf("%v", request["method"]))
+		if index < len(c.Methods.Realized) && c.Methods.Realized[index] == request["method"] {
+			// can find
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			// remoteIP := GetIP(r)
+			// fmt.Println(remoteIP)
+			conn := &rwio.T{R: req.Body, W: w}
+			codec := &scex.T{}
+			codec.Init(conn)
+			rpc.ServeCodec(codec)
+		} else {
+			// can't find
+			me.Handle(c.Proxy.URI[repostMode], w, r)
+			repostMode = (repostMode + 1) % 5
+		}
 	}
 }
 
