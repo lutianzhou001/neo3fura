@@ -44,6 +44,11 @@ func mainpage(w http.ResponseWriter, r *http.Request) {
 }
 
 func ResponseController(mt int, wsc *websocket.Conn, ch *chan map[string]interface{}) {
+	str := "hello websocket"
+	err := wsc.WriteMessage(mt, []byte(str))
+	if err != nil {
+		log.Fatal(err)
+	}
 	for {
 		b := <-*ch
 		sent, err := json.Marshal(b)
