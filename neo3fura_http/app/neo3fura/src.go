@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/go-redis/redis/v8"
 	"github.com/robfig/cron"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -37,14 +38,42 @@ func OpenConfigFile() (Config, error) {
 }
 
 type Config struct {
-	Database struct {
+	Database_Dev struct {
 		Host     string `yaml:"host"`
 		Port     string `yaml:"port"`
 		User     string `yaml:"user"`
 		Pass     string `yaml:"pass"`
 		Database string `yaml:"database"`
 		DBName   string `yaml:"dbname"`
-	} `yaml:"database"`
+	} `yaml:"database_dev"`
+	Database_Test struct {
+		Host     string `yaml:"host"`
+		Port     string `yaml:"port"`
+		User     string `yaml:"user"`
+		Pass     string `yaml:"pass"`
+		Database string `yaml:"database"`
+		DBName   string `yaml:"dbname"`
+	} `yaml:"database_test"`
+	Database_Staging struct {
+		Host     string `yaml:"host"`
+		Port     string `yaml:"port"`
+		User     string `yaml:"user"`
+		Pass     string `yaml:"pass"`
+		Database string `yaml:"database"`
+		DBName   string `yaml:"dbname"`
+	} `yaml:"database_staging"`
+	Database_Local struct {
+		Host     string `yaml:"host"`
+		Port     string `yaml:"port"`
+		User     string `yaml:"user"`
+		Pass     string `yaml:"pass"`
+		Database string `yaml:"database"`
+		DBName   string `yaml:"dbname"`
+	} `yaml:"database_local"`
+	Redis struct {
+		Host string `yaml:"host"`
+		Port string `yaml:"port"`
+	} `yaml:"redis"`
 	Proxy struct {
 		Uri []string `yaml:"uri"`
 	} `yaml:"proxy"`
@@ -58,15 +87,18 @@ func main() {
 	}
 	ctx := context.TODO()
 
-	co := intializeMongoOnlineClient(ctx)
-	cl := intializeMongoLocalClient(ctx)
+	co, dbOnline := intializeMongoOnlineClient(cfg, ctx)
+	cl := intializeMongoLocalClient(cfg, ctx)
+	rds := initializeRedisLocalClient(cfg, ctx)
 
 	client := &cli.T{
-		C_online: co,
-		C_local:  cl,
-		Ctx:      ctx,
-		RpcCli:   neoRpc.NewClient(""), // placeholder
-		RpcPorts: cfg.Proxy.Uri,
+		Redis:     rds,
+		Db_online: dbOnline,
+		C_online:  co,
+		C_local:   cl,
+		Ctx:       ctx,
+		RpcCli:    neoRpc.NewClient(""), // placeholder
+		RpcPorts:  cfg.Proxy.Uri,
 	}
 	rpc.Register(&api.T{
 		Client: client,
@@ -106,16 +138,20 @@ func main() {
 	}
 }
 
-func intializeMongoOnlineClient(ctx context.Context) *mongo.Client {
+func intializeMongoOnlineClient(cfg Config, ctx context.Context) (*mongo.Client, string) {
 	rt := os.ExpandEnv("${RUNTIME}")
 	var clientOptions *options.ClientOptions
+	var dbOnline string
 	switch rt {
 	case "DEV":
 		clientOptions = options.Client().ApplyURI("mongodb://" + cfg.Database_Dev.User + ":" + cfg.Database_Dev.Pass + "@" + cfg.Database_Dev.Host + ":" + cfg.Database_Dev.Port + "/" + cfg.Database_Dev.Database)
+		dbOnline = cfg.Database_Dev.Database
 	case "TEST":
 		clientOptions = options.Client().ApplyURI("mongodb://" + cfg.Database_Test.User + ":" + cfg.Database_Test.Pass + "@" + cfg.Database_Test.Host + ":" + cfg.Database_Test.Port + "/" + cfg.Database_Test.Database)
+		dbOnline = cfg.Database_Test.Database
 	case "STAGING":
 		clientOptions = options.Client().ApplyURI("mongodb://" + cfg.Database_Staging.User + ":" + cfg.Database_Staging.Pass + "@" + cfg.Database_Staging.Host + ":" + cfg.Database_Staging.Port + "/" + cfg.Database_Staging.Database)
+		dbOnline = cfg.Database_Staging.Database
 	default:
 		log.Fatal("err")
 	}
@@ -127,10 +163,10 @@ func intializeMongoOnlineClient(ctx context.Context) *mongo.Client {
 	if err != nil {
 		log.Fatal("err")
 	}
-	return co
+	return co, dbOnline
 }
 
-func intializeMongoLocalClient(ctx context.Context) *mongo.Client {
+func intializeMongoLocalClient(cfg Config, ctx context.Context) *mongo.Client {
 	var clientOptions *options.ClientOptions
 	clientOptions = options.Client().ApplyURI("mongodb://" + cfg.Database_Local.Host + ":" + cfg.Database_Local.Port + "/" + cfg.Database_Local.Database)
 	cl, err := mongo.Connect(ctx, clientOptions)
@@ -142,4 +178,13 @@ func intializeMongoLocalClient(ctx context.Context) *mongo.Client {
 		log.Fatal("err")
 	}
 	return cl
+}
+
+func initializeRedisLocalClient(cfg Config, ctx context.Context) *redis.Client {
+	rdb := redis.NewClient(&redis.Options{
+		Addr:     cfg.Redis.Host + ":" + cfg.Redis.Port,
+		Password: "", // no password set
+		DB:       0,  // use default DB
+	})
+	return rdb
 }

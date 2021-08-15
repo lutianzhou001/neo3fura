@@ -20,7 +20,6 @@ func (me T) GetActiveAddresses() error {
 	if err != nil {
 		return err
 	}
-
 	r1, _, err := me.Client.QueryAll(struct {
 		Collection string
 		Index      string

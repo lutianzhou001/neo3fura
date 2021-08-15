@@ -13,105 +13,26 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"gopkg.in/yaml.v3"
 	"log"
-	"os"
-	"path/filepath"
-	"time"
 )
 
 // T ...
 type T struct {
-	C_online *mongo.Client
-	C_local  *mongo.Client
-	Ctx      context.Context
-	RpcCli   *rpc.RpcClient
-	RpcPorts []string
-}
-
-type Config struct {
-	Database_Dev struct {
-		Host     string `yaml:"host"`
-		Port     string `yaml:"port"`
-		User     string `yaml:"user"`
-		Pass     string `yaml:"pass"`
-		Database string `yaml:"database"`
-		DBName   string `yaml:"dbname"`
-	} `yaml:"database_dev"`
-	Database_Test struct {
-		Host     string `yaml:"host"`
-		Port     string `yaml:"port"`
-		User     string `yaml:"user"`
-		Pass     string `yaml:"pass"`
-		Database string `yaml:"database"`
-		DBName   string `yaml:"dbname"`
-	} `yaml:"database_test"`
-	Database_Staging struct {
-		Host     string `yaml:"host"`
-		Port     string `yaml:"port"`
-		User     string `yaml:"user"`
-		Pass     string `yaml:"pass"`
-		Database string `yaml:"database"`
-		DBName   string `yaml:"dbname"`
-	} `yaml:"database_staging"`
-	Database_Local struct {
-		Host     string `yaml:"host"`
-		Port     string `yaml:"port"`
-		User     string `yaml:"user"`
-		Pass     string `yaml:"pass"`
-		Database string `yaml:"database"`
-		DBName   string `yaml:"dbname"`
-	} `yaml:"database_local"`
-	Redis struct {
-		Host string `yaml:"host"`
-		Port string `yaml:"port"`
-	} `yaml:"redis"`
-}
-
-func (me *T) OpenConfigFile() (Config, error) {
-	absPath, _ := filepath.Abs("./config.yml")
-	f, err := os.Open(absPath)
-	if err != nil {
-		return Config{}, err
-	}
-	defer f.Close()
-	var cfg Config
-	decoder := yaml.NewDecoder(f)
-	err = decoder.Decode(&cfg)
-	if err != nil {
-		return Config{}, err
-	}
-	return cfg, err
+	Redis     *redis.Client
+	Db_online string
+	C_online  *mongo.Client
+	C_local   *mongo.Client
+	Ctx       context.Context
+	RpcCli    *rpc.RpcClient
+	RpcPorts  []string
 }
 
 func (me *T) ListDatabaseNames() error {
-	uc, err := me.getConnection(os.ExpandEnv("${RUNTIME}"))
-	if err != nil {
-		return err
-	}
-	databases, err := uc.ListDatabaseNames(me.Ctx, bson.M{})
+	databases, err := me.C_online.ListDatabaseNames(me.Ctx, bson.M{})
 	if err != nil {
 		log.Fatal(err)
 	}
 	fmt.Println(databases)
-	return nil
-}
-
-func (me *T) ListCollections() error {
-	cfg, err := me.OpenConfigFile()
-	if err != nil {
-		return err
-	}
-	uc, err := me.getConnection(os.ExpandEnv("${RUNTIME}"))
-	if err != nil {
-		return err
-	}
-	dbName := me.getDbName(cfg, os.ExpandEnv("${RUNTIME}"))
-	collections, err := uc.Database(dbName).ListCollectionNames(me.Ctx, bson.M{})
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println(collections)
 	return nil
 }
 
@@ -122,15 +43,6 @@ func (me *T) QueryOne(args struct {
 	Filter     bson.M
 	Query      []string
 }, ret *json.RawMessage) (map[string]interface{}, error) {
-
-	// connect to redis
-	// if found return conver,ret
-	// if not found
-	cfg, err := me.OpenConfigFile()
-	if err != nil {
-		return nil, err
-	}
-
 	var kvs string
 	kvs = kvs + args.Collection
 	kvs = kvs + args.Index
@@ -146,31 +58,12 @@ func (me *T) QueryOne(args struct {
 	h := sha1.New()
 	h.Write([]byte(kvs))
 	hash := hex.EncodeToString(h.Sum(nil))
-
-	var ctx = context.Background()
-
-	rdb := redis.NewClient(&redis.Options{
-		Addr:     cfg.Redis.Host + ":" + cfg.Redis.Port,
-		Password: "", // no password set
-		DB:       0,  // use default DB
-	})
-
-	val, err := rdb.Get(ctx, hash).Result()
+	val, err := me.Redis.Get(me.Ctx, hash).Result()
 	// if sort != nil, it may have several results, we have to pick the sorted one
 	if err == redis.Nil || args.Sort != nil {
 		var result map[string]interface{}
 		convert := make(map[string]interface{})
-
-
-		uc, err := me.getConnection(os.ExpandEnv("${RUNTIME}"))
-		if err != nil {
-			return nil, err
-		}
-		dbName := me.getDbName(cfg, os.ExpandEnv("${RUNTIME}"))
-		collection := uc.Database(dbName).Collection(args.Collection)
-		defer uc.Disconnect(me.Ctx)
-
-
+		collection := me.C_online.Database(me.Db_online).Collection(args.Collection)
 		opts := options.FindOne().SetSort(args.Sort)
 		err = collection.FindOne(me.Ctx, args.Filter, opts).Decode(&result)
 		if err == mongo.ErrNoDocuments {
@@ -189,7 +82,7 @@ func (me *T) QueryOne(args struct {
 		if err != nil {
 			return nil, err
 		}
-		err = rdb.Set(ctx, hash, hex.EncodeToString(r), 0).Err()
+		err = me.Redis.Set(me.Ctx, hash, hex.EncodeToString(r), 0).Err()
 		if err != nil {
 			return nil, err
 		}
@@ -224,18 +117,9 @@ func (me *T) QueryAll(args struct {
 	Limit      int64
 	Skip       int64
 }, ret *json.RawMessage) ([]map[string]interface{}, int64, error) {
-	cfg, err := me.OpenConfigFile()
-	if err != nil {
-		return nil, 0, err
-	}
 	var results []map[string]interface{}
 	convert := make([]map[string]interface{}, 0)
-	uc, err := me.getConnection(os.ExpandEnv("${RUNTIME}"))
-	if err != nil {
-		return nil, 0, err
-	}
-	dbName := me.getDbName(cfg, os.ExpandEnv("${RUNTIME}"))
-	collection := uc.Database(dbName).Collection(args.Collection)
+	collection := me.C_online.Database(me.Db_online).Collection(args.Collection)
 	op := options.Find()
 	op.SetSort(args.Sort)
 	op.SetLimit(args.Limit)
@@ -247,7 +131,6 @@ func (me *T) QueryAll(args struct {
 	}
 	cursor, err := collection.Find(me.Ctx, args.Filter, op)
 	defer cursor.Close(me.Ctx)
-	defer uc.Disconnect(me.Ctx)
 	if err == mongo.ErrNoDocuments {
 		return nil, 0, errors.New("NOT FOUND")
 	}
@@ -280,36 +163,21 @@ func (me *T) SaveJob(args struct {
 	Collection string
 	Data       bson.M
 }) (bool, error) {
-	cfg, err := me.OpenConfigFile()
+	collection := me.C_local.Database("job").Collection(args.Collection)
+	_, err := collection.InsertOne(me.Ctx, args.Data)
 	if err != nil {
 		return false, err
 	}
-	uc, err := me.getConnection("LOCAL")
-	if err != nil {
-		return false, err
-	}
-	dbName := me.getDbName(cfg, "LOCAL")
-	collection := uc.Database(dbName).Collection(args.Collection)
-	_, err = collection.InsertOne(me.Ctx, args.Data)
 	return true, nil
 }
 
 func (me *T) QueryLastJob(args struct {
 	Collection string
 }) (map[string]interface{}, error) {
-	cfg, err := me.OpenConfigFile()
-	if err != nil {
-		return nil, err
-	}
-	uc, err := me.getConnection("LOCAL")
-	if err != nil {
-		return nil, err
-	}
-	dbName := me.getDbName(cfg, "LOCAL")
-	collection := uc.Database(dbName).Collection(args.Collection)
+	collection := me.C_local.Database("job").Collection(args.Collection)
 	var result map[string]interface{}
 	opts := options.FindOne().SetSort(bson.M{"_id": -1})
-	err = collection.FindOne(me.Ctx, bson.M{}, opts).Decode(&result)
+	err := collection.FindOne(me.Ctx, bson.M{}, opts).Decode(&result)
 	if err != nil {
 		return nil, err
 	}
@@ -324,20 +192,10 @@ func (me *T) QueryAggregate(args struct {
 	Pipeline   []bson.M
 	Query      []string
 }, ret *json.RawMessage) ([]map[string]interface{}, error) {
-	cfg, err := me.OpenConfigFile()
-	if err != nil {
-		return nil, err
-	}
 	var results []map[string]interface{}
 	convert := make([]map[string]interface{}, 0)
-	uc, err := me.getConnection(os.ExpandEnv("${RUNTIME}"))
-	if err != nil {
-		return nil, err
-	}
-	dbName := me.getDbName(cfg, os.ExpandEnv("${RUNTIME}"))
-	collection := uc.Database(dbName).Collection(args.Collection)
+	collection := me.C_online.Database(me.Db_online).Collection(args.Collection)
 	op := options.AggregateOptions{}
-
 	cursor, err := collection.Aggregate(me.Ctx, args.Pipeline, &op)
 	if err == mongo.ErrNoDocuments {
 		return nil, errors.New("NOT FOUNT")
@@ -373,19 +231,9 @@ func (me *T) QueryDocument(args struct {
 	Sort       bson.M
 	Filter     bson.M
 }, ret *json.RawMessage) (map[string]interface{}, error) {
-	cfg, err := me.OpenConfigFile()
-	if err != nil {
-		return nil, err
-	}
 	co := options.CountOptions{}
-	uc, err := me.getConnection(os.ExpandEnv("${RUNTIME}"))
-	if err != nil {
-		return nil, err
-	}
-	dbName := me.getDbName(cfg, os.ExpandEnv("${RUNTIME}"))
-	collection := uc.Database(dbName).Collection(args.Collection)
-	count, _ := collection.CountDocuments(me.Ctx, args.Filter, &co)
-
+	collection := me.C_online.Database(me.Db_online).Collection(args.Collection)
+	count, err := collection.CountDocuments(me.Ctx, args.Filter, &co)
 	if err == mongo.ErrNoDocuments {
 		return nil, errors.New("NOT FOUNT")
 	}
@@ -397,5 +245,4 @@ func (me *T) QueryDocument(args struct {
 	}
 	*ret = json.RawMessage(r)
 	return convert, nil
-
 }
