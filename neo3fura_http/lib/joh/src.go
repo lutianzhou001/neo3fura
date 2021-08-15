@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
-	"log"
+	log2 "neo3fura_http/lib/log"
 	"neo3fura_http/lib/rwio"
 	"neo3fura_http/lib/scex"
 	"net/http"
@@ -39,7 +39,7 @@ func (me *T) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	body, err := ioutil.ReadAll(req.Body)
 
 	if err != nil {
-		log.Printf("Error in reading body: %v", err)
+		log2.Infof("Error in reading body: %v", err)
 		http.Error(w, "can't read body", http.StatusBadRequest)
 	}
 	r := req.Clone(req.Context())
@@ -49,14 +49,13 @@ func (me *T) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	request := make(map[string]interface{})
 	err = json.Unmarshal(body, &request)
 	if err != nil {
-		log.Printf("Error decoding in JOSN: %v", err)
+		log2.Infof("Error decoding in JOSN: %v", err)
 		http.Error(w, "can't decoding in JSON", http.StatusBadRequest)
 	} else {
 		c, err := me.OpenConfigFile()
 		if err != nil {
-			log.Fatalln(err)
+			log2.Fatalf("open config file error:%s",err)
 		}
-
 		sort.Strings(c.Methods.Realized)
 
 		index := sort.SearchStrings(c.Methods.Realized, fmt.Sprintf("%v", request["method"]))

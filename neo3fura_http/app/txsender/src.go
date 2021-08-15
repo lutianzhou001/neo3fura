@@ -5,8 +5,8 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"io/ioutil"
-	"log"
 	"math/rand"
+	log2 "neo3fura_http/lib/log"
 	"net/http"
 	"os"
 	"strings"
@@ -30,7 +30,7 @@ var addressesNEOCLI []string
 func task() {
 	defer func() {
 		if r := recover(); r != nil {
-			log.Println("[!!!!][ERROR]", r)
+			log2.Infof("[!!!!][ERROR]",r)
 			time.Sleep(time.Second)
 		}
 	}()
@@ -60,7 +60,7 @@ func task() {
 		addressNEOCLI := addressesNEOCLI[rand.Intn(len(addressesNEOCLI))]
 		resp, err := http.Post(addressNEOCLI, "application/json", bytes.NewReader(payload))
 		if err != nil {
-			log.Println("[????][REQ]", err)
+			log2.Infof("[????][REQ]", err)
 			continue
 		}
 		defer resp.Body.Close()

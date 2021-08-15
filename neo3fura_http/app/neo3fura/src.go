@@ -2,17 +2,16 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"github.com/go-redis/redis/v8"
 	"github.com/robfig/cron"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"gopkg.in/yaml.v2"
-	"log"
 	"neo3fura_http/biz/api"
 	"neo3fura_http/biz/job"
 	"neo3fura_http/lib/cli"
 	"neo3fura_http/lib/joh"
+	log2 "neo3fura_http/lib/log"
 	"net/http"
 	"net/rpc"
 	"os"
@@ -80,13 +79,12 @@ type Config struct {
 }
 
 func main() {
-	fmt.Println("YOUR ENV IS " + os.ExpandEnv("${RUNTIME}"))
+	log2.Infof("YOUR ENV IS %s", os.ExpandEnv("${RUNTIME}"))
 	cfg, err := OpenConfigFile()
 	if err != nil {
-		log.Fatalln(err)
+		log2.Fatalf("open file error:%s", err)
 	}
 	ctx := context.TODO()
-
 	co, dbOnline := intializeMongoOnlineClient(cfg, ctx)
 	cl := intializeMongoLocalClient(cfg, ctx)
 	rds := initializeRedisLocalClient(cfg, ctx)
@@ -126,15 +124,15 @@ func main() {
 		go j.GetAssetCount()
 	})
 	if err != nil {
-		log.Fatal(err)
+		log2.Fatal("add job function error:%s", err)
 	}
 	c.Start()
 
 	listen := os.ExpandEnv("0.0.0.0:1926")
-	log.Println("[LISTEN]", listen)
+	log2.Infof("NOW LISTEN ON: %s", listen)
 	err = http.ListenAndServe(listen, &joh.T{})
 	if err != nil {
-		log.Fatal(err)
+		log2.Fatalf("linsten and server error:%s", err)
 	}
 }
 
@@ -153,15 +151,15 @@ func intializeMongoOnlineClient(cfg Config, ctx context.Context) (*mongo.Client,
 		clientOptions = options.Client().ApplyURI("mongodb://" + cfg.Database_Staging.User + ":" + cfg.Database_Staging.Pass + "@" + cfg.Database_Staging.Host + ":" + cfg.Database_Staging.Port + "/" + cfg.Database_Staging.Database)
 		dbOnline = cfg.Database_Staging.Database
 	default:
-		log.Fatal("err")
+		log2.Fatalf("runtime environment mismatch")
 	}
 	co, err := mongo.Connect(ctx, clientOptions)
 	if err != nil {
-		log.Fatal(err)
+		log2.Fatalf("mongo connect error:%s", err)
 	}
 	err = co.Ping(ctx, nil)
 	if err != nil {
-		log.Fatal("err")
+		log2.Fatalf("ping mongo error:%s", err)
 	}
 	return co, dbOnline
 }
@@ -171,11 +169,11 @@ func intializeMongoLocalClient(cfg Config, ctx context.Context) *mongo.Client {
 	clientOptions = options.Client().ApplyURI("mongodb://" + cfg.Database_Local.Host + ":" + cfg.Database_Local.Port + "/" + cfg.Database_Local.Database)
 	cl, err := mongo.Connect(ctx, clientOptions)
 	if err != nil {
-		log.Fatal(err)
+		log2.Fatalf("connect to mongo error:%s", err)
 	}
 	err = cl.Ping(ctx, nil)
 	if err != nil {
-		log.Fatal("err")
+		log2.Fatalf("ping mongo error:%s", err)
 	}
 	return cl
 }
