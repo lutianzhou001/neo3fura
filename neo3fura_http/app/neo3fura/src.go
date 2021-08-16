@@ -105,9 +105,10 @@ func main() {
 	j := &job.T{
 		Client: client,
 	}
-
+G
 	c := cron.New()
-	spec := "0 0/10 * * * *"
+	spec := "0/15 * * * * *"
+
 	err = c.AddFunc(spec, func() {
 		go j.GetPopularTokens()
 		go j.GetHoldersByContractHash()

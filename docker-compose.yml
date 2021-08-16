@@ -65,7 +65,7 @@ services:
     expose:
       - "27017"
     entrypoint: [ "/usr/bin/mongod", "--replSet", "rsmongo", "--bind_ip_all", "--wiredTigerCacheSizeGB", "1"]
-      
+
   mongodb3:
     image: mongo
     restart: always

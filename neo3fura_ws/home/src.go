@@ -1,6 +1,8 @@
 package home
 
-import "neo3fura_ws/cli"
+import (
+	"neo3fura_ws/lib/cli"
+)
 
 // T ...
 type T struct {
