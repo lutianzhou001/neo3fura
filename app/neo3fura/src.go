@@ -85,7 +85,7 @@ func main() {
 	}
 	c.Start()
 
-	listen := os.ExpandEnv("0.0.0.0:1927")
+	listen := os.ExpandEnv("0.0.0.0:1926")
 	log.Println("[LISTEN]", listen)
 	err = http.ListenAndServe(listen, &joh.T{})
 	if err != nil {
