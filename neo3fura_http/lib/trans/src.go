@@ -6,28 +6,11 @@ import (
 	"neo3fura_http/var/stderr"
 	"regexp"
 	"strings"
-
-	"github.com/btcsuite/btcutil/base58"
 )
 
 // T ...
 type T struct {
 	V interface{}
-}
-
-// AddressToHash ...
-func (me *T) AddressToHash() error {
-	switch address := me.V.(type) {
-	case string:
-		data := base58.Decode(address)
-		if len(data) < 22 {
-			return stderr.ErrInvalidArgs
-		}
-		me.V = data[1:21]
-		return nil
-	default:
-		return stderr.ErrInvalidArgs
-	}
 }
 
 // BytesToHex ...
