@@ -7,43 +7,31 @@ import (
 	"neo3fura_http/var/stderr"
 )
 
-func (me *T) GetNep17TransferByAddress(args struct {
+func (me *T) GetNep17TransferCountByAddress(args struct {
 	Address h160.T
-	Limit   int64
-	Skip    int64
 	Filter  map[string]interface{}
 }, ret *json.RawMessage) error {
 	if args.Address.Valid() == false {
 		return stderr.ErrInvalidArgs
 	}
-	r1, count, err := me.Client.QueryAll(struct {
+	r1, err := me.Client.QueryDocument(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
 		Filter     bson.M
-		Query      []string
-		Limit      int64
-		Skip       int64
 	}{
 		Collection: "TransferNotification",
-		Index:      "GetNep17TransferByAddress",
-		Sort:       bson.M{"_id": -1},
+		Index:      "GetNep17TransferCountByAddress",
+		Sort:       bson.M{},
 		Filter: bson.M{"$or": []interface{}{
 			bson.M{"from": args.Address.TransferredVal()},
 			bson.M{"to": args.Address.TransferredVal()},
 		}},
-		Query: []string{},
-		Limit: args.Limit,
-		Skip:  args.Skip,
 	}, ret)
 	if err != nil {
 		return err
 	}
-	r2, err := me.FilterArrayAndAppendCount(r1, count, args.Filter)
-	if err != nil {
-		return err
-	}
-	r, err := json.Marshal(r2)
+	r, err := json.Marshal(r1)
 	if err != nil {
 		return err
 	}

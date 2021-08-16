@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"neo3fura_http/lib/type/h256"
 	"neo3fura_http/var/stderr"
-
+    "fmt"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -50,7 +50,6 @@ func (me *T) GetBlockInfoByBlockHash(args struct {
 	} else {
 		r1["transactioncount"] = r4["total counts"]
 	}
-
 	r2, err2 := me.Client.QueryDocument(struct {
 		Collection string
 		Index      string
@@ -70,6 +69,8 @@ func (me *T) GetBlockInfoByBlockHash(args struct {
 	} else {
 		r1["nep11count"] = r2["total counts"]
 	}
+	fmt.Println("d")
+	fmt.Println(r2)
 	r3, err3 := me.Client.QueryDocument(struct {
 		Collection string
 		Index      string
@@ -89,7 +90,6 @@ func (me *T) GetBlockInfoByBlockHash(args struct {
 	} else {
 		r1["nep17count"] = r3["total counts"]
 	}
-
 	r, err := json.Marshal(r1)
 	if err != nil {
 		return err

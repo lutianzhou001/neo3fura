@@ -105,7 +105,7 @@ func main() {
 	j := &job.T{
 		Client: client,
 	}
-G
+
 	c := cron.New()
 	spec := "0/15 * * * * *"
 
