@@ -107,7 +107,7 @@ func main() {
 	}
 
 	c := cron.New()
-	spec := "0/15 * * * * *"
+	spec := "0/12 * * * * *"
 
 	err = c.AddFunc(spec, func() {
 		go j.GetPopularTokens()
