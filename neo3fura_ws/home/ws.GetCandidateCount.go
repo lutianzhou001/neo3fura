@@ -12,11 +12,11 @@ func (me *T) GetCandidateCount(ch *chan map[string]interface{}) error {
 	if err != nil {
 		return err
 	}
-	lastJob, err := me.Client.QueryLastJob(struct{ Collection string }{Collection: "AddressCount"})
+	lastJob, err := me.Client.QueryLastJob(struct{ Collection string }{Collection: "CandidateCount"})
 	if err != nil {
 		return err
 	}
-	candidateCount = lastJob["total counts"]
+	candidateCount = lastJob["CandidateCount"].(map[string]interface{})["total counts"]
 	*ch <- lastJob
 
 	cs, err := c.Watch(context.TODO(), mongo.Pipeline{})

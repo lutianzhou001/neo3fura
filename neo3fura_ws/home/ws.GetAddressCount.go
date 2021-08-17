@@ -16,7 +16,7 @@ func (me *T) GetAddressCount(ch *chan map[string]interface{}) error {
 	if err != nil {
 		return err
 	}
-	addressCount = lastJob["total counts"]
+	addressCount = lastJob["AddressCount"].(map[string]interface{})["total counts"]
 	*ch <- lastJob
 
 	cs, err := c.Watch(context.TODO(), mongo.Pipeline{})

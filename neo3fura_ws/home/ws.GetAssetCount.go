@@ -16,7 +16,7 @@ func (me *T) GetAssetCount(ch *chan map[string]interface{}) error {
 	if err != nil {
 		return err
 	}
-	assetCount = lastJob["total counts"]
+	assetCount = lastJob["AssetCount"].(map[string]interface{})["total counts"]
 	*ch <- lastJob
 
 	cs, err := c.Watch(context.TODO(), mongo.Pipeline{})

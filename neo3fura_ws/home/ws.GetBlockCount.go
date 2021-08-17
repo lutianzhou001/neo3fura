@@ -16,7 +16,7 @@ func (me *T) GetBlockCount(ch *chan map[string]interface{}) error {
 	if err != nil {
 		return err
 	}
-	blockCount = lastJob["total counts"]
+	blockCount = lastJob["BlockCount"].(map[string]interface{})["index"]
 	*ch <- lastJob
 
 	cs, err := c.Watch(context.TODO(), mongo.Pipeline{})
@@ -30,9 +30,9 @@ func (me *T) GetBlockCount(ch *chan map[string]interface{}) error {
 		if err != nil {
 			log.Fatal(err)
 		}
-		if blockCount != changeEvent["fullDocument"].(map[string]interface{})["BlockCount"].(map[string]interface{})["total counts"] {
+		if blockCount != changeEvent["fullDocument"].(map[string]interface{})["BlockCount"].(map[string]interface{})["index"] {
 			*ch <- changeEvent["fullDocument"].(map[string]interface{})
-			blockCount = changeEvent["fullDocument"].(map[string]interface{})["BlockCount"].(map[string]interface{})["total counts"]
+			blockCount = changeEvent["fullDocument"].(map[string]interface{})["BlockCount"].(map[string]interface{})["index"]
 		}
 	}
 	return nil

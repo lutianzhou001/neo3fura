@@ -16,7 +16,7 @@ func (me *T) GetTransactionCount(ch *chan map[string]interface{}) error {
 	if err != nil {
 		return err
 	}
-	transactionCount = lastJob["total counts"]
+	transactionCount = lastJob["TransactionCount"].(map[string]interface{})["total counts"]
 	*ch <- lastJob
 
 	cs, err := c.Watch(context.TODO(), mongo.Pipeline{})
