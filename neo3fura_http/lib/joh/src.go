@@ -49,7 +49,7 @@ func (me *T) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	request := make(map[string]interface{})
 	err = json.Unmarshal(body, &request)
 	if err != nil {
-		log2.Infof("Error decoding in JOSN: %v", err)
+		log2.Infof("Error decoding in JSON: %v", err)
 		http.Error(w, "can't decoding in JSON", http.StatusBadRequest)
 	} else {
 		c, err := me.OpenConfigFile()

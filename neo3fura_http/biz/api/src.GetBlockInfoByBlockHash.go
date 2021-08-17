@@ -2,10 +2,9 @@ package api
 
 import (
 	"encoding/json"
+	"go.mongodb.org/mongo-driver/bson"
 	"neo3fura_http/lib/type/h256"
 	"neo3fura_http/var/stderr"
-    "fmt"
-	"go.mongodb.org/mongo-driver/bson"
 )
 
 func (me *T) GetBlockInfoByBlockHash(args struct {
@@ -69,8 +68,6 @@ func (me *T) GetBlockInfoByBlockHash(args struct {
 	} else {
 		r1["nep11count"] = r2["total counts"]
 	}
-	fmt.Println("d")
-	fmt.Println(r2)
 	r3, err3 := me.Client.QueryDocument(struct {
 		Collection string
 		Index      string
