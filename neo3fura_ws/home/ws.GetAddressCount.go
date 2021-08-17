@@ -7,16 +7,23 @@ import (
 )
 
 func (me *T) GetAddressCount(ch *chan map[string]interface{}) error {
-	// var hash string
+	var addressCount interface{}
 	c, err := me.Client.GetCollection(struct{ Collection string }{Collection: "AddressCount"})
 	if err != nil {
 		return err
 	}
+	lastJob, err := me.Client.QueryLastJob(struct{ Collection string }{Collection: "AddressCount"})
+	if err != nil {
+		return err
+	}
+	addressCount = lastJob["total counts"]
+	*ch <- lastJob
+
 	cs, err := c.Watch(context.TODO(), mongo.Pipeline{})
 	if err != nil {
 		return err
 	}
-	var addressCount interface{}
+
 	// Whenever there is a new change event, decode the change event and print some information about it
 	for cs.Next(context.TODO()) {
 		var changeEvent map[string]interface{}

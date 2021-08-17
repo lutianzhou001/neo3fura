@@ -2,12 +2,12 @@ package home
 
 import (
 	"context"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"log"
 )
 
 func (me *T) GetBlockInfoList(ch *chan map[string]interface{}) error {
-	// var hash string
 	c, err := me.Client.GetCollection(struct{ Collection string }{Collection: "BlockInfoList"})
 	if err != nil {
 		return err
@@ -24,9 +24,13 @@ func (me *T) GetBlockInfoList(ch *chan map[string]interface{}) error {
 		if err != nil {
 			log.Fatal(err)
 		}
-		if blockInfoList != changeEvent["fullDocument"].(map[string]interface{})["BlockInfoList"].([]map[string]interface{})[0]["index"] {
-			*ch <- changeEvent["fullDocument"].(map[string]interface{})
-			blockInfoList = changeEvent["fullDocument"].(map[string]interface{})["BlockInfoList"].([]map[string]interface{})[0]["index"]
+		for i, item := range changeEvent["fullDocument"].(map[string]interface{})["BlockInfoList"].(primitive.A) {
+			if i == 0 && blockInfoList == item.(map[string]interface{})["hash"] {
+				*ch <- changeEvent["fullDocument"].(map[string]interface{})
+				blockInfoList = item.(map[string]interface{})["hash"]
+			} else {
+				break
+			}
 		}
 	}
 	return nil

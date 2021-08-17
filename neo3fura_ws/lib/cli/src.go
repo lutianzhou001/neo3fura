@@ -1,7 +1,11 @@
 package cli
 
 import (
+	"context"
+	"fmt"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 // T ...
@@ -25,4 +29,17 @@ func (me *T) GetCollection(args struct {
 }) (*mongo.Collection, error) {
 	collection := me.C_local.Database("job").Collection(args.Collection)
 	return collection, nil
+}
+
+func (me *T) QueryLastJob(args struct {
+	Collection string
+}) (map[string]interface{}, error) {
+	collection := me.C_local.Database("job").Collection(args.Collection)
+	var result map[string]interface{}
+	opts := options.FindOne().SetSort(bson.M{"_id": -1})
+	err := collection.FindOne(context.TODO(), bson.M{}, opts).Decode(&result)
+	if err != nil {
+		return nil, fmt.Errorf("find last job error:%s", err)
+	}
+	return result, nil
 }
