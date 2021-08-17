@@ -16,7 +16,7 @@ func (me *T) GetBlockInfoList(ch *chan map[string]interface{}) error {
 	if err != nil {
 		return err
 	}
-	var blockInfoList map[string]interface{}
+	var blockInfoList interface{}
 	// Whenever there is a new change event, decode the change event and print some information about it
 	for cs.Next(context.TODO()) {
 		var changeEvent map[string]interface{}
@@ -24,9 +24,9 @@ func (me *T) GetBlockInfoList(ch *chan map[string]interface{}) error {
 		if err != nil {
 			log.Fatal(err)
 		}
-		if blockInfoList["index"] != changeEvent["fullDocument"].(map[string]interface{})["BlockInfoList"].([]map[string]interface{})[0]["index"] {
+		if blockInfoList != changeEvent["fullDocument"].(map[string]interface{})["BlockInfoList"].([]map[string]interface{})[0]["index"] {
 			*ch <- changeEvent["fullDocument"].(map[string]interface{})
-			blockInfoList["index"] = changeEvent["fullDocument"].(map[string]interface{})["BlockInfoList"].([]map[string]interface{})[0]["index"]
+			blockInfoList = changeEvent["fullDocument"].(map[string]interface{})["BlockInfoList"].([]map[string]interface{})[0]["index"]
 		}
 	}
 	return nil

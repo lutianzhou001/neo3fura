@@ -16,17 +16,17 @@ func (me *T) GetTransactionList(ch *chan map[string]interface{}) error {
 	if err != nil {
 		return err
 	}
-	var transactionList map[string]interface{}
+	var transactionList interface{}
 	// Whenever there is a new change event, decode the change event and print some information about it
 	for cs.Next(context.TODO()) {
-		var changeEvent map[string]interface{}
+		var changeEvent  map[string]interface{}
 		err := cs.Decode(&changeEvent)
 		if err != nil {
 			log.Fatal(err)
 		}
-		if transactionList["hash"] != changeEvent["fullDocument"].(map[string]interface{})["TransactionList"].([]map[string]interface{})[0]["hash"] {
+		if transactionList != changeEvent["fullDocument"].(map[string]interface{})["TransactionList"].([]map[string]interface{})[0]["hash"] {
 			*ch <- changeEvent["fullDocument"].(map[string]interface{})
-			transactionList["hash"] = changeEvent["fullDocument"].(map[string]interface{})["TransactionList"].([]map[string]interface{})[0]["hash"]
+			transactionList = changeEvent["fullDocument"].(map[string]interface{})["TransactionList"].([]map[string]interface{})[0]["hash"]
 		}
 	}
 	return nil

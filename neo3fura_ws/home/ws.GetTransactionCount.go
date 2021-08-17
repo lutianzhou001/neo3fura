@@ -16,7 +16,7 @@ func (me *T) GetTransactionCount(ch *chan map[string]interface{}) error {
 	if err != nil {
 		return err
 	}
-	var transactionCount map[string]interface{}
+	var transactionCount interface{}
 	// Whenever there is a new change event, decode the change event and print some information about it
 	for cs.Next(context.TODO()) {
 		var changeEvent map[string]interface{}
@@ -24,9 +24,9 @@ func (me *T) GetTransactionCount(ch *chan map[string]interface{}) error {
 		if err != nil {
 			log.Fatal(err)
 		}
-		if transactionCount["TransactionCount"] != changeEvent["fullDocument"].(map[string]interface{})["TransactionCount"] {
+		if transactionCount != changeEvent["fullDocument"].(map[string]interface{})["TransactionCount"] {
 			*ch <- changeEvent["fullDocument"].(map[string]interface{})
-			transactionCount["TransactionCount"] = changeEvent["fullDocument"].(map[string]interface{})["TransactionCount"]
+			transactionCount = changeEvent["fullDocument"].(map[string]interface{})["TransactionCount"]
 		}
 	}
 	return nil
