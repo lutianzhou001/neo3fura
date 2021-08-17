@@ -16,6 +16,7 @@ func (me *T) GetTransactionList(ch *chan map[string]interface{}) error {
 	if err != nil {
 		return err
 	}
+	var transactionList map[string]interface{}
 	// Whenever there is a new change event, decode the change event and print some information about it
 	for cs.Next(context.TODO()) {
 		var changeEvent map[string]interface{}
@@ -23,7 +24,10 @@ func (me *T) GetTransactionList(ch *chan map[string]interface{}) error {
 		if err != nil {
 			log.Fatal(err)
 		}
-		*ch <- changeEvent["fullDocument"].(map[string]interface{})
+		if transactionList["hash"] != changeEvent["fullDocument"].(map[string]interface{})["TransactionList"].([]map[string]interface{})[0]["hash"] {
+			*ch <- changeEvent["fullDocument"].(map[string]interface{})
+			transactionList["hash"] = changeEvent["fullDocument"].(map[string]interface{})["TransactionList"].([]map[string]interface{})[0]["hash"]
+		}
 	}
 	return nil
 }

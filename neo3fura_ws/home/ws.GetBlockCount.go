@@ -16,6 +16,7 @@ func (me *T) GetBlockCount(ch *chan map[string]interface{}) error {
 	if err != nil {
 		return err
 	}
+	var blockCount map[string]interface{}
 	// Whenever there is a new change event, decode the change event and print some information about it
 	for cs.Next(context.TODO()) {
 		var changeEvent map[string]interface{}
@@ -23,7 +24,10 @@ func (me *T) GetBlockCount(ch *chan map[string]interface{}) error {
 		if err != nil {
 			log.Fatal(err)
 		}
-		*ch <- changeEvent["fullDocument"].(map[string]interface{})
+		if blockCount["BlockCount"] != changeEvent["fullDocument"].(map[string]interface{})["BlockCount"] {
+			*ch <- changeEvent["fullDocument"].(map[string]interface{})
+			blockCount["BlockCount"] = changeEvent["fullDocument"].(map[string]interface{})["BlockCount"]
+		}
 	}
 	return nil
 }
