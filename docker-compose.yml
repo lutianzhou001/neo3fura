@@ -88,6 +88,8 @@ services:
     container_name: mongosetup_${RUNTIME}
     depends_on:
         - mongodb1
+        - mongodb2
+        - mongodb3
     volumes:
         - mongostatus:/data/
 
