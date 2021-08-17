@@ -5,8 +5,8 @@ import (
 )
 
 // T ...
-type T struct{
-	C_local  *mongo.Client
+type T struct {
+	C_local *mongo.Client
 }
 
 type Config struct {

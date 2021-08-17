@@ -4,7 +4,7 @@ go 1.15
 
 require (
 	github.com/go-redis/redis/v8 v8.11.3
-	github.com/gorilla/websocket v1.4.2 // indirect
+	github.com/gorilla/websocket v1.4.2
 	github.com/joeqian10/neo3-gogogo v1.0.0
 	github.com/robfig/cron v1.2.0 // indirect
 	go.mongodb.org/mongo-driver v1.7.1

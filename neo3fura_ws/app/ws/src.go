@@ -4,18 +4,18 @@ import (
 	"context"
 	"encoding/json"
 	"flag"
+	"gopkg.in/yaml.v3"
 	"neo3fura_ws/home"
 	"neo3fura_ws/lib/cli"
+	log2 "neo3fura_ws/lib/log"
 	"net/http"
 	"os"
 	"path/filepath"
-	log2 "neo3fura_ws/lib/log"
 
-	"gopkg.in/yaml.v2"
+	"github.com/gorilla/websocket"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"github.com/gorilla/websocket"
-
+	"gopkg.in/yaml.v2"
 )
 
 var add = flag.String("addr", "0.0.0.0:2026", "http service address")
@@ -67,7 +67,6 @@ func intializeMongoLocalClient(cfg Config, ctx context.Context) *mongo.Client {
 	return cl
 }
 
-
 func mainpage(w http.ResponseWriter, r *http.Request) {
 	log2.Infof("DETECT CONNECTION")
 	cfg, err := OpenConfigFile()
@@ -84,23 +83,23 @@ func mainpage(w http.ResponseWriter, r *http.Request) {
 	}
 	wsc, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log2.Fatalf("upgrade error:%s",err)
+		log2.Fatalf("upgrade error:%s", err)
 	}
 	mt, _, err := wsc.ReadMessage()
 	if err != nil {
-		log2.Fatalf("read message error:%s",err)
+		log2.Fatalf("read message error:%s", err)
 	}
 
 	var responseChannel = make(chan map[string]interface{}, 20)
 
 	go c.GetAddressCount(&responseChannel)
-	go c.GetAssetCount(&responseChannel)
-	go c.GetBlockCount(&responseChannel)
-	go c.GetBlockInfoList(&responseChannel)
-	go c.GetCandidateCount(&responseChannel)
-	go c.GetContractCount(&responseChannel)
-	go c.GetTransactionCount(&responseChannel)
-	go c.GetTransactionList(&responseChannel)
+	//go c.GetAssetCount(&responseChannel)
+	//go c.GetBlockCount(&responseChannel)
+	//go c.GetBlockInfoList(&responseChannel)
+	//go c.GetCandidateCount(&responseChannel)
+	//go c.GetContractCount(&responseChannel)
+	//go c.GetTransactionCount(&responseChannel)
+	//go c.GetTransactionList(&responseChannel)
 	go ResponseController(mt, wsc, &responseChannel)
 }
 
@@ -108,17 +107,17 @@ func ResponseController(mt int, wsc *websocket.Conn, ch *chan map[string]interfa
 	str := "hello neo3fura"
 	err := wsc.WriteMessage(mt, []byte(str))
 	if err != nil {
-		log2.Fatalf("write hello message error:%s",err)
+		log2.Fatalf("write hello message error:%s", err)
 	}
 	for {
 		b := <-*ch
 		sent, err := json.Marshal(b)
 		if err != nil {
-			log2.Fatalf("json marshal error:%s",err)
+			log2.Fatalf("json marshal error:%s", err)
 		}
 		err = wsc.WriteMessage(mt, sent)
 		if err != nil {
-			log2.Fatalf("write message error:%s",err)
+			log2.Fatalf("write message error:%s", err)
 		}
 	}
 }
