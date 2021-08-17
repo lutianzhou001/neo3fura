@@ -25,7 +25,7 @@ func (me *T) GetTransactionList(ch *chan map[string]interface{}) error {
 			log.Fatal(err)
 		}
 		for i, item := range changeEvent["fullDocument"].(map[string]interface{})["TransactionList"].(primitive.A) {
-			if i == 0 && transactionList == item.(map[string]interface{})["hash"] {
+			if i == 0 && transactionList != item.(map[string]interface{})["hash"] {
 				*ch <- changeEvent["fullDocument"].(map[string]interface{})
 				transactionList = item.(map[string]interface{})["hash"]
 			} else {

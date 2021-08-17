@@ -25,7 +25,7 @@ func (me *T) GetBlockInfoList(ch *chan map[string]interface{}) error {
 			log.Fatal(err)
 		}
 		for i, item := range changeEvent["fullDocument"].(map[string]interface{})["BlockInfoList"].(primitive.A) {
-			if i == 0 && blockInfoList == item.(map[string]interface{})["hash"] {
+			if i == 0 && blockInfoList != item.(map[string]interface{})["hash"] {
 				*ch <- changeEvent["fullDocument"].(map[string]interface{})
 				blockInfoList = item.(map[string]interface{})["hash"]
 			} else {
