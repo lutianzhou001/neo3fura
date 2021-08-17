@@ -2,7 +2,6 @@ package home
 
 import (
 	"context"
-	"fmt"
 	"go.mongodb.org/mongo-driver/mongo"
 	"log"
 )
@@ -25,10 +24,9 @@ func (me *T) GetAddressCount(ch *chan map[string]interface{}) error {
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Println(changeEvent["fullDocument"].(map[string]interface{}))
-		if addressCount != changeEvent["fullDocument"].(map[string]interface{})["AddressCount"] {
+		if addressCount != changeEvent["fullDocument"].(map[string]interface{})["AddressCount"].(map[string]interface{})["total count"] {
 			*ch <- changeEvent["fullDocument"].(map[string]interface{})
-			addressCount = changeEvent["fullDocument"].(map[string]interface{})["AddressCount"]
+			addressCount = changeEvent["fullDocument"].(map[string]interface{})["AddressCount"].(map[string]interface{})["total count"]
 		}
 	}
 	return nil
