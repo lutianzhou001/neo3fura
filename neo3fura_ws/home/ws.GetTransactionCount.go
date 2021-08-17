@@ -24,9 +24,9 @@ func (me *T) GetTransactionCount(ch *chan map[string]interface{}) error {
 		if err != nil {
 			log.Fatal(err)
 		}
-		if transactionCount != changeEvent["fullDocument"].(map[string]interface{})["TransactionCount"] {
+		if transactionCount != changeEvent["fullDocument"].(map[string]interface{})["TransactionCount"].(map[string]interface{})["total counts"] {
 			*ch <- changeEvent["fullDocument"].(map[string]interface{})
-			transactionCount = changeEvent["fullDocument"].(map[string]interface{})["TransactionCount"]
+			transactionCount = changeEvent["fullDocument"].(map[string]interface{})["TransactionCount"].(map[string]interface{})["total counts"]
 		}
 	}
 	return nil

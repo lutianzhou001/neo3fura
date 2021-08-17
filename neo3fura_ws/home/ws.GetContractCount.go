@@ -24,9 +24,9 @@ func (me *T) GetContractCount(ch *chan map[string]interface{}) error {
 		if err != nil {
 			log.Fatal(err)
 		}
-		if contractCount != changeEvent["fullDocument"].(map[string]interface{})["ContractCount"] {
+		if contractCount != changeEvent["fullDocument"].(map[string]interface{})["ContractCount"].(map[string]interface{})["total counts"] {
 			*ch <- changeEvent["fullDocument"].(map[string]interface{})
-			contractCount = changeEvent["fullDocument"].(map[string]interface{})["ContractCount"]
+			contractCount = changeEvent["fullDocument"].(map[string]interface{})["ContractCount"].(map[string]interface{})["total counts"]
 		}
 	}
 	return nil

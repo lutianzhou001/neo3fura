@@ -24,9 +24,9 @@ func (me *T) GetAssetCount(ch *chan map[string]interface{}) error {
 		if err != nil {
 			log.Fatal(err)
 		}
-		if assetCount != changeEvent["fullDocument"].(map[string]interface{})["AssetCount"] {
+		if assetCount != changeEvent["fullDocument"].(map[string]interface{})["AssetCount"].(map[string]interface{})["total counts"] {
 			*ch <- changeEvent["fullDocument"].(map[string]interface{})
-			assetCount = changeEvent["fullDocument"].(map[string]interface{})["AssetCount"]
+			assetCount = changeEvent["fullDocument"].(map[string]interface{})["AssetCount"].(map[string]interface{})["total counts"]
 		}
 	}
 	return nil

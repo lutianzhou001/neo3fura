@@ -24,9 +24,9 @@ func (me *T) GetCandidateCount(ch *chan map[string]interface{}) error {
 		if err != nil {
 			log.Fatal(err)
 		}
-		if candidateCount != changeEvent["fullDocument"].(map[string]interface{})["CandidateCount"] {
+		if candidateCount != changeEvent["fullDocument"].(map[string]interface{})["CandidateCount"].(map[string]interface{})["total counts"] {
 			*ch <- changeEvent["fullDocument"].(map[string]interface{})
-			candidateCount = changeEvent["fullDocument"].(map[string]interface{})["CandidateCount"]
+			candidateCount = changeEvent["fullDocument"].(map[string]interface{})["CandidateCount"].(map[string]interface{})["total counts"]
 		}
 	}
 	return nil

@@ -24,9 +24,9 @@ func (me *T) GetBlockCount(ch *chan map[string]interface{}) error {
 		if err != nil {
 			log.Fatal(err)
 		}
-		if blockCount != changeEvent["fullDocument"].(map[string]interface{})["BlockCount"] {
+		if blockCount != changeEvent["fullDocument"].(map[string]interface{})["BlockCount"].(map[string]interface{})["total counts"] {
 			*ch <- changeEvent["fullDocument"].(map[string]interface{})
-			blockCount = changeEvent["fullDocument"].(map[string]interface{})["BlockCount"]
+			blockCount = changeEvent["fullDocument"].(map[string]interface{})["BlockCount"].(map[string]interface{})["total counts"]
 		}
 	}
 	return nil
