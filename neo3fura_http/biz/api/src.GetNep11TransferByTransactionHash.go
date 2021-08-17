@@ -2,8 +2,8 @@ package api
 
 import (
 	"encoding/json"
-	"neo3fura/lib/type/h256"
-	"neo3fura/var/stderr"
+	"neo3fura_http/lib/type/h256"
+	"neo3fura_http/var/stderr"
 
 	"go.mongodb.org/mongo-driver/bson"
 )
