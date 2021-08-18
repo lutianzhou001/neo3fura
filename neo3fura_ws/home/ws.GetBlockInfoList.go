@@ -7,6 +7,7 @@ import (
 	"log"
 )
 
+// Block
 func (me *T) GetBlockInfoList(ch *chan map[string]interface{}) error {
 	c, err := me.Client.GetCollection(struct{ Collection string }{Collection: "BlockInfoList"})
 	if err != nil {

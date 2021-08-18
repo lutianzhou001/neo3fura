@@ -7,6 +7,7 @@ import (
 	"log"
 )
 
+// TransactionList
 func (me *T) GetTransactionList(ch *chan map[string]interface{}) error {
 	c, err := me.Client.GetCollection(struct{ Collection string }{Collection: "TransactionList"})
 	if err != nil {

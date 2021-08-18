@@ -107,22 +107,15 @@ func main() {
 	}
 
 	c := cron.New()
-	spec := "0/12 * * * * *"
+	spec := "* */10 * * * *"
 
 	err = c.AddFunc(spec, func() {
 		go j.GetPopularTokens()
 		go j.GetHoldersByContractHash()
 		go j.GetNewAddresses()
 		go j.GetActiveAddresses()
-		go j.GetAddressCount()
-		go j.GetContractCount()
-		go j.GetCandidateCount()
 		go j.GetTransactionList()
-		go j.GetTransactionCount()
-		go j.GetBlockCount()
 		go j.GetBlockInfoList()
-		go j.GetAddressCount()
-		go j.GetAssetCount()
 	})
 	if err != nil {
 		log2.Fatal("add job function error:%s", err)
@@ -142,13 +135,13 @@ func intializeMongoOnlineClient(cfg Config, ctx context.Context) (*mongo.Client,
 	var clientOptions *options.ClientOptions
 	var dbOnline string
 	switch rt {
-	case "DEV":
+	case "dev":
 		clientOptions = options.Client().ApplyURI("mongodb://" + cfg.Database_Dev.User + ":" + cfg.Database_Dev.Pass + "@" + cfg.Database_Dev.Host + ":" + cfg.Database_Dev.Port + "/" + cfg.Database_Dev.Database)
 		dbOnline = cfg.Database_Dev.Database
-	case "TEST":
+	case "test":
 		clientOptions = options.Client().ApplyURI("mongodb://" + cfg.Database_Test.User + ":" + cfg.Database_Test.Pass + "@" + cfg.Database_Test.Host + ":" + cfg.Database_Test.Port + "/" + cfg.Database_Test.Database)
 		dbOnline = cfg.Database_Test.Database
-	case "STAGING":
+	case "staging":
 		clientOptions = options.Client().ApplyURI("mongodb://" + cfg.Database_Staging.User + ":" + cfg.Database_Staging.Pass + "@" + cfg.Database_Staging.Host + ":" + cfg.Database_Staging.Port + "/" + cfg.Database_Staging.Database)
 		dbOnline = cfg.Database_Staging.Database
 	default:

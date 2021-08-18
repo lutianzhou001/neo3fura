@@ -2,6 +2,7 @@ package cli
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -10,7 +11,8 @@ import (
 
 // T ...
 type T struct {
-	C_local *mongo.Client
+	Db_online string
+	C_online  *mongo.Client
 }
 
 type Config struct {
@@ -27,19 +29,28 @@ type Config struct {
 func (me *T) GetCollection(args struct {
 	Collection string
 }) (*mongo.Collection, error) {
-	collection := me.C_local.Database("job").Collection(args.Collection)
+	collection := me.C_online.Database(me.Db_online).Collection(args.Collection)
 	return collection, nil
 }
 
-func (me *T) QueryLastJob(args struct {
+func (me *T) QueryDocument(args struct {
 	Collection string
-}) (map[string]interface{}, error) {
-	collection := me.C_local.Database("job").Collection(args.Collection)
-	var result map[string]interface{}
-	opts := options.FindOne().SetSort(bson.M{"_id": -1})
-	err := collection.FindOne(context.TODO(), bson.M{}, opts).Decode(&result)
-	if err != nil {
-		return nil, fmt.Errorf("find last job error:%s", err)
+	Index      string
+	Sort       bson.M
+	Filter     bson.M
+}, ret *json.RawMessage) (map[string]interface{}, error) {
+	co := options.CountOptions{}
+	collection := me.C_online.Database(me.Db_online).Collection(args.Collection)
+	count, err := collection.CountDocuments(context.TODO(), args.Filter, &co)
+	if err == mongo.ErrNoDocuments {
+		return nil, err
 	}
-	return result, nil
+	convert := make(map[string]interface{})
+	convert["total counts"] = count
+	r, err := json.Marshal(convert)
+	if err != nil {
+		return nil, fmt.Errorf("json marshal error:%s", err)
+	}
+	*ret = json.RawMessage(r)
+	return convert, nil
 }
