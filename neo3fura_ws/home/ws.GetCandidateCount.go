@@ -3,6 +3,7 @@ package home
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"log"
@@ -24,6 +25,8 @@ func (me *T) GetCandidateCount(ch *chan map[string]interface{}) error {
 	if err != nil {
 		return err
 	}
+
+	fmt.Println(candidateCount)
 
 	// Whenever there is a new change event, decode the change event and print some information about it
 	for cs.Next(context.TODO()) {

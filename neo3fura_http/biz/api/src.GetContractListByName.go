@@ -31,14 +31,13 @@ func (me *T) GetContractListByName(args struct {
 			Filter:     bson.M{},
 			Pipeline: []bson.M{
 				bson.M{"$match": bson.M{"name": bson.M{"$regex": args.Name, "$options": "$i"}}},
-				bson.M{"$limit": args.Limit},
 				bson.M{"$skip": args.Skip},
+				bson.M{"$limit": args.Limit},
 				bson.M{"$lookup": bson.M{
 					"from":         "Transaction",
 					"localField":   "createTxid",
 					"foreignField": "hash",
 					"as":           "Transaction"}},
-
 				bson.M{"$project": bson.M{
 					"_id":                0,
 					"Transaction.sender": 1,

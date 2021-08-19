@@ -141,11 +141,11 @@ func mainpage(w http.ResponseWriter, r *http.Request) {
 	go c.GetAddressCount(&responseChannel)
 	go c.GetAssetCount(&responseChannel)
 	go c.GetBlockCount(&responseChannel)
-	// go c.GetBlockInfoList(&responseChannel)
+	go c.GetBlockInfoList(&responseChannel)
 	go c.GetCandidateCount(&responseChannel)
 	go c.GetContractCount(&responseChannel)
 	go c.GetTransactionCount(&responseChannel)
-	// go c.GetTransactionList(&responseChannel)
+	go c.GetTransactionList(&responseChannel)
 	go ResponseController(mt, wsc, &responseChannel)
 }
 
