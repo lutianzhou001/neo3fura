@@ -16,7 +16,7 @@ func (me T) GetActiveAddresses() error {
 			Sort       bson.M
 			Filter     bson.M
 			Query      []string
-		}{Collection: "Block", Index: "GetPopularTokens", Sort: bson.M{"_id": -1}}, ret)
+		}{Collection: "Block", Index: "GetActiveAddresses", Sort: bson.M{"_id": -1}}, ret)
 	if err != nil {
 		return err
 	}

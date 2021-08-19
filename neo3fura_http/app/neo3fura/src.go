@@ -106,21 +106,88 @@ func main() {
 		Client: client,
 	}
 
-	c := cron.New()
-	spec := "* */10 * * * *"
+	c1 := cron.New()
+	spec1 := "* 11 * * * *"
 
-	err = c.AddFunc(spec, func() {
+	c2 := cron.New()
+	spec2 := "* 21 * * * *"
+
+	c3 := cron.New()
+	spec3 := "* 31 * * * *"
+
+	c4 := cron.New()
+	spec4 := "* 41 * * * *"
+
+	c5 := cron.New()
+	spec5 := "* 51 * * * *"
+
+	c6 := cron.New()
+	spec6 := "* 01 * * * *"
+
+
+	err = c1.AddFunc(spec1, func() {
 		go j.GetPopularTokens()
+		//go j.GetHoldersByContractHash()
+		//go j.GetNewAddresses()
+		//go j.GetActiveAddresses()
+		//go j.GetTransactionList()
+		//go j.GetBlockInfoList()
+	})
+
+	err = c2.AddFunc(spec2, func() {
+		//go j.GetPopularTokens()
 		go j.GetHoldersByContractHash()
+		//go j.GetNewAddresses()
+		//go j.GetActiveAddresses()
+		//go j.GetTransactionList()
+		//go j.GetBlockInfoList()
+	})
+
+	err = c3.AddFunc(spec3, func() {
+		//go j.GetPopularTokens()
+		//go j.GetHoldersByContractHash()
 		go j.GetNewAddresses()
+		//go j.GetActiveAddresses()
+		//go j.GetTransactionList()
+		//go j.GetBlockInfoList()
+	})
+
+	err = c4.AddFunc(spec4, func() {
+		//go j.GetPopularTokens()
+		//go j.GetHoldersByContractHash()
+		//go j.GetNewAddresses()
 		go j.GetActiveAddresses()
+		//go j.GetTransactionList()
+		//go j.GetBlockInfoList()
+	})
+
+	err = c5.AddFunc(spec5, func() {
+		//go j.GetPopularTokens()
+		//go j.GetHoldersByContractHash()
+		//go j.GetNewAddresses()
+		//go j.GetActiveAddresses()
 		go j.GetTransactionList()
+		//go j.GetBlockInfoList()
+	})
+
+	err = c6.AddFunc(spec6, func() {
+		//go j.GetPopularTokens()
+		//go j.GetHoldersByContractHash()
+		//go j.GetNewAddresses()
+		//go j.GetActiveAddresses()
+		//go j.GetTransactionList()
 		go j.GetBlockInfoList()
 	})
+
 	if err != nil {
 		log2.Fatal("add job function error:%s", err)
 	}
-	c.Start()
+	c1.Start()
+	c2.Start()
+	c3.Start()
+	c4.Start()
+	c5.Start()
+	c6.Start()
 
 	listen := os.ExpandEnv("0.0.0.0:1926")
 	log2.Infof("NOW LISTEN ON: %s", listen)
