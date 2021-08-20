@@ -15,7 +15,6 @@ import (
 	"net/url"
 	"path/filepath"
 	"sort"
-
 	// "sort"
 )
 
@@ -54,7 +53,7 @@ func (me *T) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	} else {
 		c, err := me.OpenConfigFile()
 		if err != nil {
-			log2.Fatalf("open config file error:%s",err)
+			log2.Fatalf("open config file error:%s", err)
 		}
 		sort.Strings(c.Methods.Realized)
 

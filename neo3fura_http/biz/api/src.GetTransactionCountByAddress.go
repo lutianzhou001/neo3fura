@@ -23,7 +23,7 @@ func (me *T) GetTransactionCountByAddress(args struct {
 		Collection: "Transaction",
 		Index:      "GetTransactionCountByAddress",
 		Sort:       bson.M{},
-		Filter: bson.M{"sender": args.Address.TransferAddress()},
+		Filter:     bson.M{"sender": args.Address.TransferAddress()},
 	}, ret)
 	if err != nil {
 		return err

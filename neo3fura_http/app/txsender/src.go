@@ -30,7 +30,7 @@ var addressesNEOCLI []string
 func task() {
 	defer func() {
 		if r := recover(); r != nil {
-			log2.Infof("[!!!!][ERROR]",r)
+			log2.Infof("[!!!!][ERROR]", r)
 			time.Sleep(time.Second)
 		}
 	}()

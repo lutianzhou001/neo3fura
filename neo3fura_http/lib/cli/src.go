@@ -5,7 +5,6 @@ import (
 	"crypto/sha1"
 	"encoding/hex"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/go-redis/redis/v8"
 	"github.com/joeqian10/neo3-gogogo/rpc"
@@ -13,6 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"neo3fura_http/var/stderr"
 )
 
 // T ...
@@ -57,9 +57,9 @@ func (me *T) QueryOne(args struct {
 		opts := options.FindOne().SetSort(args.Sort)
 		err = collection.FindOne(me.Ctx, args.Filter, opts).Decode(&result)
 		if err == mongo.ErrNoDocuments {
-			return nil, fmt.Errorf("document not found:%s", errors.New("NOT FOUND"))
+			return nil, stderr.ErrNotFound
 		} else if err != nil {
-			return nil, fmt.Errorf("find document error:%s", err)
+			return nil, stderr.ErrFind
 		}
 		if len(args.Query) == 0 {
 			convert = result
@@ -70,18 +70,18 @@ func (me *T) QueryOne(args struct {
 		}
 		r, err := json.Marshal(convert)
 		if err != nil {
-			return nil, fmt.Errorf("json marshal error:%s", err)
+			return nil, stderr.ErrFind
 		}
 		err = me.Redis.Set(me.Ctx, hash, hex.EncodeToString(r), 0).Err()
 		if err != nil {
-			return nil, fmt.Errorf("write to redis error:%s", err)
+			return nil, stderr.ErrFind
 		}
 		*ret = json.RawMessage(r)
 		return convert, nil
 	} else {
 		r, err := hex.DecodeString(val)
 		if err != nil {
-			return nil, fmt.Errorf("decoding to hexstring error:%s", err)
+			return nil, stderr.ErrFind
 		}
 
 		*ret = json.RawMessage(r)
@@ -91,7 +91,7 @@ func (me *T) QueryOne(args struct {
 			convert["_id"], err = primitive.ObjectIDFromHex(convert["_id"].(string))
 		}
 		if err != nil {
-			return nil, fmt.Errorf("convert to string error:%s", err)
+			return nil, stderr.ErrFind
 		}
 		return convert, nil
 	}
@@ -117,18 +117,18 @@ func (me *T) QueryAll(args struct {
 	co := options.CountOptions{}
 	count, err := collection.CountDocuments(me.Ctx, args.Filter, &co)
 	if err != nil {
-		return nil, 0, fmt.Errorf("count documents error:%s", err)
+		return nil, 0, stderr.ErrFind
 	}
 	cursor, err := collection.Find(me.Ctx, args.Filter, op)
 	defer cursor.Close(me.Ctx)
 	if err == mongo.ErrNoDocuments {
-		return nil, 0, fmt.Errorf("document not found:%s", errors.New("NOT FOUND"))
+		return nil, 0, stderr.ErrNotFound
 	}
 	if err != nil {
-		return nil, 0, fmt.Errorf("get cursor error:%s", err)
+		return nil, 0, stderr.ErrFind
 	}
 	if err = cursor.All(me.Ctx, &results); err != nil {
-		return nil, 0, fmt.Errorf("find documents error:%s", err)
+		return nil, 0, stderr.ErrFind
 	}
 	for _, item := range results {
 		if len(args.Query) == 0 {
@@ -143,7 +143,7 @@ func (me *T) QueryAll(args struct {
 	}
 	r, err := json.Marshal(convert)
 	if err != nil {
-		return nil, 0, fmt.Errorf("json marshal error:%s", err)
+		return nil, 0, stderr.ErrFind
 	}
 	*ret = json.RawMessage(r)
 	return convert, count, nil
@@ -156,7 +156,7 @@ func (me *T) SaveJob(args struct {
 	collection := me.C_local.Database("job").Collection(args.Collection)
 	_, err := collection.InsertOne(me.Ctx, args.Data)
 	if err != nil {
-		return false, fmt.Errorf("insert job error:%s", err)
+		return false, stderr.ErrInsert
 	}
 	return true, nil
 }
@@ -169,7 +169,7 @@ func (me *T) QueryLastJob(args struct {
 	opts := options.FindOne().SetSort(bson.M{"_id": -1})
 	err := collection.FindOne(me.Ctx, bson.M{}, opts).Decode(&result)
 	if err != nil {
-		return nil, fmt.Errorf("find last job error:%s", err)
+		return nil, stderr.ErrFind
 	}
 	return result, nil
 }
@@ -188,13 +188,13 @@ func (me *T) QueryAggregate(args struct {
 	op := options.AggregateOptions{}
 	cursor, err := collection.Aggregate(me.Ctx, args.Pipeline, &op)
 	if err == mongo.ErrNoDocuments {
-		return nil, fmt.Errorf("document not found:%s", errors.New("NOT FOUND"))
+		return nil, stderr.ErrNotFound
 	}
 	if err != nil {
-		return nil, fmt.Errorf("get cursor error:%s", err)
+		return nil, stderr.ErrFind
 	}
 	if err = cursor.All(me.Ctx, &results); err != nil {
-		return nil, fmt.Errorf("find documents error:%s", err)
+		return nil, stderr.ErrFind
 	}
 	for _, item := range results {
 		if len(args.Query) == 0 {
@@ -209,7 +209,7 @@ func (me *T) QueryAggregate(args struct {
 	}
 	r, err := json.Marshal(convert)
 	if err != nil {
-		return nil, fmt.Errorf("json marshal error:%s", err)
+		return nil, stderr.ErrFind
 	}
 	*ret = json.RawMessage(r)
 	return convert, nil
@@ -225,13 +225,13 @@ func (me *T) QueryDocument(args struct {
 	collection := me.C_online.Database(me.Db_online).Collection(args.Collection)
 	count, err := collection.CountDocuments(me.Ctx, args.Filter, &co)
 	if err == mongo.ErrNoDocuments {
-		return nil, errors.New("NOT FOUNT")
+		return nil, stderr.ErrNotFound
 	}
 	convert := make(map[string]interface{})
 	convert["total counts"] = count
 	r, err := json.Marshal(convert)
 	if err != nil {
-		return nil, fmt.Errorf("json marshal error:%s", err)
+		return nil, stderr.ErrFind
 	}
 	*ret = json.RawMessage(r)
 	return convert, nil

@@ -32,8 +32,8 @@ then
     docker container rm cache_staging
     docker container rm mongo_staging
 
-    docker rmi service_ws_staging -f
-    docker rmi service_http_staging -f
+    docker rmi staging_neofura_http -f
+    docker rmi staging_neofura_ws -f
     docker-compose -p "staging" up -d
 fi
 
