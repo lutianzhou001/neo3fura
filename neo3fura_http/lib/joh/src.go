@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
+	"neo3fura_http/config"
 	log2 "neo3fura_http/lib/log"
 	"neo3fura_http/lib/rwio"
 	"neo3fura_http/lib/scex"
@@ -55,10 +56,9 @@ func (me *T) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		if err != nil {
 			log2.Fatalf("open config file error:%s", err)
 		}
-		sort.Strings(c.Methods.Realized)
-
-		index := sort.SearchStrings(c.Methods.Realized, fmt.Sprintf("%v", request["method"]))
-		if index < len(c.Methods.Realized) && c.Methods.Realized[index] == request["method"] {
+		sort.Strings(config.Apis)
+		index := sort.SearchStrings(config.Apis, fmt.Sprintf("%v", request["method"]))
+		if index < len(config.Apis) && config.Apis[index] == request["method"] {
 			// can find
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)

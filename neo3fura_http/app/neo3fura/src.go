@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"github.com/go-redis/redis/v8"
+	neoRpc "github.com/joeqian10/neo3-gogogo/rpc"
 	"github.com/robfig/cron"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -16,8 +17,6 @@ import (
 	"net/rpc"
 	"os"
 	"path/filepath"
-
-	neoRpc "github.com/joeqian10/neo3-gogogo/rpc"
 )
 
 func OpenConfigFile() (Config, error) {
@@ -98,6 +97,7 @@ func main() {
 		RpcCli:    neoRpc.NewClient(""), // placeholder
 		RpcPorts:  cfg.Proxy.Uri,
 	}
+
 	rpc.Register(&api.T{
 		Client: client,
 	})
@@ -109,6 +109,14 @@ func main() {
 	c1 := cron.New()
 	c2 := cron.New()
 
+	go j.GetPopularTokens()
+	go j.GetHoldersByContractHash()
+	go j.GetNewAddresses()
+	go j.GetActiveAddresses()
+	go j.GetTransactionList()
+	go j.GetBlockInfoList()
+	go j.GetDailyTransactions()
+
 	err = c1.AddFunc("@daily", func() {
 		go j.GetPopularTokens()
 	})
@@ -119,6 +127,7 @@ func main() {
 		go j.GetActiveAddresses()
 		go j.GetTransactionList()
 		go j.GetBlockInfoList()
+		go j.GetTransactionList()
 	})
 	if err != nil {
 		log2.Fatal("add job function error:%s", err)

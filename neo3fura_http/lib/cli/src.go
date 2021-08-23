@@ -174,6 +174,36 @@ func (me *T) QueryLastJob(args struct {
 	return result, nil
 }
 
+func (me *T) QueryLastJobs(args struct {
+	Collection string
+	Index      string
+	Sort       bson.M
+	Filter     bson.M
+	Query      []string
+	Limit      int64
+	Skip       int64
+}) ([]map[string]interface{}, error) {
+	collection := me.C_local.Database("job").Collection(args.Collection)
+	var results []map[string]interface{}
+	//
+	op := options.Find()
+	op.SetSort(args.Sort)
+	op.SetLimit(args.Limit)
+	op.SetSkip(args.Skip)
+	cursor, err := collection.Find(me.Ctx, args.Filter, op)
+	defer cursor.Close(me.Ctx)
+	if err == mongo.ErrNoDocuments {
+		return nil, stderr.ErrNotFound
+	}
+	if err != nil {
+		return nil, stderr.ErrFind
+	}
+	if err = cursor.All(me.Ctx, &results); err != nil {
+		return nil, stderr.ErrFind
+	}
+	return results, nil
+}
+
 func (me *T) QueryAggregate(args struct {
 	Collection string
 	Index      string
