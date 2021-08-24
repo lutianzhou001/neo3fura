@@ -100,7 +100,7 @@ func intializeMongoOnlineClient(cfg Config, ctx context.Context) (*mongo.Client,
 	default:
 		log2.Fatalf("runtime environment mismatch")
 	}
-	clientOptions.SetMaxPoolSize(50)
+	clientOptions.SetMaxPoolSize(20)
 	co, err := mongo.Connect(ctx, clientOptions)
 	if err != nil {
 		log2.Fatalf("mongo connect error:%s", err)
@@ -111,7 +111,6 @@ func intializeMongoOnlineClient(cfg Config, ctx context.Context) (*mongo.Client,
 	}
 	return co, dbOnline
 }
-
 
 func mainpage(w http.ResponseWriter, r *http.Request) {
 	log2.Infof("DETECT CONNECTION")
