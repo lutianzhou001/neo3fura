@@ -16,7 +16,7 @@ func (me T) GetActiveAddresses() error {
 			Sort       bson.M
 			Filter     bson.M
 			Query      []string
-		}{Collection: "Block", Index: "GetActiveAddresses", Sort: bson.M{"_id": -1}}, ret)
+		}{Collection: "Transaction", Index: "GetActiveAddresses", Sort: bson.M{"_id": -1}}, ret)
 	if err != nil {
 		return err
 	}
@@ -32,7 +32,7 @@ func (me T) GetActiveAddresses() error {
 		Collection: "Transaction",
 		Index:      "GetActiveAddresses",
 		Sort:       bson.M{},
-		Filter:     bson.M{"timestamp": bson.M{"$gt": r0["timestamp"].(int64) - 3600*24*1000}},
+		Filter:     bson.M{"blocktime": bson.M{"$gt": r0["blocktime"].(int64) - 3600*24*1000}},
 		Query:      []string{},
 	}, ret)
 	if err != nil {

@@ -119,15 +119,15 @@ func main() {
 
 	err = c1.AddFunc("@daily", func() {
 		go j.GetPopularTokens()
+		go j.GetDailyTransactions()
+		go j.GetNewAddresses()
+		go j.GetActiveAddresses()
 	})
 	err = c2.AddFunc("@hourly", func() {
 		//go j.GetPopularTokens()
 		go j.GetHoldersByContractHash()
-		go j.GetNewAddresses()
-		go j.GetActiveAddresses()
 		go j.GetTransactionList()
 		go j.GetBlockInfoList()
-		go j.GetTransactionList()
 	})
 	if err != nil {
 		log2.Fatal("add job function error:%s", err)
@@ -160,6 +160,7 @@ func intializeMongoOnlineClient(cfg Config, ctx context.Context) (*mongo.Client,
 	default:
 		log2.Fatalf("runtime environment mismatch")
 	}
+	clientOptions.SetMaxPoolSize(50)
 	co, err := mongo.Connect(ctx, clientOptions)
 	if err != nil {
 		log2.Fatalf("mongo connect error:%s", err)

@@ -32,7 +32,7 @@ func (me T) GetDailyTransactions() error {
 		Collection: "Transaction",
 		Index:      "GetDailyTransactions",
 		Sort:       bson.M{},
-		Filter:     bson.M{"timestamp": bson.M{"$gt": r0["blocktime"].(int64) - 3600*24*1000}},
+		Filter:     bson.M{"blocktime": bson.M{"$gt": r0["blocktime"].(int64) - 3600*24*1000}},
 		Query:      []string{},
 	}, ret)
 	if err != nil {

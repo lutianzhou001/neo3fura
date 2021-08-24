@@ -16,7 +16,7 @@ func (me T) GetNewAddresses() error {
 			Sort       bson.M
 			Filter     bson.M
 			Query      []string
-		}{Collection: "Block", Index: "GetPopularTokens", Sort: bson.M{"_id": -1}}, ret)
+		}{Collection: "Transaction", Index: "GetNewAddresses", Sort: bson.M{"_id": -1}}, ret)
 	if err != nil {
 		return err
 	}
@@ -29,7 +29,7 @@ func (me T) GetNewAddresses() error {
 		Query      []string
 		Limit      int64
 		Skip       int64
-	}{Collection: "Address-Asset", Index: "GetNewAddresses", Filter: bson.M{"timestamp": bson.M{"$gt": r0["timestamp"].(int64) - 3600*24*1000}}}, ret)
+	}{Collection: "Address", Index: "GetNewAddresses", Filter: bson.M{"firstusetime": bson.M{"$gt": r0["blocktime"].(int64) - 3600*24*1000}}}, ret)
 	if err != nil {
 		return err
 	}
