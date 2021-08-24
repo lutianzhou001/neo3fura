@@ -25,7 +25,7 @@ func (me *T) GetAssetInfosByName(args struct {
 		Index:      "GetAssetInfos",
 		Sort:       bson.M{},
 		Filter:     bson.M{"tokenname": bson.M{"$regex": args.Name, "$options": "$i"}},
-		Query:      []string{"hash", "tokenname", "symbol", "_id"},
+		Query:      []string{"hash", "tokenname", "symbol", "_id", "type"},
 		Limit:      args.Limit,
 		Skip:       args.Skip,
 	}, ret)

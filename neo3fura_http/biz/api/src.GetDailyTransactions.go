@@ -6,12 +6,11 @@ import (
 )
 
 func (me *T) GetDailyTransactions(args struct {
-	Limit        int64
-	Skip         int64
-	Filter       map[string]interface{}
+	Days   int64
+	Filter map[string]interface{}
 }, ret *json.RawMessage) error {
-	if args.Limit == 0 {
-		args.Limit = 7
+	if args.Days == 0 {
+		args.Days = 7
 	}
 	r1, err := me.Client.QueryLastJobs(struct {
 		Collection string
@@ -21,7 +20,7 @@ func (me *T) GetDailyTransactions(args struct {
 		Query      []string
 		Limit      int64
 		Skip       int64
-	}{Collection: "DailyTransactions", Index: "GetDailyTransactions", Sort: bson.M{"id": -1}, Filter: bson.M{}, Query: []string{}, Limit: args.Limit, Skip: args.Skip})
+	}{Collection: "DailyTransactions", Index: "GetDailyTransactions", Sort: bson.M{"id": -1}, Filter: bson.M{}, Query: []string{}, Limit: args.Days})
 	if err != nil {
 		return err
 	}
