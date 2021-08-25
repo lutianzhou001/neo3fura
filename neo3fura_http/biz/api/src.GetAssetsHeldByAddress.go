@@ -7,13 +7,17 @@ import (
 	"neo3fura_http/var/stderr"
 )
 
-func (me *T) GetAssetsHeldByAddress(args struct {
+func (me *T) GetAssetsHeldByContractHashAddress(args struct {
 	Address h160.T
+	ContractHash h160.T
 	Limit   int64
 	Skip    int64
 	Filter  map[string]interface{}
 }, ret *json.RawMessage) error {
 	if args.Address.Valid() == false {
+		return stderr.ErrInvalidArgs
+	}
+	if args.ContractHash.Valid() == false {
 		return stderr.ErrInvalidArgs
 	}
 	r1, count, err := me.Client.QueryAll(struct {
@@ -28,7 +32,7 @@ func (me *T) GetAssetsHeldByAddress(args struct {
 		Collection: "Address-Asset",
 		Index:      "GetAssetsHeldByAddress",
 		Sort:       bson.M{"balance": -1},
-		Filter:     bson.M{"address": args.Address.TransferredVal()},
+		Filter:     bson.M{"address": args.Address.TransferredVal(),"asset":args.ContractHash.Val()},
 		Query:      []string{},
 		Limit:      args.Limit,
 		Skip:       args.Skip,
