@@ -9,7 +9,7 @@ var Apis = []string{
 	"GetAssetInfoByContractHash",
 	"GetAssetInfosByName",
 	"GetAddressList",
-	"GetAssetsHeldByAddress",
+	"GetAssetsHeldByContractHashAddress",
 	"GetApplicationLogByBlockHash",
 	"GetApplicationLogByTransactionHash",
 	"GetApplicationLogsByTransactionHash",
