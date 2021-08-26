@@ -75,6 +75,7 @@ type Config struct {
 	Proxy struct {
 		Uri []string `yaml:"uri"`
 	} `yaml:"proxy"`
+	Replica string `yaml:"replica"`
 }
 
 func main() {
@@ -106,34 +107,35 @@ func main() {
 		Client: client,
 	}
 
-	c1 := cron.New()
-	c2 := cron.New()
+	if cfg.Replica == "master" {
+		c1 := cron.New()
+		c2 := cron.New()
 
-	go j.GetPopularTokens()
-	go j.GetHoldersByContractHash()
-	go j.GetNewAddresses()
-	go j.GetActiveAddresses()
-	go j.GetTransactionList()
-	go j.GetBlockInfoList()
-	go j.GetDailyTransactions()
-
-	err = c1.AddFunc("@daily", func() {
 		go j.GetPopularTokens()
-		go j.GetDailyTransactions()
+		go j.GetHoldersByContractHash()
 		go j.GetNewAddresses()
 		go j.GetActiveAddresses()
-	})
-	err = c2.AddFunc("@hourly", func() {
-		//go j.GetPopularTokens()
-		go j.GetHoldersByContractHash()
 		go j.GetTransactionList()
 		go j.GetBlockInfoList()
-	})
-	if err != nil {
-		log2.Fatal("add job function error:%s", err)
+		go j.GetDailyTransactions()
+
+		err = c1.AddFunc("@daily", func() {
+			go j.GetPopularTokens()
+			go j.GetDailyTransactions()
+			go j.GetNewAddresses()
+			go j.GetActiveAddresses()
+		})
+		err = c2.AddFunc("@hourly", func() {
+			go j.GetHoldersByContractHash()
+			go j.GetTransactionList()
+			go j.GetBlockInfoList()
+		})
+		if err != nil {
+			log2.Fatal("add job function error:%s", err)
+		}
+		c1.Start()
+		c2.Start()
 	}
-	c1.Start()
-	c2.Start()
 
 	listen := os.ExpandEnv("0.0.0.0:1926")
 	log2.Infof("NOW LISTEN ON: %s", listen)

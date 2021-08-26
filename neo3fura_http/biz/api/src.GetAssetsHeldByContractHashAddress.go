@@ -8,11 +8,11 @@ import (
 )
 
 func (me *T) GetAssetsHeldByContractHashAddress(args struct {
-	Address h160.T
+	Address      h160.T
 	ContractHash h160.T
-	Limit   int64
-	Skip    int64
-	Filter  map[string]interface{}
+	Limit        int64
+	Skip         int64
+	Filter       map[string]interface{}
 }, ret *json.RawMessage) error {
 	if args.Address.Valid() == false {
 		return stderr.ErrInvalidArgs
@@ -32,7 +32,7 @@ func (me *T) GetAssetsHeldByContractHashAddress(args struct {
 		Collection: "Address-Asset",
 		Index:      "GetAssetsHeldByContractHashAddress",
 		Sort:       bson.M{"balance": -1},
-		Filter:     bson.M{"address": args.Address.TransferredVal(),"asset":args.ContractHash.Val()},
+		Filter:     bson.M{"address": args.Address.TransferredVal(), "asset": args.ContractHash.Val()},
 		Query:      []string{},
 		Limit:      args.Limit,
 		Skip:       args.Skip,
