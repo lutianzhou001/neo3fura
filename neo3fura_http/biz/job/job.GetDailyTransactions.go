@@ -38,15 +38,7 @@ func (me T) GetDailyTransactions() error {
 	if err != nil {
 		return err
 	}
-	r2 := make(map[string]interface{})
-	for _, item := range r1 {
-		r2[item["sender"].(string)] = true
-	}
-	var i = 0
-	for _, _ = range r2 {
-		i++
-	}
-	data := bson.M{"DailyTransactions": i}
+	data := bson.M{"DailyTransactions": len(r1)}
 	_, err = me.Client.SaveJob(struct {
 		Collection string
 		Data       bson.M
