@@ -79,6 +79,7 @@ type Config struct {
 }
 
 func main() {
+	log2.InitLog(1, "./Logs/", os.Stdout)
 	log2.Infof("YOUR ENV IS %s", os.ExpandEnv("${RUNTIME}"))
 	cfg, err := OpenConfigFile()
 	if err != nil {
@@ -120,12 +121,14 @@ func main() {
 		go j.GetDailyTransactions()
 
 		err = c1.AddFunc("@daily", func() {
+			log2.Infof("Start daily job")
 			go j.GetPopularTokens()
 			go j.GetDailyTransactions()
 			go j.GetNewAddresses()
 			go j.GetActiveAddresses()
 		})
 		err = c2.AddFunc("@hourly", func() {
+			log2.Infof("Start hourly job")
 			go j.GetHoldersByContractHash()
 			go j.GetTransactionList()
 			go j.GetBlockInfoList()

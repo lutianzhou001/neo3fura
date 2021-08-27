@@ -41,7 +41,7 @@ func (me *T) GetAssetsHeldByAddress(args struct {
 		return err
 	}
 	r, err := json.Marshal(r2)
-	if err != nil {
+	if err != nil  {
 		return err
 	}
 	*ret = json.RawMessage(r)

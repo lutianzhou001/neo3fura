@@ -20,8 +20,7 @@ import (
 )
 
 // T ...
-type T struct {
-}
+type T struct{}
 
 type Config struct {
 	Methods struct {
@@ -52,6 +51,7 @@ func (me *T) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		log2.Infof("Error decoding in JSON: %v", err)
 		http.Error(w, "can't decoding in JSON", http.StatusBadRequest)
 	} else {
+		log2.Infof("Request is: %v", request["method"])
 		c, err := me.OpenConfigFile()
 		if err != nil {
 			log2.Fatalf("open config file error:%s", err)
@@ -75,6 +75,7 @@ func (me *T) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 }
 
 func (me *T) Handle(target string, w http.ResponseWriter, r *http.Request) {
+	log2.Infof("Repost to node")
 	uri, _ := url.Parse(target)
 	proxy := httputil.NewSingleHostReverseProxy(uri)
 	r.URL.Host = uri.Host

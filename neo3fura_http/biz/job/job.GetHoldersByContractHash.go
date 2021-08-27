@@ -19,7 +19,7 @@ func (me T) GetHoldersByContractHash() error {
 		Skip       int64
 	}{
 		Collection: "Asset",
-		Index:      "GetAssetInfos",
+		Index:      "GetHoldersByContractHash",
 		Sort:       bson.M{},
 		Filter:     bson.M{},
 		Query:      []string{},
@@ -38,7 +38,7 @@ func (me T) GetHoldersByContractHash() error {
 			Skip       int64
 		}{
 			Collection: "Address-Asset",
-			Index:      "GetAssetHoldersByContractHash",
+			Index:      "GetHoldersByContractHash",
 			Sort:       bson.M{"balance": -1},
 			Filter:     bson.M{"asset": item["hash"]},
 			Query:      []string{},
