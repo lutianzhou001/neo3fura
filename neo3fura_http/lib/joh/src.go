@@ -82,6 +82,9 @@ func (me *T) Handle(target string, w http.ResponseWriter, r *http.Request) {
 	r.URL.Scheme = uri.Scheme
 	r.Header.Set("X-Forwarded-Host", r.Header.Get("Host"))
 	r.Host = uri.Host
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Add("Access-Control-Allow-Headers", "Content-Type")
+	w.Header().Set("content-type", "application/json")
 	proxy.ServeHTTP(w, r)
 }
 

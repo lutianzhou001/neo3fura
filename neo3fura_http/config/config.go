@@ -82,6 +82,7 @@ var Apis = []string{
 	"GetActiveAddresses",
 	"GetNewAddresses",
 	"GetDailyTransactions",
+	"GetTotalSentAndReceivedByContractHashAddress",
 	"getblock",
 	"getblockcount",
 	"getblockhash",
