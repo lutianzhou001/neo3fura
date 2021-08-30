@@ -60,6 +60,8 @@ func (me *T) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		index := sort.SearchStrings(config.Apis, fmt.Sprintf("%v", request["method"]))
 		if index < len(config.Apis) && config.Apis[index] == request["method"] {
 			// can find
+			w.Header().Set("Access-Control-Allow-Origin", "*")
+			w.Header().Add("Access-Control-Allow-Headers", "Content-Type")
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
 			conn := &rwio.T{R: req.Body, W: w}
@@ -82,9 +84,6 @@ func (me *T) Handle(target string, w http.ResponseWriter, r *http.Request) {
 	r.URL.Scheme = uri.Scheme
 	r.Header.Set("X-Forwarded-Host", r.Header.Get("Host"))
 	r.Host = uri.Host
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Add("Access-Control-Allow-Headers", "Content-Type")
-	w.Header().Set("content-type", "application/json")
 	proxy.ServeHTTP(w, r)
 	fmt.Println(w)
 	fmt.Println(r)
