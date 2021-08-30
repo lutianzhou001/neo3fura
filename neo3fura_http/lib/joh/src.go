@@ -86,6 +86,8 @@ func (me *T) Handle(target string, w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Access-Control-Allow-Headers", "Content-Type")
 	w.Header().Set("content-type", "application/json")
 	proxy.ServeHTTP(w, r)
+	fmt.Println(w)
+	fmt.Println(r)
 }
 
 func (me *T) OpenConfigFile() (Config, error) {
