@@ -5,6 +5,7 @@ import (
 	"github.com/go-redis/redis/v8"
 	neoRpc "github.com/joeqian10/neo3-gogogo/rpc"
 	"github.com/robfig/cron"
+	"github.com/rs/cors"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"gopkg.in/yaml.v2"
@@ -108,6 +109,8 @@ func main() {
 		Client: client,
 	}
 
+	joh := &joh.T{}
+
 	if cfg.Replica == "master" {
 		c1 := cron.New()
 		c2 := cron.New()
@@ -142,7 +145,12 @@ func main() {
 
 	listen := os.ExpandEnv("0.0.0.0:1926")
 	log2.Infof("NOW LISTEN ON: %s", listen)
-	err = http.ListenAndServe(listen, &joh.T{})
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", func(writer http.ResponseWriter, request *http.Request) {
+		joh.ServeHTTP(writer, request)
+	})
+	handler := cors.Default().Handler(mux)
+	err = http.ListenAndServe(listen, handler)
 	if err != nil {
 		log2.Fatalf("linsten and server error:%s", err)
 	}

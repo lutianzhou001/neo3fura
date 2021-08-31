@@ -11,9 +11,7 @@ import (
 	"neo3fura_http/lib/rwio"
 	"neo3fura_http/lib/scex"
 	"net/http"
-	"net/http/httputil"
 	"net/rpc"
-	"net/url"
 	"path/filepath"
 	"sort"
 	// "sort"
@@ -36,7 +34,6 @@ var repostMode int = 0
 
 func (me *T) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	body, err := ioutil.ReadAll(req.Body)
-
 	if err != nil {
 		log2.Infof("Error in reading body: %v", err)
 		http.Error(w, "can't read body", http.StatusBadRequest)
@@ -60,33 +57,26 @@ func (me *T) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		index := sort.SearchStrings(config.Apis, fmt.Sprintf("%v", request["method"]))
 		if index < len(config.Apis) && config.Apis[index] == request["method"] {
 			// can find
-			w.Header().Set("Access-Control-Allow-Origin", "*")
-			w.Header().Add("Access-Control-Allow-Headers", "Content-Type")
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
 			conn := &rwio.T{R: req.Body, W: w}
 			codec := &scex.T{}
 			codec.Init(conn)
 			rpc.ServeCodec(codec)
 		} else {
 			// can't find
-			me.Handle(c.Proxy.URI[repostMode], w, r)
+            responseBody := bytes.NewBuffer(body)
+			resp,err := http.Post(c.Proxy.URI[repostMode],"application/json",responseBody)
+            if err!=nil {
+            	log2.Fatalf("Repost error%v",err)
+			}
+			defer resp.Body.Close()
+			body,err:=ioutil.ReadAll(resp.Body)
+			if err!=nil{
+				log2.Fatalf("Read err%v",err)
+			}
+			w.Write(body)
 			repostMode = (repostMode + 1) % 5
 		}
 	}
-}
-
-func (me *T) Handle(target string, w http.ResponseWriter, r *http.Request) {
-	log2.Infof("Repost to node")
-	uri, _ := url.Parse(target)
-	proxy := httputil.NewSingleHostReverseProxy(uri)
-	r.URL.Host = uri.Host
-	r.URL.Scheme = uri.Scheme
-	r.Header.Set("X-Forwarded-Host", r.Header.Get("Host"))
-	r.Host = uri.Host
-	proxy.ServeHTTP(w, r)
-	fmt.Println(w)
-	fmt.Println(r)
 }
 
 func (me *T) OpenConfigFile() (Config, error) {
