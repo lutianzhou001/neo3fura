@@ -64,6 +64,7 @@ func (me *T) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		} else {
 			// can't find
             responseBody := bytes.NewBuffer(body)
+            w.Header().Set("Content-Type","application/json")
 			resp,err := http.Post(c.Proxy.URI[repostMode],"application/json",responseBody)
             if err!=nil {
             	log2.Fatalf("Repost error%v",err)
