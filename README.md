@@ -45,6 +45,6 @@ If the service meet the method that have not been implemented the service will r
 ### GraphQL(coming soon)
 A graphql server will be implemented soon to have a more flexible query.
 
-## Thanks
+## Appreciations
 We really appreciate all the partners in contributing codes in this project, especially [vikkko](https://github.com/vikkkko) and [joeqian](https://github.com/joeqian10/). Also, [WSbaikaishui](https://github.com/WSbaikaishui), [zifanwangsteven](https://github.com/zifanwangsteven), [RookieCoderrr](https://github.com/RookieCoderrr) come up with many advices. [Celia18305](https://github.com/Celia18305) is a perfect document worker who helps to make all the documents in order.
 Don't forget to give us a STAR if you like it! 
