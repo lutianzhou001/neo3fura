@@ -55,24 +55,27 @@ func (me *T) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		}
 		sort.Strings(config.Apis)
 		index := sort.SearchStrings(config.Apis, fmt.Sprintf("%v", request["method"]))
+		log2.Infof("index is %v", index)
 		if index < len(config.Apis) && config.Apis[index] == request["method"] {
 			// can find
+			log2.Infof("Serving %v", request["method"])
 			conn := &rwio.T{R: req.Body, W: w}
 			codec := &scex.T{}
 			codec.Init(conn)
 			rpc.ServeCodec(codec)
 		} else {
 			// can't find
-            responseBody := bytes.NewBuffer(body)
-            w.Header().Set("Content-Type","application/json")
-			resp,err := http.Post(c.Proxy.URI[repostMode],"application/json",responseBody)
-            if err!=nil {
-            	log2.Fatalf("Repost error%v",err)
+			log2.Infof("repost %v", request["method"])
+			responseBody := bytes.NewBuffer(body)
+			w.Header().Set("Content-Type", "application/json")
+			resp, err := http.Post(c.Proxy.URI[repostMode], "application/json", responseBody)
+			if err != nil {
+				log2.Fatalf("Repost error%v", err)
 			}
 			defer resp.Body.Close()
-			body,err:=ioutil.ReadAll(resp.Body)
-			if err!=nil{
-				log2.Fatalf("Read err%v",err)
+			body, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				log2.Fatalf("Read err%v", err)
 			}
 			w.Write(body)
 			repostMode = (repostMode + 1) % 5
