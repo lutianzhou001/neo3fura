@@ -56,6 +56,11 @@ func (me *T) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		sort.Strings(config.Apis)
 		index := sort.SearchStrings(config.Apis, fmt.Sprintf("%v", request["method"]))
 		log2.Infof("index is %v", index)
+		log2.Infof("lens of apis is %v", len(config.Apis))
+		log2.Infof("config api is %v", config.Apis[index])
+		log2.Infof("request[method] is %v", request["method"])
+		log2.Infof("index < len(config.apis) %v", index < len(config.Apis))
+		log2.Infof("config.apis == request[method] %v", config.Apis[index] == request["method"])
 		if index < len(config.Apis) && config.Apis[index] == request["method"] {
 			// can find
 			log2.Infof("Serving %v", request["method"])
