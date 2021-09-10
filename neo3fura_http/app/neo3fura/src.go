@@ -4,9 +4,9 @@ import (
 	"context"
 	"github.com/go-redis/redis/v8"
 	neoRpc "github.com/joeqian10/neo3-gogogo/rpc"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/robfig/cron"
 	"github.com/rs/cors"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"gopkg.in/yaml.v2"
@@ -150,7 +150,7 @@ func main() {
 	mux.HandleFunc("/", func(writer http.ResponseWriter, request *http.Request) {
 		joh.ServeHTTP(writer, request)
 	})
-	mux.Handle("/metrics",promhttp.Handler())
+	mux.Handle("/metrics", promhttp.Handler())
 	handler := cors.Default().Handler(mux)
 	err = http.ListenAndServe(listen, handler)
 	if err != nil {

@@ -3,7 +3,6 @@ package joh
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"neo3fura_http/config"
@@ -13,7 +12,6 @@ import (
 	"net/http"
 	"net/rpc"
 	"path/filepath"
-	"sort"
 	// "sort"
 )
 
@@ -53,15 +51,7 @@ func (me *T) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		if err != nil {
 			log2.Fatalf("open config file error:%s", err)
 		}
-		sort.Strings(config.Apis)
-		index := sort.SearchStrings(config.Apis, fmt.Sprintf("%v", request["method"]))
-		log2.Infof("index is %v", index)
-		log2.Infof("lens of apis is %v", len(config.Apis))
-		log2.Infof("config api is %v", config.Apis[index])
-		log2.Infof("request[method] is %v", request["method"])
-		log2.Infof("index < len(config.apis) %v", index < len(config.Apis))
-		log2.Infof("config.apis == request[method] %v", config.Apis[index] == request["method"])
-		if index < len(config.Apis) && config.Apis[index] == request["method"] {
+		if me.exists(request["method"].(string)) == true {
 			// can find
 			log2.Infof("Serving %v", request["method"])
 			conn := &rwio.T{R: req.Body, W: w}
@@ -86,6 +76,15 @@ func (me *T) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 			repostMode = (repostMode + 1) % 5
 		}
 	}
+}
+
+func (me *T) exists(method string) bool {
+	for _, item := range config.Apis {
+		if item == method {
+			return true
+		}
+	}
+	return false
 }
 
 func (me *T) OpenConfigFile() (Config, error) {
