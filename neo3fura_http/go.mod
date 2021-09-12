@@ -8,6 +8,7 @@ require (
 	github.com/joeqian10/neo3-gogogo v1.0.0
 	github.com/robfig/cron v1.2.0
 	github.com/rs/cors v1.8.0
+	github.com/thinkeridea/go-extend v1.3.2 // indirect
 	go.mongodb.org/mongo-driver v1.7.1
 	golang.org/x/tools v0.0.0-20201224043029-2b0845dc783e
 	gopkg.in/yaml.v2 v2.4.0

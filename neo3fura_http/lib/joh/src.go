@@ -3,6 +3,7 @@ package joh
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/thinkeridea/go-extend/exnet"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"neo3fura_http/config"
@@ -39,6 +40,12 @@ func (me *T) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	r := req.Clone(req.Context())
 	req.Body = ioutil.NopCloser(bytes.NewReader(body))
 	r.Body = ioutil.NopCloser(bytes.NewReader(body))
+
+	ip := exnet.ClientPublicIP(r)
+	if ip == "" {
+		ip = exnet.ClientIP(r)
+	}
+	log2.Infof("Request from:%v", ip)
 
 	request := make(map[string]interface{})
 	err = json.Unmarshal(body, &request)
