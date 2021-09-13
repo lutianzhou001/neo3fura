@@ -7,7 +7,7 @@ import (
 	"neo3fura_http/var/stderr"
 )
 
-func (me *T) GetTransferByBlockHeight(args struct {
+func (me *T) GetNep11TransferByBlockHeight(args struct {
 	BlockHeight uintval.T
 	Limit       int64
 	Skip        int64
@@ -28,7 +28,7 @@ func (me *T) GetTransferByBlockHeight(args struct {
 		Query      []string
 	}{
 		Collection: "Block",
-		Index:      "GetTransferByBlockHeight",
+		Index:      "GetNep11TransferByBlockHeight",
 		Sort:       bson.M{},
 		Filter:     bson.M{"index": args.BlockHeight},
 		Query:      []string{},
@@ -37,7 +37,7 @@ func (me *T) GetTransferByBlockHeight(args struct {
 		return err
 	}
 
-	r2, _, err2 := me.Client.QueryAll(struct {
+	r2, count, err2 := me.Client.QueryAll(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
@@ -47,7 +47,7 @@ func (me *T) GetTransferByBlockHeight(args struct {
 		Skip       int64
 	}{
 		Collection: "Nep11TransferNotification",
-		Index:      "GetTransferByBlockHeight",
+		Index:      "GetNep11TransferByBlockHeight",
 		Sort:       bson.M{},
 		Filter:     bson.M{"timestamp": r1["timestamp"]},
 		Query:      []string{},
@@ -56,41 +56,11 @@ func (me *T) GetTransferByBlockHeight(args struct {
 		return err2
 	}
 
-	r3, _, err3 := me.Client.QueryAll(struct {
-		Collection string
-		Index      string
-		Sort       bson.M
-		Filter     bson.M
-		Query      []string
-		Limit      int64
-		Skip       int64
-	}{
-		Collection: "TransferNotification",
-		Index:      "GetNep17TransferByAddress",
-		Sort:       bson.M{},
-		Filter:     bson.M{"timestamp": r1["timestamp"]},
-		Query:      []string{},
-	}, ret)
-
-	if err3 != nil {
-		return err3
-	}
-	r4 := append(r2, r3...)
-	r5 := make([]map[string]interface{}, 0)
-	for i, item := range r4 {
-		if int64(i) < args.Skip {
-			continue
-		} else if int64(i) > args.Skip+args.Limit-1 {
-			continue
-		} else {
-			r5 = append(r5, item)
-		}
-	}
-	r6, err := me.FilterArrayAndAppendCount(r5, int64(len(r4)), args.Filter)
+	r3, err := me.FilterArrayAndAppendCount(r2, count, args.Filter)
 	if err != nil {
 		return err
 	}
-	r, err := json.Marshal(r6)
+	r, err := json.Marshal(r3)
 	if err != nil {
 		return err
 	}
