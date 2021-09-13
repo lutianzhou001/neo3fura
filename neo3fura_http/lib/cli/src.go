@@ -217,6 +217,7 @@ func (me *T) QueryAggregate(args struct {
 	collection := me.C_online.Database(me.Db_online).Collection(args.Collection)
 	op := options.AggregateOptions{}
 	cursor, err := collection.Aggregate(me.Ctx, args.Pipeline, &op)
+	defer cursor.Close(me.Ctx)
 	if err == mongo.ErrNoDocuments {
 		return nil, stderr.ErrNotFound
 	}
