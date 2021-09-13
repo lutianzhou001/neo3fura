@@ -28,6 +28,8 @@ services:
       - network
     restart: always
     container_name: service_ws_${RUNTIME}
+    volumes:
+      - ./logs_ws:/go/application/Logs/
     depends_on:
       - redis
       - mongo
