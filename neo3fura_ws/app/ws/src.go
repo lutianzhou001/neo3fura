@@ -114,19 +114,7 @@ func intializeMongoOnlineClient(cfg Config, ctx context.Context) (*mongo.Client,
 
 func mainpage(w http.ResponseWriter, r *http.Request) {
 	log2.Infof("DETECT CONNECTION")
-	cfg, err := OpenConfigFile()
-	if err != nil {
-		log2.Fatalf("open file error:%s", err)
-	}
-	ctx := context.TODO()
-	co, dbOnline := intializeMongoOnlineClient(cfg, ctx)
-	client := &cli.T{
-		Db_online: dbOnline,
-		C_online:  co,
-	}
-	c := &home.T{
-		Client: client,
-	}
+
 	wsc, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log2.Fatalf("upgrade error:%s", err)
@@ -165,6 +153,24 @@ func ResponseController(mt int, wsc *websocket.Conn, ch *chan map[string]interfa
 		if err != nil {
 			log2.Fatalf("write message error:%s", err)
 		}
+	}
+}
+
+var c *home.T
+
+func init() {
+	cfg, err := OpenConfigFile()
+	if err != nil {
+		log2.Fatalf("open file error:%s", err)
+	}
+	ctx := context.TODO()
+	co, dbOnline := intializeMongoOnlineClient(cfg, ctx)
+	client := &cli.T{
+		Db_online: dbOnline,
+		C_online:  co,
+	}
+	c = &home.T{
+		Client: client,
 	}
 }
 
