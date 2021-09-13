@@ -19,6 +19,8 @@
 config.yml
 
 # dependencies
+logs/
+logs_ws/
 github.com/
 go.mongodb.org/
 gopkg.in/

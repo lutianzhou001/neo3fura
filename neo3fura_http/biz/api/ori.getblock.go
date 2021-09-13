@@ -8,6 +8,9 @@ import (
 )
 
 func (me *T) Getblock(args []interface{}, ret *json.RawMessage) error {
+	if len(args) <= 1 {
+		return stderr.ErrInvalidArgs
+	}
 	if args[1] != true {
 		return stderr.ErrInvalidArgs
 	}
