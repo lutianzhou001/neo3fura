@@ -148,18 +148,11 @@ func ResponseController(mt int, wsc *websocket.Conn, ch *chan map[string]interfa
 		sent, err := json.Marshal(b)
 		if err != nil {
 			log2.Fatalf("json marshal error:%s", err)
-			err := wsc.Close()
-			if err != nil {
-				log2.Fatalf("closing ws error:%s", err)
-			}
 		}
 		err = wsc.WriteMessage(mt, sent)
 		if err != nil {
 			log2.Fatalf("write message error:%s", err)
-			err := wsc.Close()
-			if err != nil {
-				log2.Fatalf("closing ws error:%s", err)
-			}
+			break
 		}
 	}
 }
