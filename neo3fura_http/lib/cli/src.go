@@ -12,6 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	log2 "neo3fura_http/lib/log"
 	"neo3fura_http/var/stderr"
 )
 
@@ -120,7 +121,12 @@ func (me *T) QueryAll(args struct {
 		return nil, 0, stderr.ErrFind
 	}
 	cursor, err := collection.Find(me.Ctx, args.Filter, op)
-	defer cursor.Close(me.Ctx)
+	defer func(cursor *mongo.Cursor, ctx context.Context) {
+		err := cursor.Close(ctx)
+		if err != nil {
+			log2.Fatalf("Closing cursor error %v", err)
+		}
+	}(cursor, me.Ctx)
 	if err == mongo.ErrNoDocuments {
 		return nil, 0, stderr.ErrNotFound
 	}
@@ -191,7 +197,12 @@ func (me *T) QueryLastJobs(args struct {
 	op.SetLimit(args.Limit)
 	op.SetSkip(args.Skip)
 	cursor, err := collection.Find(me.Ctx, args.Filter, op)
-	defer cursor.Close(me.Ctx)
+	defer func(cursor *mongo.Cursor, ctx context.Context) {
+		err := cursor.Close(ctx)
+		if err != nil {
+			log2.Fatalf("Closing cursor error %v", err)
+		}
+	}(cursor, me.Ctx)
 	if err == mongo.ErrNoDocuments {
 		return nil, stderr.ErrNotFound
 	}
@@ -217,7 +228,12 @@ func (me *T) QueryAggregate(args struct {
 	collection := me.C_online.Database(me.Db_online).Collection(args.Collection)
 	op := options.AggregateOptions{}
 	cursor, err := collection.Aggregate(me.Ctx, args.Pipeline, &op)
-	defer cursor.Close(me.Ctx)
+	defer func(cursor *mongo.Cursor, ctx context.Context) {
+		err := cursor.Close(ctx)
+		if err != nil {
+			log2.Fatalf("Closing cursor error %v", err)
+		}
+	}(cursor, me.Ctx)
 	if err == mongo.ErrNoDocuments {
 		return nil, stderr.ErrNotFound
 	}

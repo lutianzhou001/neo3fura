@@ -116,14 +116,6 @@ func main() {
 		c1 := cron.New()
 		c2 := cron.New()
 
-		go j.GetPopularTokens()
-		go j.GetHoldersByContractHash()
-		go j.GetNewAddresses()
-		go j.GetActiveAddresses()
-		go j.GetTransactionList()
-		go j.GetBlockInfoList()
-		go j.GetDailyTransactions()
-
 		err = c1.AddFunc("@daily", func() {
 			log2.Infof("Start daily job")
 			go j.GetPopularTokens()
