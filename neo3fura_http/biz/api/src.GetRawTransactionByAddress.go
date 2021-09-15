@@ -29,7 +29,7 @@ func (me *T) GetRawTransactionByAddress(args struct {
 	}{
 		Collection: "Transaction",
 		Index:      "GetRawTransactionByAddress",
-		Sort:       bson.M{},
+		Sort:       bson.M{"_id": -1},
 		Filter:     bson.M{"sender": args.Address.TransferAddress()},
 		Query:      []string{},
 		Limit:      args.Limit,

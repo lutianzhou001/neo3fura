@@ -6,7 +6,7 @@ require (
 	github.com/go-redis/redis/v8 v8.11.3
 	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/joeqian10/neo3-gogogo v1.0.0
-	github.com/prometheus/client_golang v1.11.0 // indirect
+	github.com/prometheus/client_golang v1.11.0
 	github.com/robfig/cron v1.2.0
 	github.com/rs/cors v1.8.0
 	github.com/thinkeridea/go-extend v1.3.2
