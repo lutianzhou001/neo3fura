@@ -27,7 +27,7 @@ func (me *T) GetScCallByTransactionHash(args struct {
 	}{
 		Collection: "ScCall",
 		Index:      "GetScCallByTransactionHash",
-		Sort:       bson.M{},
+		Sort:       bson.M{"_id": 1},
 		Filter:     bson.M{"txid": args.TransactionHash.Val()},
 		Query:      []string{},
 		Limit:      args.Limit,

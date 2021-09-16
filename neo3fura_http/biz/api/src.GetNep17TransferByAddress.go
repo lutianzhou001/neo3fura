@@ -4,42 +4,73 @@ import (
 	"encoding/json"
 	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/bsontype"
 	"neo3fura_http/lib/type/h160"
 	"neo3fura_http/lib/type/h256"
 	"neo3fura_http/var/stderr"
 )
 
 func (me *T) GetNep17TransferByAddress(args struct {
-	Address h160.T
-	Limit   int64
-	Skip    int64
-	Filter  map[string]interface{}
+	Address      h160.T
+	Limit        int64
+	Skip         int64
+	Filter       map[string]interface{}
+	BonusAndBurn bool
 }, ret *json.RawMessage) error {
 	if args.Address.Valid() == false {
 		return stderr.ErrInvalidArgs
 	}
-	r1, count, err := me.Client.QueryAll(struct {
-		Collection string
-		Index      string
-		Sort       bson.M
-		Filter     bson.M
-		Query      []string
-		Limit      int64
-		Skip       int64
-	}{
-		Collection: "TransferNotification",
-		Index:      "GetNep17TransferByAddress",
-		Sort:       bson.M{"_id": -1},
-		Filter: bson.M{"$or": []interface{}{
-			bson.M{"from": args.Address.TransferredVal()},
-			bson.M{"to": args.Address.TransferredVal()},
-		}},
-		Query: []string{},
-		Limit: args.Limit,
-		Skip:  args.Skip,
-	}, ret)
-	if err != nil {
-		return err
+	var r1 []map[string]interface{}
+	var count int64
+	var err error
+	if args.BonusAndBurn == false {
+		r1, count, err = me.Client.QueryAll(struct {
+			Collection string
+			Index      string
+			Sort       bson.M
+			Filter     bson.M
+			Query      []string
+			Limit      int64
+			Skip       int64
+		}{
+			Collection: "TransferNotification",
+			Index:      "GetNep17TransferByAddress",
+			Sort:       bson.M{"_id": -1},
+			Filter: bson.M{"$or": []interface{}{
+				bson.M{"from": args.Address.TransferredVal(), "to": bson.M{"$ne": bsontype.Null}},
+				bson.M{"to": args.Address.TransferredVal(), "from": bson.M{"$ne": bsontype.Null}},
+			}},
+			Query: []string{},
+			Limit: args.Limit,
+			Skip:  args.Skip,
+		}, ret)
+		if err != nil {
+			return err
+		}
+	} else {
+		r1, count, err = me.Client.QueryAll(struct {
+			Collection string
+			Index      string
+			Sort       bson.M
+			Filter     bson.M
+			Query      []string
+			Limit      int64
+			Skip       int64
+		}{
+			Collection: "TransferNotification",
+			Index:      "GetNep17TransferByAddress",
+			Sort:       bson.M{"_id": -1},
+			Filter: bson.M{"$or": []interface{}{
+				bson.M{"from": args.Address.TransferredVal()},
+				bson.M{"to": args.Address.TransferredVal()},
+			}},
+			Query: []string{},
+			Limit: args.Limit,
+			Skip:  args.Skip,
+		}, ret)
+		if err != nil {
+			return err
+		}
 	}
 	var raw1 map[string]interface{}
 	var raw3 map[string]interface{}

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 	"neo3fura_http/lib/type/h160"
 	"neo3fura_http/lib/type/h256"
 	"neo3fura_http/var/stderr"
@@ -53,6 +54,22 @@ func (me *T) GetRawTransactionByAddress(args struct {
 			return err
 		}
 		item["vmstate"] = raw1["vmstate"].(string)
+		if raw1["vmstate"].(string) != "FAULT" {
+			var raw2 map[string]interface{}
+			err = me.GetTransferEventByTransactionHash(struct {
+				TransactionHash h256.T
+				Filter          map[string]interface{}
+				Raw             *map[string]interface{}
+			}{TransactionHash: h256.T(fmt.Sprint(item["hash"])), Filter: nil, Raw: &raw2}, ret)
+			fmt.Println(raw2)
+			if err == mongo.ErrNoDocuments {
+				item["faultdetails"] = nil
+			}
+			if err != nil && err != mongo.ErrNoDocuments {
+				return err
+			}
+			item["faultdetails"] = raw2
+		}
 	}
 
 	r2, err := me.FilterArrayAndAppendCount(r1, count, args.Filter)

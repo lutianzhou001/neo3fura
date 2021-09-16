@@ -12,6 +12,7 @@ import (
 	"gopkg.in/yaml.v2"
 	"neo3fura_http/biz/api"
 	"neo3fura_http/biz/job"
+	"neo3fura_http/biz/watch"
 	"neo3fura_http/lib/cli"
 	"neo3fura_http/lib/joh"
 	log2 "neo3fura_http/lib/log"
@@ -27,7 +28,12 @@ func OpenConfigFile() (Config, error) {
 	if err != nil {
 		return Config{}, err
 	}
-	defer f.Close()
+	defer func(f *os.File) {
+		err := f.Close()
+		if err != nil {
+			log2.Fatalf("Closing file error: %v", err)
+		}
+	}(f)
 	var cfg Config
 	decoder := yaml.NewDecoder(f)
 	err = decoder.Decode(&cfg)
@@ -88,8 +94,8 @@ func main() {
 		log2.Fatalf("open file error:%s", err)
 	}
 	ctx := context.TODO()
-	co, dbOnline := intializeMongoOnlineClient(cfg, ctx)
-	cl := intializeMongoLocalClient(cfg, ctx)
+	co, dbOnline := initializeMongoOnlineClient(cfg, ctx)
+	cl := initializeMongoLocalClient(cfg, ctx)
 	rds := initializeRedisLocalClient(cfg, ctx)
 
 	client := &cli.T{
@@ -110,9 +116,20 @@ func main() {
 		Client: client,
 	}
 
-	joh := &joh.T{}
+	w := &watch.T{
+		Client: client,
+	}
+
+	h := &joh.T{}
 
 	if cfg.Replica == "master" {
+		go func() {
+			err := w.GetFirstEventByTransactionHash()
+			if err != nil {
+				log2.Fatalf("run watching error:%v", err)
+			}
+		}()
+
 		c1 := cron.New()
 		c2 := cron.New()
 
@@ -140,17 +157,17 @@ func main() {
 	log2.Infof("NOW LISTEN ON: %s", listen)
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", func(writer http.ResponseWriter, request *http.Request) {
-		joh.ServeHTTP(writer, request)
+		h.ServeHTTP(writer, request)
 	})
 	mux.Handle("/metrics", promhttp.Handler())
 	handler := cors.Default().Handler(mux)
 	err = http.ListenAndServe(listen, handler)
 	if err != nil {
-		log2.Fatalf("linsten and server error:%s", err)
+		log2.Fatalf("listen and server error:%s", err)
 	}
 }
 
-func intializeMongoOnlineClient(cfg Config, ctx context.Context) (*mongo.Client, string) {
+func initializeMongoOnlineClient(cfg Config, ctx context.Context) (*mongo.Client, string) {
 	rt := os.ExpandEnv("${RUNTIME}")
 	var clientOptions *options.ClientOptions
 	var dbOnline string
@@ -179,7 +196,7 @@ func intializeMongoOnlineClient(cfg Config, ctx context.Context) (*mongo.Client,
 	return co, dbOnline
 }
 
-func intializeMongoLocalClient(cfg Config, ctx context.Context) *mongo.Client {
+func initializeMongoLocalClient(cfg Config, ctx context.Context) *mongo.Client {
 	var clientOptions *options.ClientOptions
 	clientOptions = options.Client().ApplyURI("mongodb://" + cfg.Database_Local.Host + ":" + cfg.Database_Local.Port + "/" + cfg.Database_Local.Database)
 	cl, err := mongo.Connect(ctx, clientOptions)

@@ -167,6 +167,19 @@ func (me *T) SaveJob(args struct {
 	return true, nil
 }
 
+func (me *T) QueryOneJob(args struct {
+	Collection string
+	Filter     bson.M
+}) (map[string]interface{}, error) {
+	collection := me.C_local.Database("job").Collection(args.Collection)
+	var result map[string]interface{}
+	err := collection.FindOne(me.Ctx, args.Filter).Decode(&result)
+	if err != nil {
+		return nil, err
+	}
+    return result,nil
+}
+
 func (me *T) QueryLastJob(args struct {
 	Collection string
 }) (map[string]interface{}, error) {
