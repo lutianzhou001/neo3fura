@@ -54,7 +54,7 @@ func (me *T) GetRawTransactionByAddress(args struct {
 			return err
 		}
 		item["vmstate"] = raw1["vmstate"].(string)
-		if raw1["vmstate"].(string) != "FAULT" {
+		if raw1["vmstate"].(string) == "FAULT" {
 			var raw2 map[string]interface{}
 			err = me.GetTransferEventByTransactionHash(struct {
 				TransactionHash h256.T
