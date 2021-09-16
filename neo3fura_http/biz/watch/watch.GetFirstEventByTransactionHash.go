@@ -22,7 +22,7 @@ func (me *T) GetFirstEventByTransactionHash() error {
 		var changeEvent map[string]interface{}
 		err := cs.Decode(&changeEvent)
 		if err != nil {
-			return err
+			log2.Fatalf("Decode error:%v", err)
 		}
 
 		r2, err := me.Client.QueryOne(struct {
@@ -39,7 +39,7 @@ func (me *T) GetFirstEventByTransactionHash() error {
 			Query:      []string{},
 		}, ret)
 		if err != nil {
-			return err
+			log2.Fatalf("Query ScCall error:%v", err)
 		}
 
 		r1, err := me.Client.QueryOne(struct {
@@ -56,7 +56,7 @@ func (me *T) GetFirstEventByTransactionHash() error {
 			Query:      []string{"vmstate"},
 		}, ret)
 		if err != nil {
-			return err
+			log2.Fatalf("Query Execution error:%v", err)
 		}
 
 		r2["vmstate"] = r1["vmstate"].(string)
@@ -65,9 +65,8 @@ func (me *T) GetFirstEventByTransactionHash() error {
 			Data       bson.M
 		}{Collection: "TransferEvent", Data: r2})
 		if err != nil {
-			return err
+			log2.Fatalf("Save Job Error: %v", err)
 		}
-		return nil
 	}
 	return nil
 }
