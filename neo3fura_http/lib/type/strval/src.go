@@ -45,3 +45,18 @@ func (me T) In(str_array []string) bool {
 	}
 	return false
 }
+
+func (me T) Reverse() string {
+	a := []byte(me.Val())
+	for i := 0; i < len(a)/2; i++ {
+		tmp := a[i]
+		if i%2 == 0 {
+			a[i] = a[len(a)-i-2]
+			a[len(a)-i-2] = tmp
+		} else {
+			a[i] = a[len(a)-i]
+			a[len(a)-i] = tmp
+		}
+	}
+	return string(a)
+}

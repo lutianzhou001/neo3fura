@@ -3,7 +3,9 @@ package api
 import (
 	"encoding/json"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"neo3fura_http/lib/type/h256"
+	"neo3fura_http/lib/type/strval"
 	"neo3fura_http/var/stderr"
 )
 
@@ -26,6 +28,13 @@ func (me *T) GetTransferEventByTransactionHash(args struct {
 	if args.Raw != nil {
 		*args.Raw = r1
 	}
+	var reversedArray []string
+	for _, item := range r1["hexStringParams"].(primitive.A) {
+		st := strval.T(item.(string))
+		reversedItem := st.Reverse()
+		reversedArray = append(reversedArray, reversedItem)
+	}
+	r1["hexStringParams"] = reversedArray
 	r1, err = me.Filter(r1, args.Filter)
 	if err != nil {
 		return err
