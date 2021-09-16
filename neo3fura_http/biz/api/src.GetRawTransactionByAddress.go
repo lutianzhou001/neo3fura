@@ -61,7 +61,6 @@ func (me *T) GetRawTransactionByAddress(args struct {
 				Filter          map[string]interface{}
 				Raw             *map[string]interface{}
 			}{TransactionHash: h256.T(fmt.Sprint(item["hash"])), Filter: nil, Raw: &raw2}, ret)
-			fmt.Println(raw2)
 			if err == mongo.ErrNoDocuments {
 				item["faultdetails"] = nil
 			}
