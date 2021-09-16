@@ -62,12 +62,12 @@ func (me *T) GetRawTransactionByAddress(args struct {
 				Raw             *map[string]interface{}
 			}{TransactionHash: h256.T(fmt.Sprint(item["hash"])), Filter: nil, Raw: &raw2}, ret)
 			if err == mongo.ErrNoDocuments {
-				item["faultdetails"] = nil
+				item["faultdetail"] = nil
 			}
 			if err != nil && err != mongo.ErrNoDocuments {
 				return err
 			}
-			item["faultdetails"] = raw2
+			item["faultdetail"] = raw2
 		}
 	}
 
