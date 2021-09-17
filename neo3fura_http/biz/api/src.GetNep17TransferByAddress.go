@@ -10,11 +10,11 @@ import (
 )
 
 func (me *T) GetNep17TransferByAddress(args struct {
-	Address      h160.T
-	Limit        int64
-	Skip         int64
-	Filter       map[string]interface{}
-	BonusAndBurn bool
+	Address             h160.T
+	Limit               int64
+	Skip                int64
+	Filter              map[string]interface{}
+	ExcludeBonusAndBurn bool
 }, ret *json.RawMessage) error {
 	if args.Address.Valid() == false {
 		return stderr.ErrInvalidArgs
@@ -22,7 +22,7 @@ func (me *T) GetNep17TransferByAddress(args struct {
 	var r1 []map[string]interface{}
 	var count int64
 	var err error
-	if args.BonusAndBurn == false {
+	if args.ExcludeBonusAndBurn == true {
 		r1, count, err = me.Client.QueryAll(struct {
 			Collection string
 			Index      string
