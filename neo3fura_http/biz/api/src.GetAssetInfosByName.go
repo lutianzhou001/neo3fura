@@ -94,10 +94,10 @@ func (me *T) GetAssetInfosByName(args struct {
 				}
 			}
 			if i == 4 {
-				item["type"] = "Nep17"
+				item["type"] = "NEP17"
 			}
 			if i == 5 {
-				item["type"] = "Nep11"
+				item["type"] = "NEP11"
 			}
 		}
 	}

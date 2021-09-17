@@ -72,10 +72,10 @@ func (me *T) GetAssetInfoByContractHash(args struct {
 			}
 		}
 		if i == 5 {
-			r1["type"] = "Nep17"
+			r1["type"] = "NEP17"
 		}
 		if i == 6 {
-			r1["type"] = "Nep11"
+			r1["type"] = "NEP11"
 		}
 	}
 
