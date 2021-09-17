@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/bsontype"
 	"neo3fura_http/lib/type/h160"
 	"neo3fura_http/lib/type/h256"
 	"neo3fura_http/var/stderr"
@@ -37,8 +36,8 @@ func (me *T) GetNep17TransferByAddress(args struct {
 			Index:      "GetNep17TransferByAddress",
 			Sort:       bson.M{"_id": -1},
 			Filter: bson.M{"$or": []interface{}{
-				bson.M{"from": args.Address.TransferredVal(), "to": bson.M{"$ne": bsontype.Null}},
-				bson.M{"to": args.Address.TransferredVal(), "from": bson.M{"$ne": bsontype.Null}},
+				bson.M{"from": args.Address.TransferredVal(), "to": bson.M{"$ne": nil}},
+				bson.M{"to": args.Address.TransferredVal(), "from": bson.M{"$ne": nil}},
 			}},
 			Query: []string{},
 			Limit: args.Limit,

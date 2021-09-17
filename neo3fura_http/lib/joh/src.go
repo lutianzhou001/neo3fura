@@ -60,6 +60,7 @@ func (me *T) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		}
 		if me.exists(request["method"].(string)) == true {
 			// can find
+			w.Header().Set("Content-Type", "application/json")
 			log2.Infof("Serving %v", request["method"])
 			conn := &rwio.T{R: req.Body, W: w}
 			codec := &scex.T{}

@@ -29,12 +29,15 @@ func (me *T) GetTransferEventByTransactionHash(args struct {
 		*args.Raw = r1
 	}
 	var reversedArray []string
-	for _, item := range r1["hexStringParams"].(primitive.A) {
-		st := strval.T(item.(string))
-		reversedItem := st.Reverse()
-		reversedArray = append(reversedArray, reversedItem)
+	if len(r1["hexStringParams"].(primitive.A)) != 0 {
+		for _, item := range r1["hexStringParams"].(primitive.A) {
+			st := strval.T(item.(string))
+			reversedItem := st.Reverse()
+			reversedArray = append(reversedArray, reversedItem)
+		}
+		r1["hexStringParams"] = reversedArray
 	}
-	r1["hexStringParams"] = reversedArray
+
 	r1, err = me.Filter(r1, args.Filter)
 	if err != nil {
 		return err
