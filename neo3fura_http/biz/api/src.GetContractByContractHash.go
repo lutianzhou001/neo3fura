@@ -11,6 +11,7 @@ import (
 func (me *T) GetContractByContractHash(args struct {
 	ContractHash h160.T
 	Filter       map[string]interface{}
+	Raw          *map[string]interface{}
 }, ret *json.RawMessage) error {
 	if args.ContractHash.Valid() == false {
 		return stderr.ErrInvalidArgs
@@ -72,7 +73,9 @@ func (me *T) GetContractByContractHash(args struct {
 	} else {
 		r1["sender"] = nil
 	}
-
+	if args.Raw != nil {
+		*args.Raw = r1
+	}
 	r1, err = me.Filter(r1, args.Filter)
 	if err != nil {
 		return err

@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"neo3fura_http/lib/type/h160"
@@ -34,6 +35,48 @@ func (me *T) GetAssetInfoByContractHash(args struct {
 	}
 	if args.Raw != nil {
 		*args.Raw = r1
+	}
+
+	raw1 := make(map[string]interface{})
+	if r1["type"] == "Unknown" {
+		err := me.GetContractByContractHash(struct {
+			ContractHash h160.T
+			Filter       map[string]interface{}
+			Raw          *map[string]interface{}
+		}{ContractHash: h160.T(fmt.Sprint(r1["hash"])), Filter: nil, Raw: &raw1}, ret)
+		if err != nil {
+			return nil
+		}
+		m := make(map[string]interface{})
+		json.Unmarshal([]byte(raw1["manifest"].(string)), &m)
+		methods := m["abi"].(map[string]interface{})["methods"].([]interface{})
+		i := 0
+		for _, method := range methods {
+			if method.(map[string]interface{})["name"].(string) == "transfer" {
+				i = i + 1
+			}
+			if len(method.(map[string]interface{})["parameters"].([]interface{})) == 4 {
+				i = i + 1
+			}
+			if len(method.(map[string]interface{})["parameters"].([]interface{})) == 3 {
+				i = i + 2
+			}
+			if method.(map[string]interface{})["name"].(string) == "balanceOf" {
+				i = i + 1
+			}
+			if method.(map[string]interface{})["name"].(string) == "totalSupply" {
+				i = i + 1
+			}
+			if method.(map[string]interface{})["name"].(string) == "decimals" {
+				i = i + 1
+			}
+		}
+		if i == 5 {
+			r1["type"] = "Nep17"
+		}
+		if i == 6 {
+			r1["type"] = "Nep11"
+		}
 	}
 
 	r2, err := me.Client.QueryLastJob(struct{ Collection string }{Collection: "PopularTokens"})
