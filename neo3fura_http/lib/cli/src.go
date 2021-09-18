@@ -177,7 +177,7 @@ func (me *T) QueryOneJob(args struct {
 	if err != nil {
 		return nil, err
 	}
-    return result,nil
+	return result, nil
 }
 
 func (me *T) QueryLastJob(args struct {

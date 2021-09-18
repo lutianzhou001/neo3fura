@@ -2,11 +2,6 @@ package main
 
 import (
 	"context"
-	"github.com/go-redis/redis/v8"
-	neoRpc "github.com/joeqian10/neo3-gogogo/rpc"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/robfig/cron"
-	"github.com/rs/cors"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"gopkg.in/yaml.v2"
@@ -16,10 +11,18 @@ import (
 	"neo3fura_http/lib/cli"
 	"neo3fura_http/lib/joh"
 	log2 "neo3fura_http/lib/log"
+	"neo3fura_http/lib/monitor"
 	"net/http"
 	"net/rpc"
 	"os"
 	"path/filepath"
+	"time"
+
+	"github.com/go-redis/redis/v8"
+	neoRpc "github.com/joeqian10/neo3-gogogo/rpc"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/robfig/cron"
+	"github.com/rs/cors"
 )
 
 func OpenConfigFile() (Config, error) {
@@ -122,6 +125,14 @@ func main() {
 
 	h := &joh.T{}
 
+	// reset qps
+	go func() {
+		for {
+			monitor.Http_request_qps.Set(0)
+			time.Sleep(1 * time.Second)
+		}
+	}()
+
 	if cfg.Replica == "master" {
 		go func() {
 			err := w.GetFirstEventByTransactionHash()
@@ -157,6 +168,11 @@ func main() {
 	log2.Infof("NOW LISTEN ON: %s", listen)
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", func(writer http.ResponseWriter, request *http.Request) {
+		monitor.Http_request_qps.Inc()
+		monitor.Http_request_total.Inc()
+		monitor.Http_request_in_flight.Inc()
+		defer monitor.Http_request_in_flight.Dec()
+		monitor.Http_request_duration_seconds.Observe(time.Since(time.Now()).Seconds())
 		h.ServeHTTP(writer, request)
 	})
 	mux.Handle("/metrics", promhttp.Handler())
