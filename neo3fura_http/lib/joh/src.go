@@ -32,6 +32,7 @@ type Config struct {
 var repostMode int = 0
 
 func (me *T) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	body, err := ioutil.ReadAll(req.Body)
 	if err != nil {
 		log2.Infof("Error in reading body: %v", err)
