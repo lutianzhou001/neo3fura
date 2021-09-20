@@ -28,7 +28,7 @@ func (me *T) GetAssetsHeldByAddress(args struct {
 		Collection: "Address-Asset",
 		Index:      "GetAssetsHeldByAddress",
 		Sort:       bson.M{"balance": -1},
-		Filter:     bson.M{"address": args.Address.TransferredVal()},
+		Filter:     bson.M{"address": args.Address.TransferredVal(), "balance": bson.M{"$gt": 0}},
 		Query:      []string{},
 		Limit:      args.Limit,
 		Skip:       args.Skip,

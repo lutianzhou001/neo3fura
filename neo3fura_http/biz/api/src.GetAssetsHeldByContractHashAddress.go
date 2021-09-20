@@ -32,7 +32,7 @@ func (me *T) GetAssetsHeldByContractHashAddress(args struct {
 		Collection: "Address-Asset",
 		Index:      "GetAssetsHeldByContractHashAddress",
 		Sort:       bson.M{"balance": -1},
-		Filter:     bson.M{"address": args.Address.TransferredVal(), "asset": args.ContractHash.Val()},
+		Filter:     bson.M{"address": args.Address.TransferredVal(), "asset": args.ContractHash.Val(), "balance": bson.M{"$gt": 0}},
 		Query:      []string{},
 		Limit:      args.Limit,
 		Skip:       args.Skip,
