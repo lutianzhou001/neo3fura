@@ -6,6 +6,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"neo3fura_http/lib/type/h160"
+	"neo3fura_http/lib/type/strval"
 	"neo3fura_http/var/stderr"
 )
 
@@ -14,6 +15,7 @@ func (me *T) GetAssetInfos(args struct {
 	Addresses []h160.T
 	Limit     int64
 	Skip      int64
+	Standard  strval.T
 }, ret *json.RawMessage) error {
 	var f bson.M
 	if args.Addresses == nil {
@@ -119,7 +121,14 @@ func (me *T) GetAssetInfos(args struct {
 			}
 		}
 	}
-	r4, err := me.FilterArrayAndAppendCount(r1, count, args.Filter)
+
+	r5 := make([]map[string]interface{}, 0)
+	for _, item := range r1 {
+		if args.Standard == "" || (args.Standard == "NEP11" && item["type"] == "NEP11") || (args.Standard == "NEP17" && item["type"] == "NEP17") {
+			r5 = append(r5, item)
+		}
+	}
+	r4, err := me.FilterArrayAndAppendCount(r5, count, args.Filter)
 	if err != nil {
 		return err
 	}
