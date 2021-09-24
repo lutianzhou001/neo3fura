@@ -13,7 +13,7 @@ func (me *T) GetContractListByName(args struct {
 }, ret *json.RawMessage) error {
 
 	if args.Limit == 0 {
-		args.Limit = 500
+		args.Limit = 512
 	}
 
 	var r1, err = me.Client.QueryAggregate(

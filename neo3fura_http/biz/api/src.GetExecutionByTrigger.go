@@ -14,7 +14,7 @@ func (me *T) GetExecutionByTrigger(args struct {
 	Filter  map[string]interface{}
 }, ret *json.RawMessage) error {
 	if args.Limit == 0 {
-		args.Limit = 200
+		args.Limit = 512
 	}
 	in := args.Trigger.In([]string{"OnPersist", "PostPersist", "Application", "Verification", "System", "All"})
 	if in == false {

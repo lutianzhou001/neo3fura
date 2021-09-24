@@ -18,6 +18,9 @@ func (me *T) GetAssetInfos(args struct {
 	Standard  strval.T
 }, ret *json.RawMessage) error {
 	var f bson.M
+	if args.Limit == 0 {
+		args.Limit = 512
+	}
 	if args.Addresses == nil {
 		f = bson.M{}
 	} else {
@@ -35,7 +38,7 @@ func (me *T) GetAssetInfos(args struct {
 			f = bson.M{"$or": addresses}
 		}
 	}
-	r1, count, err := me.Client.QueryAll(struct {
+	r1, _, err := me.Client.QueryAll(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
@@ -49,8 +52,6 @@ func (me *T) GetAssetInfos(args struct {
 		Sort:       bson.M{},
 		Filter:     f,
 		Query:      []string{},
-		Limit:      args.Limit,
-		Skip:       args.Skip,
 	}, ret)
 	if err != nil {
 		return err
@@ -123,12 +124,22 @@ func (me *T) GetAssetInfos(args struct {
 	}
 
 	r5 := make([]map[string]interface{}, 0)
+	r6 := make([]map[string]interface{}, 0)
 	for _, item := range r1 {
 		if args.Standard == "" || (args.Standard == "NEP11" && item["type"] == "NEP11") || (args.Standard == "NEP17" && item["type"] == "NEP17") {
 			r5 = append(r5, item)
 		}
 	}
-	r4, err := me.FilterArrayAndAppendCount(r5, count, args.Filter)
+	for i, item := range r5 {
+		if int64(i) < args.Skip {
+			continue
+		} else if int64(i) > args.Skip+args.Limit-1 {
+			continue
+		} else {
+			r6 = append(r6, item)
+		}
+	}
+	r4, err := me.FilterArrayAndAppendCount(r6, int64(len(r5)), args.Filter)
 	if err != nil {
 		return err
 	}

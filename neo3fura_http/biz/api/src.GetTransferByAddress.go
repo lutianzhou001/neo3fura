@@ -17,7 +17,7 @@ func (me *T) GetTransferByAddress(args struct {
 		return stderr.ErrInvalidArgs
 	}
 	if args.Limit == 0 {
-		args.Limit = 500
+		args.Limit = 512
 	}
 	r1, _, err1 := me.Client.QueryAll(struct {
 		Collection string
