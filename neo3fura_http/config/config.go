@@ -51,7 +51,7 @@ var Apis = []string{
 	"GetNep11OwnedByContractHashAddress",
 	"GetNep11TransferByAddress",
 	"GetNep11TransferByBlockHeight",
-	"GetNep11TransferByContractHash",
+	"GetNep11TransferByContractHashTokenId",
 	"GetNep11TransferByTransactionHash",
 	"GetNep11TransferCountByAddress",
 	"GetNep17TransferByAddress",

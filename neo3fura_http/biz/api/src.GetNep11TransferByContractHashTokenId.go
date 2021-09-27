@@ -4,17 +4,25 @@ import (
 	"encoding/json"
 	"go.mongodb.org/mongo-driver/bson"
 	"neo3fura_http/lib/type/h160"
+	"neo3fura_http/lib/type/strval"
 	"neo3fura_http/var/stderr"
 )
 
-func (me *T) GetNep11TransferByContractHash(args struct {
+func (me *T) GetNep11TransferByContractHashTokenId(args struct {
 	ContractHash h160.T
 	Limit        int64
 	Skip         int64
+	TokenId      strval.T
 	Filter       map[string]interface{}
 }, ret *json.RawMessage) error {
 	if args.ContractHash.Valid() == false {
 		return stderr.ErrInvalidArgs
+	}
+	var f bson.M
+	if args.TokenId == "" {
+		f = bson.M{"contract": args.ContractHash.Val()}
+	} else {
+		f = bson.M{"contract": args.ContractHash.Val(), "tokenId": args.TokenId}
 	}
 	r1, count, err := me.Client.QueryAll(struct {
 		Collection string
@@ -28,7 +36,7 @@ func (me *T) GetNep11TransferByContractHash(args struct {
 		Collection: "Nep11TransferNotification",
 		Index:      "GetNep11TransferByAddress",
 		Sort:       bson.M{"_id": -1},
-		Filter:     bson.M{"contract": args.ContractHash.Val()},
+		Filter:     f,
 		Query:      []string{},
 		Limit:      args.Limit,
 		Skip:       args.Skip,
