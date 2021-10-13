@@ -40,7 +40,7 @@ func (me T) GetHoldersByContractHash() error {
 			Collection: "Address-Asset",
 			Index:      "GetHoldersByContractHash",
 			Sort:       bson.M{"balance": -1},
-			Filter:     bson.M{"asset": item["hash"]},
+			Filter:     bson.M{"asset": item["hash"], "balance": bson.M{"$gt": 0}},
 			Query:      []string{},
 		}, ret)
 		if err != nil {
