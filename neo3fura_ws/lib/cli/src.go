@@ -55,6 +55,19 @@ func (me *T) QueryDocument(args struct {
 	return convert, nil
 }
 
+func (me *T) QueryLastOne(args struct {
+	Collection string
+}) (map[string]interface{}, error) {
+	collection := me.C_online.Database(me.Db_online).Collection(args.Collection)
+	var result map[string]interface{}
+	opts := options.FindOne().SetSort(bson.M{"_id": -1})
+	err := collection.FindOne(context.TODO(), bson.M{}, opts).Decode(&result)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
 func (me *T) QueryAll(args struct {
 	Collection string
 	Index      string

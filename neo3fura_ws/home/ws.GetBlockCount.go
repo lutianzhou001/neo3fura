@@ -2,20 +2,21 @@ package home
 
 import (
 	"context"
-	"encoding/json"
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"log"
 )
 
 // Asset
 func (me *T) GetBlockCount(ch *chan map[string]interface{}) error {
-	blockCount, err := me.getBlockCount()
+	blockCount := make(map[string]interface{})
+	totalCounts := make(map[string]interface{})
+	lastestBlock,err := me.Client.QueryLastOne(struct{ Collection string }{Collection: "Block"})
+	totalCounts["total counts"] =  lastestBlock["index"]
+	blockCount["BlockCount"] = totalCounts
 	if err != nil {
 		return err
 	}
 	*ch <- blockCount
-
 	c, err := me.Client.GetCollection(struct{ Collection string }{Collection: "Block"})
 	if err != nil {
 		return err
@@ -31,10 +32,10 @@ func (me *T) GetBlockCount(ch *chan map[string]interface{}) error {
 		if err != nil {
 			log.Fatal(err)
 		}
-		newBlockCount, err := me.getBlockCount()
-		if err != nil {
-			return err
-		}
+		newBlockCount := make(map[string]interface{})
+		newTotalCounts := make(map[string]interface{})
+		newTotalCounts["total counts"] = changeEvent["fullDocument"].(map[string]interface{})["index"]
+		newBlockCount["BlockCount"] = newTotalCounts
 		if blockCount["BlockCount"].(map[string]interface{})["total counts"] != newBlockCount["BlockCount"].(map[string]interface{})["total counts"] {
 			*ch <- newBlockCount
 			blockCount = newBlockCount
@@ -43,25 +44,3 @@ func (me *T) GetBlockCount(ch *chan map[string]interface{}) error {
 	return nil
 }
 
-func (me T) getBlockCount() (map[string]interface{}, error) {
-	message := make(json.RawMessage, 0)
-	ret := &message
-	res := make(map[string]interface{})
-
-	r1, err := me.Client.QueryDocument(struct {
-		Collection string
-		Index      string
-		Sort       bson.M
-		Filter     bson.M
-	}{
-		Collection: "Block",
-		Index:      "GetBlockCount",
-		Sort:       bson.M{},
-		Filter:     bson.M{},
-	}, ret)
-	if err != nil {
-		return nil, err
-	}
-	res["BlockCount"] = r1
-	return res, nil
-}
