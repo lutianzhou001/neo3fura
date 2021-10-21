@@ -46,6 +46,14 @@ func (me T) GetHoldersByContractHash() error {
 		if err != nil {
 			return err
 		}
+		f := make(map[string]interface{})
+		count = 0
+		for k, _ := range item {
+			f[k] = 1
+		}
+		for _, _ = range f {
+			count = count + 1
+		}
 		data = append(data, bson.M{item["hash"].(string): count})
 	}
 	_, err = me.Client.SaveJob(struct {

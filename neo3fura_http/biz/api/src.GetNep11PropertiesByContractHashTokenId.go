@@ -4,15 +4,16 @@ import (
 	"encoding/json"
 	"go.mongodb.org/mongo-driver/bson"
 	"neo3fura_http/lib/type/h160"
+	"neo3fura_http/lib/type/strval"
 	"neo3fura_http/var/stderr"
 )
 
 func (me *T) GetNep11PropertiesByContractHashTokenId(args struct {
-	Address      h160.T
 	ContractHash h160.T
+	TokenId      strval.T
 	Filter       map[string]interface{}
 }, ret *json.RawMessage) error {
-	if args.Address.Valid() == false {
+	if len(args.TokenId.Val()) <= 0 {
 		return stderr.ErrInvalidArgs
 	}
 	if args.ContractHash.Valid() == false {
@@ -25,10 +26,10 @@ func (me *T) GetNep11PropertiesByContractHashTokenId(args struct {
 		Filter     bson.M
 		Query      []string
 	}{
-		Collection: "Address-Asset",
-		Index:      "GetAssetsHeldByContractHashAddress",
+		Collection: "Nep11Properties",
+		Index:      "GetNep11PropertiesByContractHashTokenId",
 		Sort:       bson.M{"balance": -1},
-		Filter:     bson.M{"address": args.Address.TransferredVal(), "asset": args.ContractHash.Val(), "balance": bson.M{"$gt": 0}},
+		Filter:     bson.M{"asset": args.ContractHash.TransferredVal(), "tokenid": args.TokenId},
 		Query:      []string{},
 	}, ret)
 	if err != nil {
