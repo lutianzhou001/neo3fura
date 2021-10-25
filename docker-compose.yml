@@ -55,6 +55,8 @@ services:
 
   mongo-express:
     image: mongo-express
+    restart: always
+    container_name: mongo_express_${RUNTIME}
     ports:
       - "8081:8081"
     networks:
