@@ -53,6 +53,18 @@ services:
     expose:
       - "27017"
 
+  mongo-express:
+    image: mongo-express
+    ports:
+      - "8081:8081"
+    networks:
+      - network
+    environment:
+      ME_CONFIG_BASICAUTH_USERNAME: change_the_admin
+      ME_CONFIG_BASICAUTH_PASSWORD: change_the_password
+    depends_on:
+      - mongo
+
   prometheus:
     image: prom/prometheus:v2.6.1
     container_name: prometheus_${RUNTIME}
