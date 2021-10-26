@@ -83,6 +83,7 @@ var Apis = []string{
 	"GetTransferByAddress",
 	"GetTransferByBlockHash",
 	"GetTransferByBlockHeight",
+	"GetTransferEventByTransactionHash",
 	"GetVerifiedContracts",
 	"GetVerifiedContractByContractHash",
 	"GetVmStateByTransactionHash",
