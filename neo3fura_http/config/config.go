@@ -75,6 +75,7 @@ var Apis = []string{
 	"GetScVoteCallByCandidateAddress",
 	"GetScVoteCallByTransactionHash",
 	"GetScVoteCallByVoterAddress",
+	"GetSourceCodeByContractHash",
 	"GetTotalSentAndReceivedByContractHashAddress",
 	"GetTotalVotes",
 	"GetTransactionCount",
