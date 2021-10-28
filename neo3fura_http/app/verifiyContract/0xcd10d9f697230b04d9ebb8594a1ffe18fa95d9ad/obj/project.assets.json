@@ -1,0 +1,151 @@
+{
+  "version": 3,
+  "targets": {
+    "net5.0": {
+      "Neo.SmartContract.Framework/3.0.2": {
+        "type": "package",
+        "compile": {
+          "lib/net5.0/Neo.SmartContract.Framework.dll": {}
+        },
+        "runtime": {
+          "lib/net5.0/Neo.SmartContract.Framework.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "Neo.SmartContract.Framework/3.0.2": {
+      "sha512": "RPEJwyKJxinXGjpE1iRyJ2DGA5txhSNa95ylWhtugf0iHIV1pkrsW8VBdQq8v899Q+u82V6LN9irpZJKEehhIw==",
+      "type": "package",
+      "path": "neo.smartcontract.framework/3.0.2",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/net5.0/Neo.SmartContract.Framework.dll",
+        "neo.smartcontract.framework.3.0.2.nupkg.sha512",
+        "neo.smartcontract.framework.nuspec",
+        "src/ByteString.cs",
+        "src/CallingConventionAttribute.cs",
+        "src/ContractAttribute.cs",
+        "src/ContractHashAttribute.cs",
+        "src/ContractParameterType.cs",
+        "src/ContractPermissionAttribute.cs",
+        "src/ContractTrustAttribute.cs",
+        "src/ECPoint.cs",
+        "src/ExecutionEngine.cs",
+        "src/Helper.cs",
+        "src/IApiInterface.cs",
+        "src/InitialValueAttribute.cs",
+        "src/List.cs",
+        "src/ManifestExtraAttribute.cs",
+        "src/Map.cs",
+        "src/Native/ContractManagement.cs",
+        "src/Native/CryptoLib.cs",
+        "src/Native/GAS.cs",
+        "src/Native/Ledger.cs",
+        "src/Native/NEO.cs",
+        "src/Native/NamedCurve.cs",
+        "src/Native/NeoAccountState.cs",
+        "src/Native/Oracle.cs",
+        "src/Native/OracleResponseCode.cs",
+        "src/Native/Policy.cs",
+        "src/Native/Role.cs",
+        "src/Native/RoleManagement.cs",
+        "src/Native/StdLib.cs",
+        "src/Nep11Token.cs",
+        "src/Nep11TokenState.cs",
+        "src/Nep17Token.cs",
+        "src/OpCode.cs",
+        "src/OpCodeAttribute.cs",
+        "src/Properties/AssemblyInfo.cs",
+        "src/SafeAttribute.cs",
+        "src/Services/Block.cs",
+        "src/Services/CallFlags.cs",
+        "src/Services/Contract.cs",
+        "src/Services/Crypto.cs",
+        "src/Services/FindOptions.cs",
+        "src/Services/Iterator.cs",
+        "src/Services/Notification.cs",
+        "src/Services/Runtime.cs",
+        "src/Services/Storage.cs",
+        "src/Services/StorageContext.cs",
+        "src/Services/StorageMap.cs",
+        "src/Services/Transaction.cs",
+        "src/Services/TriggerType.cs",
+        "src/SmartContract.cs",
+        "src/StackItemType.cs",
+        "src/SupportedStandardsAttribute.cs",
+        "src/SyscallAttribute.cs",
+        "src/TokenContract.cs",
+        "src/UInt160.cs",
+        "src/UInt256.cs"
+      ]
+    }
+  },
+  "projectFileDependencyGroups": {
+    "net5.0": [
+      "Neo.SmartContract.Framework >= 3.0.2"
+    ]
+  },
+  "packageFolders": {
+    "/Users/qinzilie/.nuget/packages/": {}
+  },
+  "project": {
+    "version": "1.0.0",
+    "restore": {
+      "projectUniqueName": "/Users/qinzilie/neo3furaForked/neo3fura/neo3fura_http/app/verifiyContract/20211026173936/Neoverse.csproj",
+      "projectName": "Neoverse",
+      "projectPath": "/Users/qinzilie/neo3furaForked/neo3fura/neo3fura_http/app/verifiyContract/20211026173936/Neoverse.csproj",
+      "packagesPath": "/Users/qinzilie/.nuget/packages/",
+      "outputPath": "/Users/qinzilie/neo3furaForked/neo3fura/neo3fura_http/app/verifiyContract/20211026173936/obj/",
+      "projectStyle": "PackageReference",
+      "configFilePaths": [
+        "/Users/qinzilie/.nuget/NuGet/NuGet.Config"
+      ],
+      "originalTargetFrameworks": [
+        "net5.0"
+      ],
+      "sources": {
+        "https://api.nuget.org/v3/index.json": {}
+      },
+      "frameworks": {
+        "net5.0": {
+          "targetAlias": "net5.0",
+          "projectReferences": {}
+        }
+      },
+      "warningProperties": {
+        "warnAsError": [
+          "NU1605"
+        ]
+      }
+    },
+    "frameworks": {
+      "net5.0": {
+        "targetAlias": "net5.0",
+        "dependencies": {
+          "Neo.SmartContract.Framework": {
+            "target": "Package",
+            "version": "[3.0.2, )"
+          }
+        },
+        "imports": [
+          "net461",
+          "net462",
+          "net47",
+          "net471",
+          "net472",
+          "net48"
+        ],
+        "assetTargetFallback": true,
+        "warn": true,
+        "frameworkReferences": {
+          "Microsoft.NETCore.App": {
+            "privateAssets": "all"
+          }
+        },
+        "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/5.0.301/RuntimeIdentifierGraph.json"
+      }
+    }
+  }
+}
