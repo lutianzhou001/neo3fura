@@ -10,8 +10,8 @@ import (
 
 func (me *T) GetVerifiedContractByContractHash(args struct {
 	ContractHash  h160.T
-	UpdateCounter  uintval.T
-	Filter  map[string]interface{}
+	UpdateCounter uintval.T
+	Filter        map[string]interface{}
 }, ret *json.RawMessage) error {
 	if args.ContractHash.Valid() == false {
 		return stderr.ErrInvalidArgs
@@ -30,7 +30,7 @@ func (me *T) GetVerifiedContractByContractHash(args struct {
 		Collection: "VerifyContract",
 		Index:      "GetVerifiedContractByContractHash",
 		Sort:       bson.M{},
-		Filter:     bson.M{"hash": args.ContractHash,"updatecounter":args.UpdateCounter},
+		Filter:     bson.M{"hash": args.ContractHash, "updatecounter": args.UpdateCounter},
 		Query:      []string{},
 	}, ret)
 

@@ -9,11 +9,11 @@ import (
 )
 
 func (me *T) GetSourceCodeByContractHash(args struct {
-	Limit  int64
-	Skip   int64
-	ContractHash h160.T
+	Limit         int64
+	Skip          int64
+	ContractHash  h160.T
 	UpdateCounter uintval.T
-	Filter map[string]interface{}
+	Filter        map[string]interface{}
 }, ret *json.RawMessage) error {
 	if args.ContractHash.Valid() == false {
 		return stderr.ErrInvalidArgs
@@ -36,7 +36,7 @@ func (me *T) GetSourceCodeByContractHash(args struct {
 		Collection: "ContractSourceCode",
 		Index:      "someIndex",
 		Sort:       bson.M{},
-		Filter:     bson.M{"hash":args.ContractHash,"updatecounter":args.UpdateCounter},
+		Filter:     bson.M{"hash": args.ContractHash, "updatecounter": args.UpdateCounter},
 		Query:      []string{},
 		Limit:      args.Limit,
 		Skip:       args.Skip,

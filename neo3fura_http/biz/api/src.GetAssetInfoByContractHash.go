@@ -55,10 +55,10 @@ func (me *T) GetAssetInfoByContractHash(args struct {
 			if method.(map[string]interface{})["name"].(string) == "transfer" {
 				i = i + 1
 			}
-			if len(method.(map[string]interface{})["parameters"].([]interface{})) == 4 {
+			if (method.(map[string]interface{})["name"].(string) == "transfer") && len(method.(map[string]interface{})["parameters"].([]interface{})) == 4 {
 				i = i + 1
 			}
-			if len(method.(map[string]interface{})["parameters"].([]interface{})) == 3 {
+			if (method.(map[string]interface{})["name"].(string) == "transfer") && len(method.(map[string]interface{})["parameters"].([]interface{})) == 3 {
 				i = i + 2
 			}
 			if method.(map[string]interface{})["name"].(string) == "balanceOf" {
@@ -71,6 +71,7 @@ func (me *T) GetAssetInfoByContractHash(args struct {
 				i = i + 1
 			}
 		}
+
 		if i == 5 {
 			r1["type"] = "NEP17"
 		}

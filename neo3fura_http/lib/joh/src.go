@@ -52,12 +52,12 @@ func (me *T) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	err = json.Unmarshal(body, &request)
 	if err != nil {
 		log2.Infof("Error decoding in JSON: %v", err)
-		http.Error(w, "can't decoding in JSON", http.StatusBadRequest)
+		http.Error(w, "Can't decoding in JSON", http.StatusBadRequest)
 	} else {
 		log2.Infof("Request is: %v", request["method"])
 		c, err := me.OpenConfigFile()
 		if err != nil {
-			log2.Fatalf("open config file error:%s", err)
+			log2.Fatalf("Open config file error:%s", err)
 		}
 		if me.exists(request["method"].(string)) == true {
 			// can find
@@ -69,7 +69,7 @@ func (me *T) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 			rpc.ServeCodec(codec)
 		} else {
 			// can't find
-			log2.Infof("repost %v", request["method"])
+			log2.Infof("Repost %v", request["method"])
 			responseBody := bytes.NewBuffer(body)
 			w.Header().Set("Content-Type", "application/json")
 			resp, err := http.Post(c.Proxy.URI[repostMode], "application/json", responseBody)
