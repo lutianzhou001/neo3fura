@@ -12,6 +12,7 @@ import (
 	"neo3fura_http/lib/joh"
 	log2 "neo3fura_http/lib/log"
 	"neo3fura_http/lib/monitor"
+	"neo3fura_http/lib/verify"
 	"net/http"
 	"net/rpc"
 	"os"
@@ -124,6 +125,9 @@ func main() {
 	}
 
 	h := &joh.T{}
+	v := &verify.T{
+		Client: client,
+	}
 
 	// reset qps
 	go func() {
@@ -174,6 +178,9 @@ func main() {
 		defer monitor.Http_request_in_flight.Dec()
 		monitor.Http_request_duration_seconds.Observe(time.Since(time.Now()).Seconds())
 		h.ServeHTTP(writer, request)
+	})
+	mux.HandleFunc("/upload", func(writer http.ResponseWriter, request *http.Request) {
+		v.MultipleFile(writer, request)
 	})
 	mux.Handle("/metrics", promhttp.Handler())
 	handler := cors.Default().Handler(mux)
