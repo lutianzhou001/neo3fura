@@ -45,6 +45,7 @@ var Apis = []string{
 	"GetExecutionByTrigger",
 	"GetExtraTransferByBlockHash",
 	"GetHoldersByContractHash",
+	"GetHourlyTransactions",
 	"GetNep11BalanceByContractHashAddress",
 	"GetNep11BalanceByContractHashAddressTokenId",
 	"GetNep11OwnedByAddress",
