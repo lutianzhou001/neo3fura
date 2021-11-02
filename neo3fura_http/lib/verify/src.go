@@ -103,7 +103,6 @@ func (me *T) MultipleFile(w http.ResponseWriter, r *http.Request) {
 	//如果编译出错，程序不向下执行
 	if chainNef == "0" || chainNef == "1" || chainNef == "2" {
 		return
-
 	}
 	//向链上结点请求合约的状态，返回请求到的合约nef数据
 	version, sourceNef := getContractState(pathFile, w, m1, m2)
@@ -246,13 +245,13 @@ func execCommand(pathFile string, w http.ResponseWriter, m map[string]string) st
 	//根据用户上传参数选择对应的编译器
 	cmd := exec.Command("echo")
 	if getVersion(m) == "Neo.Compiler.CSharp 3.0.0" {
-		cmd = exec.Command("/go/application/compilers/c/nccs")
+		cmd = exec.Command("/go/application/compilers/3.0.0/nccs")
 		log2.Infof("use 3.0.0 compiler")
 	} else if getVersion(m) == "Neo.Compiler.CSharp 3.0.2" {
-		cmd = exec.Command("/go/application/compilers/b/nccs")
+		cmd = exec.Command("/go/application/compilers/3.0.2/nccs")
 		log2.Infof("use 3.0.2 compiler")
 	} else if getVersion(m) == "Neo.Compiler.CSharp 3.0.3" {
-		cmd = exec.Command("/go/application/compilers/a/nccs")
+		cmd = exec.Command("/go/application/compilers/3.0.3/nccs")
 		log2.Infof("use 3.0.3 compiler")
 	} else {
 		log2.Fatalf("Compiler version doesn't exist")
@@ -286,10 +285,10 @@ func execCommand(pathFile string, w http.ResponseWriter, m map[string]string) st
 		log2.Infof("Cmd execution failed: %v", err)
 		msg, _ := json.Marshal(jsonResult{1, "Cmd execution failed "})
 		w.Header().Set("Content-Type", "application/json")
-		err := os.RemoveAll(pathFile)
-		if err != nil {
-			log2.Fatalf("Remove file error: %v", err)
-		}
+		// err := os.RemoveAll(pathFile)
+		// if err != nil {
+			// log2.Fatalf("Remove file error: %v", err)
+		// }
 		_, err = w.Write(msg)
 		if err != nil {
 			log2.Fatalf("Write message error: %v", err)
@@ -315,15 +314,14 @@ func execCommand(pathFile string, w http.ResponseWriter, m map[string]string) st
 		}
 		var result = base64.StdEncoding.EncodeToString(res.Script)
 		return result
-
 	} else {
-		log2.Fatalf("============.nef file doesn't exist=========== %v", err)
+		log2.Fatalf(".nef file doesn't exist: %v", err)
 		msg, _ := json.Marshal(jsonResult{2, ".nef file doesn't exist "})
 		w.Header().Set("Content-Type", "application/json")
-		err := os.RemoveAll(pathFile)
-		if err != nil {
-			log2.Fatalf("Remove file error: %v", err)
-		}
+		//err := os.RemoveAll(pathFile)
+		//if err != nil {
+		//	log2.Fatalf("Remove file error: %v", err)
+		//}
 		_, err = w.Write(msg)
 		if err != nil {
 			log2.Fatalf("Write message error: %v", err)
@@ -364,9 +362,9 @@ func getContractState(pathFile string, w http.ResponseWriter, m1 map[string]stri
 	log2.Infof("RPC params: ContractHash: %v", getContract(m1))
 	switch rt {
 	case "staging":
-		resp, err = http.Post("http://127.0.0.1:1927", "application/json", bytes.NewReader(payload))
+		resp, err = http.Post("https://neofura.ngd.network:1927", "application/json", bytes.NewReader(payload))
 	case "test":
-		resp, err = http.Post("http://127.0.0.1:1926", "application/json", bytes.NewReader(payload))
+		resp, err = http.Post("https://testneofura.ngd.network:444", "application/json", bytes.NewReader(payload))
 	}
 
 	if err != nil {
