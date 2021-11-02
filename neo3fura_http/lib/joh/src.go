@@ -3,7 +3,6 @@ package joh
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"github.com/thinkeridea/go-extend/exnet"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
@@ -67,8 +66,6 @@ func (me *T) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 			conn := &rwio.T{R: req.Body, W: w}
 			codec := &scex.T{}
 			codec.Init(conn)
-			fmt.Println("codec")
-			fmt.Println(codec)
 			rpc.ServeCodec(codec)
 		} else {
 			// can't find
