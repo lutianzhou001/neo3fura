@@ -32,6 +32,12 @@ RUN  apt-get update
 
 RUN  apt-get install -y aspnetcore-runtime-5.0
 
+RUN  chmod 777 compilers/3.0.0/nccs
+
+RUN  chmod 777 compilers/3.0.2/nccs
+
+RUN  chmod 777 compilers/3.0.3/nccs
+
 RUN  go build -o main app/neo3fura/src.go
 
 EXPOSE 1926
