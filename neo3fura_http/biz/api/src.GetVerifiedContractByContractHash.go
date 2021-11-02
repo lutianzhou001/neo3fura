@@ -19,7 +19,6 @@ func (me *T) GetVerifiedContractByContractHash(args struct {
 	if args.UpdateCounter.Valid() == false {
 		return stderr.ErrInvalidArgs
 	}
-
 	r1, err := me.Client.QueryOne(struct {
 		Collection string
 		Index      string
@@ -27,7 +26,7 @@ func (me *T) GetVerifiedContractByContractHash(args struct {
 		Filter     bson.M
 		Query      []string
 	}{
-		Collection: "VerifyContract",
+		Collection: "VerifyContractModel",
 		Index:      "GetVerifiedContractByContractHash",
 		Sort:       bson.M{},
 		Filter:     bson.M{"hash": args.ContractHash, "updatecounter": args.UpdateCounter},
