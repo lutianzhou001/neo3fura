@@ -245,13 +245,13 @@ func execCommand(pathFile string, w http.ResponseWriter, m map[string]string) st
 	//根据用户上传参数选择对应的编译器
 	cmd := exec.Command("echo")
 	if getVersion(m) == "Neo.Compiler.CSharp 3.0.0" {
-		cmd = exec.Command("/go/application/compilers/3.0.0/nccs")
+		cmd = exec.Command("/go/application/compiler/a/nccs")
 		log2.Infof("use 3.0.0 compiler")
 	} else if getVersion(m) == "Neo.Compiler.CSharp 3.0.2" {
-		cmd = exec.Command("/go/application/compilers/3.0.2/nccs")
+		cmd = exec.Command("/go/application/compiler/c/nccs")
 		log2.Infof("use 3.0.2 compiler")
 	} else if getVersion(m) == "Neo.Compiler.CSharp 3.0.3" {
-		cmd = exec.Command("/go/application/compilers/3.0.3/nccs")
+		cmd = exec.Command("/go/application/compiler/b/nccs")
 		log2.Infof("use 3.0.3 compiler")
 	} else {
 		log2.Fatalf("Compiler version doesn't exist")
@@ -287,7 +287,7 @@ func execCommand(pathFile string, w http.ResponseWriter, m map[string]string) st
 		w.Header().Set("Content-Type", "application/json")
 		// err := os.RemoveAll(pathFile)
 		// if err != nil {
-			// log2.Fatalf("Remove file error: %v", err)
+		// log2.Fatalf("Remove file error: %v", err)
 		// }
 		_, err = w.Write(msg)
 		if err != nil {

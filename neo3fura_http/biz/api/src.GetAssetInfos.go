@@ -98,10 +98,13 @@ func (me *T) GetAssetInfos(args struct {
 			methods := m["abi"].(map[string]interface{})["methods"].([]interface{})
 			i := 0
 			for _, method := range methods {
-				if method.(map[string]interface{})["name"].(string) == "transfer" && len(method.(map[string]interface{})["parameters"].([]interface{})) == 4 {
+				if method.(map[string]interface{})["name"].(string) == "transfer" {
 					i = i + 1
 				}
-				if method.(map[string]interface{})["name"].(string) == "transfer" && len(method.(map[string]interface{})["parameters"].([]interface{})) == 3 {
+				if (method.(map[string]interface{})["name"].(string) == "transfer") && len(method.(map[string]interface{})["parameters"].([]interface{})) == 4 {
+					i = i + 1
+				}
+				if (method.(map[string]interface{})["name"].(string) == "transfer") && len(method.(map[string]interface{})["parameters"].([]interface{})) == 3 {
 					i = i + 2
 				}
 				if method.(map[string]interface{})["name"].(string) == "balanceOf" {
@@ -114,10 +117,10 @@ func (me *T) GetAssetInfos(args struct {
 					i = i + 1
 				}
 			}
-			if i == 4 {
+			if i == 5 {
 				item["type"] = "NEP17"
 			}
-			if i == 5 {
+			if i == 6 {
 				item["type"] = "NEP11"
 			}
 		}

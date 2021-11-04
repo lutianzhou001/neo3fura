@@ -17,7 +17,7 @@ func (me *T) GetVerifiedContracts(args struct {
 		Limit      int64
 		Skip       int64
 	}{
-		Collection: "VerifyContract",
+		Collection: "VerifyContractModel",
 		Index:      "GetVerifiedContracts",
 		Sort:       bson.M{},
 		Filter:     bson.M{},

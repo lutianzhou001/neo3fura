@@ -1,8 +1,8 @@
 package job
 
 import (
-"encoding/json"
-"go.mongodb.org/mongo-driver/bson"
+	"encoding/json"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 func (me T) GetHourlyTransactions() error {

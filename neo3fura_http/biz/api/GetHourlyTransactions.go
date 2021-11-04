@@ -1,12 +1,12 @@
 package api
 
 import (
-"encoding/json"
-"go.mongodb.org/mongo-driver/bson"
+	"encoding/json"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 func (me *T) GetHourlyTransactions(args struct {
-	Hours   int64
+	Hours  int64
 	Filter map[string]interface{}
 }, ret *json.RawMessage) error {
 	if args.Hours == 0 {
