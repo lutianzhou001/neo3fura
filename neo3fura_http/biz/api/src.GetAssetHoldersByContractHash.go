@@ -14,6 +14,7 @@ func (me *T) GetAssetHoldersByContractHash(args struct {
 	Limit        int64
 	Skip         int64
 	Filter       map[string]interface{}
+	Raw          *[]map[string]interface{}
 }, ret *json.RawMessage) error {
 	if args.ContractHash.Valid() == false {
 		return stderr.ErrInvalidArgs
@@ -58,6 +59,10 @@ func (me *T) GetAssetHoldersByContractHash(args struct {
 		itf := new(big.Float).SetInt(it)
 		dv := new(big.Float).Quo(ibf, itf)
 		item["percentage"] = dv
+	}
+
+	if args.Raw != nil {
+		*args.Raw = r1
 	}
 
 	r2, err := me.FilterArrayAndAppendCount(r1, count, args.Filter)

@@ -120,9 +120,16 @@ func (me *T) MultipleFile(w http.ResponseWriter, r *http.Request) {
 		if result.Err() != nil {
 			//在VerifyContract表中插入该合约信息
 			verified := insertVerifiedContract{getContract(m1), getId(m2), getUpdateCounter(m2)}
-			_, err = me.Client.C_local.Database("contracts").Collection("VerifyContractModel").InsertOne(context.TODO(), verified)
-			if err != nil {
-				log2.Infof("Insert data error: %v", err)
+			if rt == "staging" {
+				_, err := me.Client.C_online.Database("neofura").Collection("VerifyContractModel").InsertOne(context.TODO(), verified)
+				if err != nil {
+					log2.Fatalf("Insert to online database error: %v", err)
+				}
+			} else {
+				_, err := me.Client.C_online.Database("testneofura").Collection("VerifyContractModel").InsertOne(context.TODO(), verified)
+				if err != nil {
+					log2.Fatalf("Insert to online database eror: %v", err)
+				}
 			}
 			log2.Infof("Inserted a verified Contract in verifyContractModel collection in" + rt + " database")
 			//在ContractSourceCode表中，插入上传的合约源代码。
@@ -157,7 +164,18 @@ func (me *T) MultipleFile(w http.ResponseWriter, r *http.Request) {
 
 					}
 					sourceCode := insertContractSourceCode{getContract(m1), getUpdateCounter(m2), fi.Name(), string(buffer)}
-					_, err = me.Client.C_local.Database("contracts").Collection("ContractSourceCode").InsertOne(context.TODO(), sourceCode)
+					if rt == "staging" {
+						_, err := me.Client.C_online.Database("neofura").Collection("ContractSourceCode").InsertOne(context.TODO(), sourceCode)
+						if err != nil {
+							log2.Fatalf("Insert to online database error: %v", err)
+						}
+					} else if rt == "test" {
+						_, err := me.Client.C_online.Database("testneofura").Collection("ContractSourceCode").InsertOne(context.TODO(), sourceCode)
+						if err != nil {
+							log2.Fatalf("Insert to online database error: %v", err)
+						}
+					}
+					// _, err = me.Client.C_local.Database("contracts").Collection("ContractSourceCode").InsertOne(context.TODO(), sourceCode)
 					if err != nil {
 						log2.Fatalf("Insert database error: %v", err)
 					}
