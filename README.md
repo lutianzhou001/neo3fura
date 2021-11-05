@@ -1,7 +1,7 @@
 # Neofura
 Neofura is a service for quickly getting data from the [Neo](www.neo.org) , If you are a developer on neo and need performance or good productivity, you will love Neofura.
 
-For more info, Please refer to [Neofura-Doc](https://neofura.readthedocs.io/en/latest/)
+For more info, Please refer to [Neofura-Doc](https://neofura.readthedocs.io/en/latest/)(will be deprecated soon), A new version of docs will be displayed here https://vincent-bytetsai.gitbook.io/api-docs.
 
 ## Quick Start
 
