@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 	"io"
 	"io/ioutil"
 	"neo3fura_http/lib/cli"
@@ -115,7 +116,12 @@ func (me *T) MultipleFile(w http.ResponseWriter, r *http.Request) {
 		rt := os.ExpandEnv("${RUNTIME}")
 		//查询当前合约是否已经存在于VerifiedContract表中，参数为合约hash，合约更新次数
 		filter := bson.M{"hash": getContract(m1), "updatecounter": getUpdateCounter(m2)}
-		result := me.Client.C_local.Database("contracts").Collection("VerifyContractModel").FindOne(context.TODO(), filter)
+		var result *mongo.SingleResult
+		if rt == "staging" {
+			result = me.Client.C_online.Database("neofura").Collection("VerifyContractModel").FindOne(context.TODO(), filter)
+		} else {
+			result = me.Client.C_online.Database("testneofura").Collection("VerifyContractModel").FindOne(context.TODO(), filter)
+		}
 		//如果合约不存在于VerifiedContract表中，验证成功
 		if result.Err() != nil {
 			//在VerifyContract表中插入该合约信息
@@ -175,7 +181,6 @@ func (me *T) MultipleFile(w http.ResponseWriter, r *http.Request) {
 							log2.Fatalf("Insert to online database error: %v", err)
 						}
 					}
-					// _, err = me.Client.C_local.Database("contracts").Collection("ContractSourceCode").InsertOne(context.TODO(), sourceCode)
 					if err != nil {
 						log2.Fatalf("Insert database error: %v", err)
 					}
