@@ -76,7 +76,7 @@ func getNep11Properties(tokenIds []strval.T, me *T, contractHash h160.T, ret *js
 		if err != nil {
 			return err
 		}
-		r4 = append(r4, map[string]interface{}{tokenId.Val(): filter})
+		r4 = append(r4, filter)
 	}
 	r5, err := me.FilterArrayAndAppendCount(r4, int64(len(r4)), filter)
 	if err != nil {
