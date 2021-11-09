@@ -385,7 +385,7 @@ func getContractState(pathFile string, w http.ResponseWriter, m1 map[string]stri
 	log2.Infof("RPC params: ContractHash: %v", getContract(m1))
 	switch rt {
 	case "staging":
-		resp, err = http.Post("https://neofura.ngd.network:1927", "application/json", bytes.NewReader(payload))
+		resp, err = http.Post("https://neofura.ngd.network", "application/json", bytes.NewReader(payload))
 	case "test":
 		resp, err = http.Post("https://testneofura.ngd.network:444", "application/json", bytes.NewReader(payload))
 	}
