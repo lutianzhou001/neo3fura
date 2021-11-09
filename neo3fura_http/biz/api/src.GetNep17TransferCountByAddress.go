@@ -2,9 +2,10 @@ package api
 
 import (
 	"encoding/json"
-	"go.mongodb.org/mongo-driver/bson"
 	"neo3fura_http/lib/type/h160"
 	"neo3fura_http/var/stderr"
+
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 func (me *T) GetNep17TransferCountByAddress(args struct {
@@ -14,11 +15,14 @@ func (me *T) GetNep17TransferCountByAddress(args struct {
 	if args.Address.Valid() == false {
 		return stderr.ErrInvalidArgs
 	}
-	r1, err := me.Client.QueryDocument(struct {
+	r1, _, err := me.Client.QueryAll(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
 		Filter     bson.M
+		Query      []string
+		Limit      int64
+		Skip       int64
 	}{
 		Collection: "TransferNotification",
 		Index:      "GetNep17TransferCountByAddress",
@@ -28,10 +32,20 @@ func (me *T) GetNep17TransferCountByAddress(args struct {
 			bson.M{"to": args.Address.TransferredVal()},
 		}},
 	}, ret)
+
+	f := make(map[string]interface{})
+	count := 0
+	for _, item := range r1 {
+		f[item["txid"].(string)] = 1
+	}
+	for _, _ = range f {
+		count = count + 1
+	}
+
 	if err != nil {
 		return err
 	}
-	r, err := json.Marshal(r1)
+	r, err := json.Marshal(count)
 	if err != nil {
 		return err
 	}

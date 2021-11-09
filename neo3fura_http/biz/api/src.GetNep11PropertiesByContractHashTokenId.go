@@ -2,10 +2,11 @@ package api
 
 import (
 	"encoding/json"
-	"go.mongodb.org/mongo-driver/bson"
 	"neo3fura_http/lib/type/h160"
 	"neo3fura_http/lib/type/strval"
 	"neo3fura_http/var/stderr"
+
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 func (me *T) GetNep11PropertiesByContractHashTokenId(args struct {
@@ -24,7 +25,7 @@ func (me *T) GetNep11PropertiesByContractHashTokenId(args struct {
 			Skip         int64
 			Filter       map[string]interface{}
 			Raw          *[]map[string]interface{}
-		}{ContractHash: args.ContractHash , Raw: &raw1},ret)
+		}{ContractHash: args.ContractHash, Raw: &raw1}, ret)
 		if err != nil {
 			return err
 		}
@@ -72,7 +73,7 @@ func getNep11Properties(tokenIds []strval.T, me *T, contractHash h160.T, ret *js
 		if err != nil {
 			return err
 		}
-		filter,err := me.Filter(r1, filter)
+		filter, err := me.Filter(r1, filter)
 		if err != nil {
 			return err
 		}
