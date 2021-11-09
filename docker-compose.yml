@@ -38,6 +38,7 @@ services:
     image: redis
     networks:
       - network
+    restart: always
     ports:
       - "6379:6379"
     container_name: cache_${RUNTIME}
