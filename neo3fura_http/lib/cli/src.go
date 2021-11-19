@@ -51,7 +51,7 @@ func (me *T) QueryOne(args struct {
 	hash := hex.EncodeToString(h.Sum(nil))
 	val, err := me.Redis.Get(me.Ctx, hash).Result()
 	// if sort != nil, it may have several results, we have to pick the sorted one
-	if err != nil || len(args.Sort) != 0 {
+	if err != nil || len(args.Sort) != 0 || args.Index == "GetCandidateByAddress" || args.Index == "GetAssetInfoByContractHash" || args.Index == "GetVerifiedContractByContractHash" || args.Index == "GetVotesByCandidateAddress" {
 		var result map[string]interface{}
 		convert := make(map[string]interface{})
 		collection := me.C_online.Database(me.Db_online).Collection(args.Collection)
