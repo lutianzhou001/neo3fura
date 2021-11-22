@@ -52,7 +52,11 @@ func (me *T) GetAssetHoldersByContractHash(args struct {
 		if err != nil {
 			return err
 		}
-		it, _ := new(big.Int).SetString(raw1["totalsupply"].(string), 10)
+		// it, _ := new(big.Int).SetString(raw1["totalsupply"].(string), 10)
+		it, _, err := raw1["totalsupply"].(primitive.Decimal128).BigInt()
+		if err != nil {
+			return err
+		}
 		ibf := new(big.Float).SetInt(ib)
 		itf := new(big.Float).SetInt(it)
 		dv := new(big.Float).Quo(ibf, itf)
