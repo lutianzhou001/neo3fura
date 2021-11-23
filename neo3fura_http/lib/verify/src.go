@@ -77,6 +77,8 @@ func (me *T) MultipleFile(w http.ResponseWriter, r *http.Request) {
 				m1[part.FormName()] = string(data)
 			} else if part.FormName() == "Version" {
 				m1[part.FormName()] = string(data)
+			} else if part.FormName() == "CompileCommand"{
+				m1[part.FormName()] = string(data)
 			}
 		} else {
 			dst, _ := os.OpenFile(pathFile+"/"+part.FileName(), os.O_WRONLY|os.O_CREATE, 0666)
@@ -268,14 +270,32 @@ func execCommand(pathFile string, w http.ResponseWriter, m map[string]string) st
 	//根据用户上传参数选择对应的编译器
 	cmd := exec.Command("echo")
 	if getVersion(m) == "Neo.Compiler.CSharp 3.0.0" {
-		cmd = exec.Command("/go/application/compiler/a/nccs")
-		log2.Infof("use 3.0.0 compiler")
+		if getCompileCommand(m)=="nccs --no-optimize" {
+			cmd= exec.Command("/go/application/compiler/a/nccs","--no-optimize")
+			log2.Infof("Compiler: Neo.Compiler.CSharp 3.0.0, Command: nccs --no-optimize")
+		}
+		if getCompileCommand(m)=="nccs" {
+			cmd= exec.Command("/go/application/compiler/a/nccs")
+			log2.Infof("Compiler: Neo.Compiler.CSharp 3.0.0, Command: nccs")
+		}
 	} else if getVersion(m) == "Neo.Compiler.CSharp 3.0.2" {
-		cmd = exec.Command("/go/application/compiler/c/nccs")
-		log2.Infof("use 3.0.2 compiler")
+		if getCompileCommand(m)=="nccs --no-optimize" {
+			cmd= exec.Command("/go/application/compiler/c/nccs","--no-optimize")
+			log2.Infof("Compiler: Neo.Compiler.CSharp 3.0.2, Command: nccs --no-optimize")
+		}
+		if getCompileCommand(m)=="nccs" {
+			cmd= exec.Command("/go/application/compiler/c/nccs")
+			log2.Infof("Compiler: Neo.Compiler.CSharp 3.0.2, Command: nccs")
+		}
 	} else if getVersion(m) == "Neo.Compiler.CSharp 3.0.3" {
-		cmd = exec.Command("/go/application/compiler/b/nccs")
-		log2.Infof("use 3.0.3 compiler")
+		if getCompileCommand(m)=="nccs --no-optimize" {
+			cmd= exec.Command("/go/application/compiler/b/nccs","--no-optimize")
+			log2.Infof("Compiler: Neo.Compiler.CSharp 3.0.3, Command: nccs --no-optimize")
+		}
+		if getCompileCommand(m)=="nccs" {
+			cmd= exec.Command("/go/application/compiler/b/nccs")
+			log2.Infof("Compiler: Neo.Compiler.CSharp 3.0.3, Command: nccs")
+		}
 	} else {
 		log2.Fatalf("Compiler version doesn't exist")
 		msg, _ := json.Marshal(jsonResult{0, "Compiler version doesn't exist, please choose Neo.Compiler.CSharp 3.0.0/Neo.Compiler.CSharp 3.0.2/Neo.Compiler.CSharp 3.0.3 version"})
@@ -367,6 +387,9 @@ func getUpdateCounter(m map[string]int) int {
 
 func getId(m map[string]int) int {
 	return m["id"]
+}
+func getCompileCommand(m map[string] string) string{
+	return m["CompileCommand"]
 }
 
 // 向链上结点请求合约的nef数据
