@@ -9,16 +9,20 @@ import (
 func (me *T) GetContractCount(args struct {
 	Filter map[string]interface{}
 }, ret *json.RawMessage) error {
-	r1, err := me.Client.QueryDocument(struct {
+	r1, err := me.Client.GetDistinctCount(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
 		Filter     bson.M
+		Pipeline   []bson.M
+		Query      []string
 	}{
 		Collection: "Contract",
 		Index:      "GetContractCount",
 		Sort:       bson.M{},
 		Filter:     bson.M{},
+		Pipeline:   []bson.M{},
+		Query:      []string{},
 	}, ret)
 	if err != nil {
 		return err
