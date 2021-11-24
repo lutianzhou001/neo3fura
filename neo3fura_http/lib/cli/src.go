@@ -296,3 +296,8 @@ func (me *T) QueryDocument(args struct {
 	*ret = json.RawMessage(r)
 	return convert, nil
 }
+
+// 去重查询
+func (me *T) name() {
+
+}
