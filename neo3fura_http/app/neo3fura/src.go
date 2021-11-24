@@ -92,6 +92,7 @@ type Config struct {
 
 func main() {
 	log2.InitLog(1, "./Logs/", os.Stdout)
+	log2.InitLog(12) //test
 	log2.Infof("YOUR ENV IS %s", os.ExpandEnv("${RUNTIME}"))
 	cfg, err := OpenConfigFile()
 	if err != nil {
