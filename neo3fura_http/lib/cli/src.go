@@ -297,7 +297,51 @@ func (me *T) QueryDocument(args struct {
 	return convert, nil
 }
 
-// 去重查询
-func (me *T) name() {
+// 去重查询统计
+func (me *T) GetDistinctCount(args struct {
+	Collection string
+	Index      string
+	Sort       bson.M
+	Filter     bson.M
+	Pipeline   []bson.M
+	Query      []string
+}, ret *json.RawMessage) (map[string]interface{}, error) {
+	var results []map[string]interface{}
+	convert := make(map[string]interface{})
+	collection := me.C_online.Database(me.Db_online).Collection(args.Collection)
+	op := options.AggregateOptions{}
+	pipeline := bson.M{
+		"$group": bson.M{"_id": "$hash"},
+	}
+	args.Pipeline = append(args.Pipeline, pipeline)
+	args.Pipeline = append(args.Pipeline, bson.M{"$count": "count"})
+	cursor, err := collection.Aggregate(me.Ctx, args.Pipeline, &op)
+
+	defer func(cursor *mongo.Cursor, ctx context.Context) {
+		err := cursor.Close(ctx)
+		if err != nil {
+			log2.Fatalf("Closing cursor error %v", err)
+		}
+	}(cursor, me.Ctx)
+	if err == mongo.ErrNoDocuments {
+		return nil, stderr.ErrNotFound
+	}
+	if err != nil {
+		return nil, stderr.ErrFind
+	}
+
+	if err = cursor.All(me.Ctx, &results); err != nil {
+		return nil, stderr.ErrFind
+	}
+
+	convert["total"] = results[0]["count"]
+
+	r, err := json.Marshal(convert)
+	if err != nil {
+		return nil, stderr.ErrFind
+	}
+	*ret = json.RawMessage(r)
+
+	return convert, nil
 
 }
