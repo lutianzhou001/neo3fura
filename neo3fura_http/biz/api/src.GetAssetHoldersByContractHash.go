@@ -41,7 +41,6 @@ func (me *T) GetAssetHoldersByContractHash(args struct {
 
 	//Nep11
 	if count != 0 && r1[0]["tokenid"] != "" {
-		//token:Nep11
 		var raw1 map[string]interface{}
 		err = me.GetAssetInfoByContractHash(struct {
 			ContractHash h160.T
@@ -51,31 +50,33 @@ func (me *T) GetAssetHoldersByContractHash(args struct {
 		if err != nil {
 			return err
 		}
-		ib, _, err := r1[0]["balance"].(primitive.Decimal128).BigInt()
-		if err != nil {
-			return err
-		}
-		// it, _ := new(big.Int).SetString(raw1["totalsupply"].(string), 10)
+
 		it, _, err := raw1["totalsupply"].(primitive.Decimal128).BigInt()
 		if err != nil {
 			return err
 		}
-		ibf := new(big.Float).SetInt(ib)
 		itf := new(big.Float).SetInt(it)
-		dv := new(big.Float).Quo(ibf, itf)
 
 		var groups = utils.GroupBy(r1, "address")
 		var holders = []Nep11Holder{}
 		for _, items := range groups {
+			var bal int64 = 0
 			tokenid := []string{}
 			for _, item := range items {
 				tid := item["tokenid"]
 				tokenid = append(tokenid, tid.(string))
+				bal++
 			}
+
+			var b2 *big.Float = big.NewFloat(float64(bal))
+
+			dv := new(big.Float).Quo(b2, itf)
+
 			holder := Nep11Holder{
-				Address: items[0]["address"].(string),
-				Balance: len(items),
-				TokenId: tokenid,
+				Address:    items[0]["address"].(string),
+				Balance:    bal,
+				TokenId:    tokenid,
+				Percentage: dv,
 			}
 			holders = append(holders, holder)
 		}
@@ -83,7 +84,6 @@ func (me *T) GetAssetHoldersByContractHash(args struct {
 
 		result := make(map[string]interface{})
 		result["asset"] = args.ContractHash
-		result["percentage"] = dv
 		result["holder"] = holders
 		var results []map[string]interface{}
 		results = append(results, result)
