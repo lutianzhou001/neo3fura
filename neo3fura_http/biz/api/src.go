@@ -2,7 +2,6 @@ package api
 
 import (
 	"fmt"
-	"math/big"
 	"neo3fura_http/lib/cli"
 )
 
@@ -96,26 +95,4 @@ func (me *T) FilterAggragateAndAppendCount(data []map[string]interface{}, count 
 		res2["result"] = res
 		return res2, nil
 	}
-}
-
-// 重构GetAssetHoldersByContractHash结构体
-type Nep11Holder struct {
-	Address    string
-	Balance    int64
-	TokenId    []string
-	Percentage *big.Float
-}
-
-type Nep11HolderByBalance []Nep11Holder
-
-func (holder Nep11HolderByBalance) Len() int {
-	return len(holder)
-}
-
-func (holder Nep11HolderByBalance) Less(i, j int) bool {
-	return holder[i].Balance < holder[j].Balance
-}
-
-func (holder Nep11HolderByBalance) Swap(i, j int) {
-	holder[i], holder[j] = holder[j], holder[i]
 }
