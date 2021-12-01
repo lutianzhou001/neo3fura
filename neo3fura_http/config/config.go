@@ -97,5 +97,5 @@ var Apis = []string{
 	"getblockheader",
 	"getcommittee",
 	"getrawtransaction",
-	"GetAssetByContractHash",
+	"GetAssetHoldersListByContractHash",
 }

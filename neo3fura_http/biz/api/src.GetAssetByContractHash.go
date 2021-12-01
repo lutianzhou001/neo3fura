@@ -10,7 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func (me *T) GetAssetByContractHash(args struct {
+func (me *T) GetAssetHoldersListByContractHash(args struct {
 	ContractHash h160.T
 	Limit        int64
 	Skip         int64
@@ -30,7 +30,7 @@ func (me *T) GetAssetByContractHash(args struct {
 		Skip       int64
 	}{
 		Collection: "Address-Asset",
-		Index:      "GetAssetHoldersByContractHash",
+		Index:      "GetAssetHoldersListByContractHash",
 		Sort:       bson.M{"balance": -1},
 		Filter:     bson.M{"asset": args.ContractHash.Val(), "balance": bson.M{"$gt": 0}},
 		Query:      []string{},
