@@ -32,7 +32,7 @@ func (me *T) GetAssetInfosByName(args struct {
 		Collection: "Asset",
 		Index:      "GetAssetInfos",
 		Sort:       bson.M{},
-		Filter:     bson.M{"tokenname": bson.M{"$regex": args.Name, "$options": "$i"}},
+		Filter:     bson.M{"$or": []interface{}{bson.M{"tokenname": bson.M{"$regex": args.Name, "$options": "$i"}}, bson.M{"symbol": bson.M{"$regex": args.Name, "$options": "$i"}}}},
 		Query:      []string{},
 	}, ret)
 	if err != nil {
