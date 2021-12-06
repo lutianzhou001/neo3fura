@@ -47,11 +47,12 @@ func (me T) getContractCount() (map[string]interface{}, error) {
 	message := make(json.RawMessage, 0)
 	ret := &message
 	res := make(map[string]interface{})
-	r1, err := me.Client.QueryDocument(struct {
+	r1, err := me.Client.GetDistinctCount(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
 		Filter     bson.M
+		Pipeline   []bson.M
 	}{
 		Collection: "Contract",
 		Index:      "GetContractCount",
