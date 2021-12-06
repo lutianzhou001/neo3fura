@@ -98,4 +98,8 @@ var Apis = []string{
 	"getcommittee",
 	"getrawtransaction",
 	"GetAssetHoldersListByContractHash",
+	"GetNFTMarket",
+	"GetBidInfoByNFT",
+	"GetNFTOwnedByAddress",
+	"GetNFTRecords",
 }
