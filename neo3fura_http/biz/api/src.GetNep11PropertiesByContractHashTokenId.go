@@ -19,7 +19,7 @@ func (me *T) GetNep11PropertiesByContractHashTokenId(args struct {
 	}
 	if len(args.TokenIds) == 0 {
 		var raw1 []map[string]interface{}
-		err := me.GetAssetHoldersByContractHash(struct {
+		err := me.GetAssetHoldersListByContractHash(struct {
 			ContractHash h160.T
 			Limit        int64
 			Skip         int64
