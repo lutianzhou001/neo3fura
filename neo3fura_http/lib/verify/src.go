@@ -77,7 +77,7 @@ func (me *T) MultipleFile(w http.ResponseWriter, r *http.Request) {
 				m1[part.FormName()] = string(data)
 			} else if part.FormName() == "Version" {
 				m1[part.FormName()] = string(data)
-			} else if part.FormName() == "CompileCommand"{
+			} else if part.FormName() == "CompileCommand" {
 				m1[part.FormName()] = string(data)
 			}
 		} else {
@@ -94,6 +94,10 @@ func (me *T) MultipleFile(w http.ResponseWriter, r *http.Request) {
 			}
 			fileExt := path.Ext(pathFile + "/" + part.FileName())
 			if fileExt == ".csproj" {
+				point := strings.Index(part.FileName(), ".")
+				tmp := part.FileName()[0:point]
+				m1["Filename"] = tmp
+			} else if fileExt == ".py" {
 				point := strings.Index(part.FileName(), ".")
 				tmp := part.FileName()[0:point]
 				m1["Filename"] = tmp
@@ -269,32 +273,44 @@ func execCommand(pathFile string, w http.ResponseWriter, m map[string]string) st
 	//cmd := exec.Command("ls")
 	//根据用户上传参数选择对应的编译器
 	cmd := exec.Command("echo")
-	if getVersion(m) == "Neo.Compiler.CSharp 3.0.0" {
-		if getCompileCommand(m)=="nccs --no-optimize" {
-			cmd= exec.Command("/go/application/compiler/a/nccs","--no-optimize")
+	if getVersion(m) == "neo3-boa" {
+		cmd = exec.Command("/bin/sh", "-c", "/go/application/pythonExec.sh")
+		log2.Infof("Compiler: neo3-boa, Command: neo3-boa")
+	} else if getVersion(m) == "Neo.Compiler.CSharp 3.0.0" {
+		if getCompileCommand(m) == "nccs --no-optimize" {
+			cmd = exec.Command("/go/application/compiler/a/nccs", "--no-optimize")
 			log2.Infof("Compiler: Neo.Compiler.CSharp 3.0.0, Command: nccs --no-optimize")
 		}
-		if getCompileCommand(m)=="nccs" {
-			cmd= exec.Command("/go/application/compiler/a/nccs")
+		if getCompileCommand(m) == "nccs" {
+			cmd = exec.Command("/go/application/compiler/a/nccs")
 			log2.Infof("Compiler: Neo.Compiler.CSharp 3.0.0, Command: nccs")
 		}
 	} else if getVersion(m) == "Neo.Compiler.CSharp 3.0.2" {
-		if getCompileCommand(m)=="nccs --no-optimize" {
-			cmd= exec.Command("/go/application/compiler/c/nccs","--no-optimize")
+		if getCompileCommand(m) == "nccs --no-optimize" {
+			cmd = exec.Command("/go/application/compiler/c/nccs", "--no-optimize")
 			log2.Infof("Compiler: Neo.Compiler.CSharp 3.0.2, Command: nccs --no-optimize")
 		}
-		if getCompileCommand(m)=="nccs" {
-			cmd= exec.Command("/go/application/compiler/c/nccs")
+		if getCompileCommand(m) == "nccs" {
+			cmd = exec.Command("/go/application/compiler/c/nccs")
 			log2.Infof("Compiler: Neo.Compiler.CSharp 3.0.2, Command: nccs")
 		}
 	} else if getVersion(m) == "Neo.Compiler.CSharp 3.0.3" {
-		if getCompileCommand(m)=="nccs --no-optimize" {
-			cmd= exec.Command("/go/application/compiler/b/nccs","--no-optimize")
+		if getCompileCommand(m) == "nccs --no-optimize" {
+			cmd = exec.Command("/go/application/compiler/b/nccs", "--no-optimize")
 			log2.Infof("Compiler: Neo.Compiler.CSharp 3.0.3, Command: nccs --no-optimize")
 		}
-		if getCompileCommand(m)=="nccs" {
-			cmd= exec.Command("/go/application/compiler/b/nccs")
+		if getCompileCommand(m) == "nccs" {
+			cmd = exec.Command("/go/application/compiler/b/nccs")
 			log2.Infof("Compiler: Neo.Compiler.CSharp 3.0.3, Command: nccs")
+		}
+	} else if getVersion(m) == "Neo.Compiler.CSharp 3.1.0" {
+		if getCompileCommand(m) == "nccs --no-optimize" {
+			cmd = exec.Command("/go/application/compiler/d/nccs", "--no-optimize")
+			log2.Infof("Compiler: Neo.Compiler.CSharp 3.1.0, Command: nccs --no-optimize")
+		}
+		if getCompileCommand(m) == "nccs" {
+			cmd = exec.Command("/go/application/compiler/d/nccs")
+			log2.Infof("Compiler: Neo.Compiler.CSharp 3.1.0, Command: nccs")
 		}
 	} else {
 		log2.Fatalf("Compiler version doesn't exist")
@@ -345,16 +361,35 @@ func execCommand(pathFile string, w http.ResponseWriter, m map[string]string) st
 	} else {
 		log2.Info(string(opBytes))
 	}
-	_, err = os.Lstat(pathFile + "/" + "bin/sc/" + m["Filename"] + ".nef")
+	if getVersion(m) == "neo3-boa" {
+		_, err = os.Lstat(pathFile + "/" + m["Filename"] + ".nef")
+		log2.Info("python")
+	} else {
+		_, err = os.Lstat(pathFile + "/" + "bin/sc/" + m["Filename"] + ".nef")
+		log2.Info("csharp")
+	}
 	if !os.IsNotExist(err) {
-		f, err := ioutil.ReadFile(pathFile + "/" + "bin/sc/" + m["Filename"] + ".nef")
-		if err != nil {
-			log2.Fatalf("Read file error: %v", err)
+		var res nef.File
+		if getVersion(m) == "neo3-boa" {
+			f, err := ioutil.ReadFile(pathFile + "/" + m["Filename"] + ".nef")
+			if err != nil {
+				log2.Fatalf("err")
+			}
+			res, err = nef.FileFromBytes(f)
+			if err != nil {
+				log2.Fatalf("error")
+			}
+		} else {
+			f, err := ioutil.ReadFile(pathFile + "/" + "bin/sc/" + m["Filename"] + ".nef")
+			if err != nil {
+				log2.Fatalf("err")
+			}
+			res, err = nef.FileFromBytes(f)
+			if err != nil {
+				log2.Fatalf("error")
+			}
 		}
-		res, err := nef.FileFromBytes(f)
-		if err != nil {
-			log2.Fatalf("File from bytes error: %v", err)
-		}
+
 		var result = base64.StdEncoding.EncodeToString(res.Script)
 		return result
 	} else {
@@ -388,7 +423,7 @@ func getUpdateCounter(m map[string]int) int {
 func getId(m map[string]int) int {
 	return m["id"]
 }
-func getCompileCommand(m map[string] string) string{
+func getCompileCommand(m map[string]string) string {
 	return m["CompileCommand"]
 }
 
