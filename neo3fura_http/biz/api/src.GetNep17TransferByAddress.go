@@ -38,7 +38,7 @@ func (me *T) GetNep17TransferByAddress(args struct {
 			Sort:       bson.M{"_id": -1},
 			Filter: bson.M{"$or": []interface{}{
 				bson.M{"from": args.Address.TransferredVal(), "to": bson.M{"$ne": nil}},
-				bson.M{"to": args.Address.TransferredVal(), "from": bson.M{"$ne": nil}},
+				bson.M{"to": args.Address.TransferredVal()},
 			}},
 			Query: []string{},
 			Limit: args.Limit,
