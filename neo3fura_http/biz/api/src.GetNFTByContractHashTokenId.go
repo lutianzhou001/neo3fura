@@ -16,7 +16,7 @@ func (me *T) GetNFTByContractHashTokenId(args struct {
 	ContractHash h160.T     //  asset
 	TokenIds     []strval.T // tokenId
 	Filter       map[string]interface{}
-	Raw          *map[string]interface{}
+	Raw          *[]map[string]interface{}
 }, ret *json.RawMessage) error {
 	currentTime := time.Now().UnixMilli()
 	if args.ContractHash.Valid() == false {
@@ -90,8 +90,10 @@ func (me *T) GetNFTByContractHashTokenId(args struct {
 			r1["state"] = NFTstate.Sale.Val()
 		} else if amount > 0 && r1["owner"] != r1["market"] {
 			r1["state"] = NFTstate.NotListed.Val()
-		} else if amount > 0 && bidAmount > 0 && deadline < currentTime {
+		} else if amount > 0 && bidAmount > 0 && deadline < currentTime && r1["owner"] == r1["market"] {
 			r1["state"] = NFTstate.Unclaimed.Val()
+		} else if amount > 0 && deadline < currentTime && bidAmount == 0 && r1["owner"] == r1["market"] {
+			r1["state"] = NFTstate.Expired.Val()
 		} else {
 			r1["state"] = ""
 		}
@@ -106,6 +108,11 @@ func (me *T) GetNFTByContractHashTokenId(args struct {
 	if err != nil {
 		return err
 	}
+
+	if args.Raw != nil {
+		*args.Raw = r4
+	}
+
 	r, err := json.Marshal(r5)
 	if err != nil {
 		return err

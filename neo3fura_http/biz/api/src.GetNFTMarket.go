@@ -87,13 +87,14 @@ func (me *T) GetNFTMarket(args struct {
 			bson.M{"$limit": args.Limit},
 		}
 
-	} else if args.NFTState.Val() == NFTstate.Unclaimed.Val() { //未领取  accont >0 &&  runtime > deadline && bidAccount >0
+	} else if args.NFTState.Val() == NFTstate.Unclaimed.Val() { //未领取  accont >0 &&  runtime > deadline && owner== market && bidAccount >0
 		pipeline = []bson.M{
 
 			bson.M{"$match": bson.M{"amount": bson.M{"$gt": 0}}},
 			bson.M{"$match": bson.M{"bidAmount": bson.M{"$gt": 0}}},
 			bson.M{"$match": bson.M{"deadline": bson.M{"$lt": currentTime}}},
-			bson.M{"$project": bson.M{"_id": 1, "asset": 1, "tokenid": 1, "amount": 1, "owner": 1, "market": 1, "auctionType": 1, "auctor": 1, "auctionAsset": 1, "auctionAmount": 1, "deadline": 1, "bidder": 1, "bidAmount": 1, "timestamp": 1, "state": "unclaimed"}},
+			bson.M{"$project": bson.M{"_id": 1, "asset": 1, "tokenid": 1, "amount": 1, "owner": 1, "market": 1, "difference": bson.M{"$eq": []string{"$owner", "$market"}}, "auctionType": 1, "auctor": 1, "auctionAsset": 1, "auctionAmount": 1, "deadline": 1, "bidder": 1, "bidAmount": 1, "timestamp": 1, "state": "unclaimed"}},
+			bson.M{"$match": bson.M{"difference": true}},
 			bson.M{"$skip": args.Skip},
 			bson.M{"$limit": args.Limit},
 		}

@@ -68,8 +68,10 @@ func (me *T) GetNFTOwnedByAddress(args struct {
 			item["state"] = NFTstate.Sale.Val()
 		} else if amount > 0 && item["owner"] != item["market"] {
 			item["state"] = NFTstate.NotListed.Val()
-		} else if amount > 0 && bidAmount > 0 && deadline < currentTime {
+		} else if amount > 0 && bidAmount > 0 && deadline < currentTime && item["owner"] == item["market"] {
 			item["state"] = NFTstate.Unclaimed.Val()
+		} else if amount > 0 && deadline < currentTime && bidAmount == 0 && item["owner"] == item["market"] {
+			item["state"] = NFTstate.Expired.Val()
 		} else {
 			item["state"] = ""
 		}

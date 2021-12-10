@@ -15,6 +15,7 @@ func (me *T) GetNep11TransferByContractHashTokenId(args struct {
 	Skip         int64
 	TokenId      strval.T
 	Filter       map[string]interface{}
+	Raw          *[]map[string]interface{}
 }, ret *json.RawMessage) error {
 	if args.ContractHash.Valid() == false {
 		return stderr.ErrInvalidArgs
@@ -42,6 +43,10 @@ func (me *T) GetNep11TransferByContractHashTokenId(args struct {
 		Limit:      args.Limit,
 		Skip:       args.Skip,
 	}, ret)
+
+	if args.Raw != nil {
+		*args.Raw = r1
+	}
 	if err != nil {
 		return err
 	}
