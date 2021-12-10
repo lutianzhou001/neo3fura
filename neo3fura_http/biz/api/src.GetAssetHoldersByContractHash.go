@@ -4,11 +4,12 @@ import (
 	"encoding/json"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"math"
 	"math/big"
+	"neo3fura_http/lib/mapsort"
 	"neo3fura_http/lib/type/h160"
 	"neo3fura_http/lib/utils"
 	"neo3fura_http/var/stderr"
-	"sort"
 )
 
 func (me *T) GetAssetHoldersByContractHash(args struct {
@@ -35,8 +36,6 @@ func (me *T) GetAssetHoldersByContractHash(args struct {
 		Sort:       bson.M{"balance": -1},
 		Filter:     bson.M{"asset": args.ContractHash.Val(), "balance": bson.M{"$gt": 0}},
 		Query:      []string{},
-		Limit:      args.Limit,
-		Skip:       args.Skip,
 	}, ret)
 
 	//Nep11
@@ -58,7 +57,7 @@ func (me *T) GetAssetHoldersByContractHash(args struct {
 		itf := new(big.Float).SetInt(it)
 
 		var groups = utils.GroupBy(r1, "address")
-		var holders = []Nep11Holder{}
+		holders := make([]map[string]interface{}, 0)
 		for _, items := range groups {
 			var bal int64 = 0
 			tokenid := []string{}
@@ -72,26 +71,33 @@ func (me *T) GetAssetHoldersByContractHash(args struct {
 
 			dv := new(big.Float).Quo(b2, itf)
 
-			holder := Nep11Holder{
-				Address:    items[0]["address"].(string),
-				Balance:    bal,
-				TokenId:    tokenid,
-				Percentage: dv,
-			}
+			holder := make(map[string]interface{})
+			holder["address"] = items[0]["address"].(string)
+			holder["balance"] = bal
+			holder["tokenid"] = tokenid
+			holder["percentage"] = dv
+			holder["asset"] = args.ContractHash.Val()
+
 			holders = append(holders, holder)
+			mapsort.MapSort(holders, "balance")
 		}
-		sort.Sort(Nep11HolderByBalance(holders))
-
-		result := make(map[string]interface{})
-		result["asset"] = args.ContractHash
-		result["holder"] = holders
-		var results []map[string]interface{}
-		results = append(results, result)
-
 		if args.Raw != nil {
-			*args.Raw = results
+			*args.Raw = holders
 		}
-		r2, err := me.FilterArrayAndAppendCount(results, count, args.Filter)
+		if args.Limit == 0 {
+			args.Limit = int64(math.Inf(1))
+		}
+		pagedHolders := make([]map[string]interface{}, 0)
+		for i, item := range holders {
+			if int64(i) < args.Skip {
+				continue
+			} else if int64(i) > args.Skip+args.Limit-1 {
+				continue
+			} else {
+				pagedHolders = append(pagedHolders, item)
+			}
+		}
+		r2, err := me.FilterArrayAndAppendCount(pagedHolders, int64(len(holders)), args.Filter)
 		if err != nil {
 			return err
 		}
@@ -131,7 +137,22 @@ func (me *T) GetAssetHoldersByContractHash(args struct {
 			*args.Raw = r1
 		}
 
-		r2, err := me.FilterArrayAndAppendCount(r1, count, args.Filter)
+		if args.Limit == 0 {
+			args.Limit = int64(math.Inf(1))
+		}
+
+		pagedHolders := make([]map[string]interface{}, 0)
+		for i, item := range r1 {
+			if int64(i) < args.Skip {
+				continue
+			} else if int64(i) > args.Skip+args.Limit-1 {
+				continue
+			} else {
+				pagedHolders = append(pagedHolders, item)
+			}
+		}
+
+		r2, err := me.FilterArrayAndAppendCount(pagedHolders, count, args.Filter)
 		if err != nil {
 			return err
 		}

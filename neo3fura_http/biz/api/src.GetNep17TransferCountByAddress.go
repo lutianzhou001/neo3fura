@@ -15,7 +15,7 @@ func (me *T) GetNep17TransferCountByAddress(args struct {
 	if args.Address.Valid() == false {
 		return stderr.ErrInvalidArgs
 	}
-	r1, _, err := me.Client.QueryAll(struct {
+	_, count, err := me.Client.QueryAll(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
@@ -28,19 +28,10 @@ func (me *T) GetNep17TransferCountByAddress(args struct {
 		Index:      "GetNep17TransferCountByAddress",
 		Sort:       bson.M{},
 		Filter: bson.M{"$or": []interface{}{
-			bson.M{"from": args.Address.TransferredVal()},
+			bson.M{"from": args.Address.TransferredVal(), "to": bson.M{"$ne": nil}},
 			bson.M{"to": args.Address.TransferredVal()},
 		}},
 	}, ret)
-
-	f := make(map[string]interface{})
-	count := 0
-	for _, item := range r1 {
-		f[item["txid"].(string)] = 1
-	}
-	for _, _ = range f {
-		count = count + 1
-	}
 
 	if err != nil {
 		return err
