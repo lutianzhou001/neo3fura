@@ -36,7 +36,7 @@ func (me *T) GetNFTOwnedByAddress(args struct {
 		Collection: "Market",
 		Index:      "GetNFTOwnedByAddress",
 		Sort:       bson.M{},
-		Filter:     bson.M{"auctor": args.Address.Val()},
+		Filter:     bson.M{"owner": args.Address.Val()},
 		Query:      []string{},
 		Limit:      args.Limit,
 		Skip:       args.Skip,
