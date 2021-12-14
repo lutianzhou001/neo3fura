@@ -63,7 +63,7 @@ func (me *T) GetNFTRecordByContractHashTokenId(args struct {
 	for _, item := range raw2 {
 		rr := make(map[string]interface{})
 		rr["asset"] = item["contract"]
-		rr["tokenid"] = item["tokenid"]
+		rr["tokenid"] = item["tokenId"]
 		rr["from"] = item["from"]
 		rr["to"] = item["to"]
 		rr["auctionAsset"] = ""
