@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"neo3fura_http/lib/type/NFTstate"
@@ -26,11 +27,12 @@ func (me *T) GetNFTMarket(args struct {
 	currentTime := time.Now().UnixMilli()
 	pipeline := []bson.M{}
 
+	fmt.Printf("", args.NFTState.Val() == NFTstate.Auction.Val())
+
 	if args.NFTState.Val() == NFTstate.Auction.Val() { //拍卖中  accont >0 && auctionType =2 &&  owner=market && runtime <deadline
 		pipeline = []bson.M{
 			bson.M{"$skip": args.Skip},
 			bson.M{"$limit": args.Limit},
-			bson.M{"$match": bson.M{"asset": args.ContractHash}},
 			bson.M{"$match": bson.M{"amount": bson.M{"$gt": 0}}},
 			bson.M{"$match": bson.M{"auctionType": bson.M{"$eq": 2}}},
 			bson.M{"$match": bson.M{"deadline": bson.M{"$gt": currentTime}}},
@@ -92,7 +94,7 @@ func (me *T) GetNFTMarket(args struct {
 		if args.AssetHash.Valid() == false {
 			return stderr.ErrInvalidArgs
 		} else {
-			a := bson.M{"$match": bson.M{"asset": args.AssetHash}}
+			a := bson.M{"$match": bson.M{"auctionAsset": args.AssetHash}}
 			pipeline = append(pipeline, a)
 		}
 	}
