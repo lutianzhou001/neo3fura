@@ -98,6 +98,31 @@ func (me *T) GetNFTByContractHashTokenId(args struct {
 			r1["state"] = ""
 		}
 
+		var raw3 map[string]interface{}
+		err1 := getNFTProperties(tokenId, args.ContractHash, me, ret, args.Filter, &raw3)
+		if err1 != nil {
+			return err1
+		}
+		extendData := raw3["properties"].(string)
+		var dat map[string]interface{}
+		if err := json.Unmarshal([]byte(extendData), &dat); err == nil {
+			value, ok := dat["image"]
+			if ok {
+				r1["image"] = value
+			} else {
+				r1["image"] = ""
+			}
+			value1, ok1 := dat["name"]
+			if ok1 {
+				r1["name"] = value1
+			} else {
+				r1["name"] = ""
+			}
+
+		} else {
+			return err
+		}
+
 		filter, err := me.Filter(r1, args.Filter)
 		if err != nil {
 			return err

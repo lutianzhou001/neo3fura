@@ -19,7 +19,7 @@ func (me *T) GetBidInfoByNFT(args struct {
 		return stderr.ErrInvalidArgs
 	}
 
-	//获取NFT 最新一轮上架的竞价信息    需要再加个nounce字段，区分历史上架和最新上架
+	//获取NFT 最新一轮上架的竞价信息
 	var f bson.M
 	if args.Address != "" {
 		if args.AssetHash.Valid() == false || args.Address.Valid() == false {
@@ -48,7 +48,7 @@ func (me *T) GetBidInfoByNFT(args struct {
 		Skip       int64
 	}{
 		Collection: "MarketNotification",
-		Index:      "GetNFTRecordByAddress",
+		Index:      "GetBidInfoByNFT",
 		Sort:       bson.M{"timestamp": -1},
 		Filter:     f,
 		Query:      []string{},
@@ -59,7 +59,6 @@ func (me *T) GetBidInfoByNFT(args struct {
 	result := make([]map[string]interface{}, 0)
 	for _, item := range r1 {
 		rr := make(map[string]interface{})
-		rr["user"] = item["user"]
 		rr["tokenid"] = item["tokenid"]
 		rr["asset"] = item["asset"]
 		rr["bidder"] = item["user"]

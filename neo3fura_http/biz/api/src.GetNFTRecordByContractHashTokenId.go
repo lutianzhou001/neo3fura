@@ -10,23 +10,20 @@ import (
 )
 
 func (me *T) GetNFTRecordByContractHashTokenId(args struct {
-	ContractHash       h160.T
-	MarketContractHash h160.T
-	TokenId            strval.T
-	Filter             map[string]interface{}
+	ContractHash h160.T
+	TokenId      strval.T
+	Filter       map[string]interface{}
 }, ret *json.RawMessage) error {
 
 	if args.ContractHash.Valid() == false {
 		return stderr.ErrInvalidArgs
 	}
-	if args.MarketContractHash.Valid() == false {
+	if len(args.TokenId) <= 0 {
 		return stderr.ErrInvalidArgs
 	}
-	//currentTime := time.Now().UnixMilli()
-	//getNftrecord  Address为空,AssetHash,TokenId 不为空：//获取某个Nft在用户之间的历史记录
+
 	result := make([]map[string]interface{}, 0)
 
-	//
 	r1, _, err := me.Client.QueryAll(struct {
 		Collection string
 		Index      string
@@ -66,11 +63,13 @@ func (me *T) GetNFTRecordByContractHashTokenId(args struct {
 		rr["tokenid"] = item["tokenId"]
 		rr["from"] = item["from"]
 		rr["to"] = item["to"]
-		rr["auctionAsset"] = ""
+		rr["auctionAsset"] = "" //普通账户之间转账  无价格
 		rr["auctionAmount"] = ""
-		//筛选出从市场交易的nft
+		rr["timestamp"] = item["timestamp"]
+
+		//筛选出从市场交易的nft 会有交易价格
 		for _, i := range r1 {
-			if item["txid"] == i["txid"] {
+			if item["txid"] == i["txid"] { //为了获取nft的交易价格
 				extendData := i["extendData"].(string)
 				var dat map[string]interface{}
 				if err := json.Unmarshal([]byte(extendData), &dat); err == nil {
@@ -87,7 +86,48 @@ func (me *T) GetNFTRecordByContractHashTokenId(args struct {
 				}
 			}
 		}
-		result = append(result, rr)
+
+		asset := item["contract"].(string)
+		tokenid := item["tokenId"].(string)
+		r4, err := me.Client.QueryOne(struct {
+			Collection string
+			Index      string
+			Sort       bson.M
+			Filter     bson.M
+			Query      []string
+		}{
+			Collection: "Nep11Properties",
+			Index:      "GetNep11PropertiesByContractHashTokenId",
+			Sort:       bson.M{"balance": -1},
+			Filter:     bson.M{"asset": asset, "tokenid": tokenid},
+			Query:      []string{},
+		}, ret)
+		if err != nil {
+			return err
+		}
+
+		extendData := r4["properties"].(string)
+		var dat map[string]interface{}
+		if err := json.Unmarshal([]byte(extendData), &dat); err == nil {
+			value, ok := dat["image"]
+			if ok {
+				rr["image"] = value
+			} else {
+				rr["image"] = ""
+			}
+			value1, ok1 := dat["name"]
+			if ok1 {
+				rr["name"] = value1
+			} else {
+				rr["name"] = ""
+			}
+
+		} else {
+			return err
+		}
+
+		result = append(result, rr) //  通过市场流转
+
 	}
 
 	num, err := strconv.ParseInt(strconv.Itoa(len(result)), 10, 64)

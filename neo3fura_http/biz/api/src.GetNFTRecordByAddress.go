@@ -2,17 +2,14 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/bson"
 	"neo3fura_http/lib/type/NFTevent"
 	"neo3fura_http/lib/type/NFTstate"
 	"neo3fura_http/lib/type/h160"
 	"neo3fura_http/lib/type/strval"
 	"neo3fura_http/var/stderr"
+	"reflect"
 	"strconv"
-	"time"
-
-	"go.mongodb.org/mongo-driver/bson"
 )
 
 func (me *T) GetNFTRecordByAddress(args struct {
@@ -22,16 +19,15 @@ func (me *T) GetNFTRecordByAddress(args struct {
 	Skip               int64
 	Filter             map[string]interface{}
 }, ret *json.RawMessage) error {
-	//if args.AssetHash.Valid() == false {
-	//	return stderr.ErrInvalidArgs
-	//}
 	if args.Address.Valid() == false {
 		return stderr.ErrInvalidArgs
 	}
 
-	currentTime := time.Now().UnixMilli()
-
-	//getNftrecord  Address为空,AssetHash,TokenId 不为空：//获取某个Nft在用户之间的历史记录
+	if args.MarketContractHash != "" {
+		if args.MarketContractHash.Valid() == false {
+			return stderr.ErrInvalidArgs
+		}
+	}
 	result := make([]map[string]interface{}, 0)
 
 	//获取某个用户对NFT所有操作
@@ -63,12 +59,41 @@ func (me *T) GetNFTRecordByAddress(args struct {
 		tokenid := item["tokenid"].(string)
 		tokenids = append(tokenids, strval.T(tokenid))
 		rr["event"] = item["eventname"]
-		rr["user"] = item["user"]
+		user := item["user"].(string)
+		rr["user"] = user
 		rr["asset"] = asset
 		rr["tokenid"] = tokenid
 		rr["timestamp"] = item["timestamp"]
+		nonce := item["nonce"].(int64)
+		rr["nonce"] = nonce
 
-		//===================
+		//获取Nft的属性
+		var raw2 map[string]interface{}
+		err := getNFTProperties(strval.T(tokenid), h160.T(asset), me, ret, args.Filter, &raw2)
+		if err != nil {
+			return err
+		}
+
+		extendData := raw2["properties"].(string)
+		var dat map[string]interface{}
+		if err := json.Unmarshal([]byte(extendData), &dat); err == nil {
+			value, ok := dat["image"]
+			if ok {
+				rr["image"] = value
+			} else {
+				rr["image"] = ""
+			}
+			value1, ok1 := dat["name"]
+			if ok1 {
+				rr["name"] = value1
+			} else {
+				rr["name"] = ""
+			}
+
+		} else {
+			return err
+		}
+
 		//获取此时Nft的状态
 		var raw1 []map[string]interface{}
 		err1 := me.GetNFTByContractHashTokenId(struct {
@@ -81,14 +106,7 @@ func (me *T) GetNFTRecordByAddress(args struct {
 			return err1
 		}
 		nowNFTState := raw1[0]["state"]
-		nowBidder := raw1[0]["bidder"]
 
-		deadline := raw1[0]["deadline"].(int64)
-		ba := raw1[0]["bidAmount"].(primitive.Decimal128).String()
-		nowBidAmount, err2 := strconv.ParseInt(ba, 10, 64)
-		if err2 != nil {
-			return err2
-		}
 		// 上架过期 （卖家事件）
 		if nowNFTState == NFTstate.Expired.Val() {
 			rr1 := make(map[string]interface{})
@@ -148,31 +166,53 @@ func (me *T) GetNFTRecordByAddress(args struct {
 
 		} else if item["eventname"].(string) == "Bid" { //3种状态  正常 已过期  已成交 (买家事件)
 
+			//获取nft所有的bid信息
+			var raw2 []map[string]interface{}
+			err4 := me.GetAllBidInfoByNFT(struct {
+				AssetHash h160.T
+				TokenId   strval.T
+				Filter    map[string]interface{}
+				Raw       *[]map[string]interface{}
+			}{AssetHash: h160.T(asset), TokenId: strval.T(tokenid), Raw: &raw2}, ret) //nonce 分组，并按时间排序
+			if err4 != nil {
+				return err4
+			}
+
 			extendData := item["extendData"].(string)
 			var dat map[string]interface{}
 			if err := json.Unmarshal([]byte(extendData), &dat); err == nil {
+
 				bidAmount, err := strconv.ParseInt(dat["bidAmount"].(string), 10, 64)
 				if err != nil {
 					return err
 				}
-				user := item["user"]
+
 				auctionAsset := dat["auctionAsset"]
 				rr["auctionAsset"] = auctionAsset
 				rr["auctionAmount"] = bidAmount
 				rr["from"] = user
 				rr["to"] = ""
 
-				if user == nowBidder && bidAmount == nowBidAmount && currentTime < deadline {
-					rr["state"] = NFTevent.Auction_Bid.Val() //state :正常
+				for _, it := range raw2 {
+					ba := reflect.ValueOf(it["bidAmount"]) //获取竞价数组
+					bd := reflect.ValueOf(it["bidder"])    //获取竞价数组
+					println(" ")
+					if nowNFTState == NFTstate.Auction.Val() && raw2[0]["nonce"] == it["nonce"] { //最新上架  拍卖中 2种状态：已退回  正常s
+						if bidAmount == ba.Index(0).Int() && user == bd.Index(0).String() {
+							rr["state"] = NFTevent.Auction_Bid.Val() //state :正常
+						} else {
+							rr["state"] = NFTevent.Auction_Return.Val() //state :已退回
+						}
+					} else {
+						if bidAmount == ba.Index(0).Int() && user == bd.Index(0).String() { //上架 ：2种状态： 已成交  已退回
+							rr["state"] = NFTevent.Auction_Bid_Deal.Val() //state :已成交
+						} else {
+							rr["state"] = NFTevent.Auction_Return.Val() //state :已退回
+						}
 
-				} else if user == nowBidder && bidAmount == nowBidAmount && currentTime > deadline {
-					rr["state"] = NFTevent.Auction_Bid_Deal.Val() //state :已成交
-
-				} else if user != nowBidder && bidAmount <= nowBidAmount {
-					rr["state"] = NFTevent.Auction_Return.Val() //state :已退回
-
+					}
 				}
-				fmt.Println(user != nowBidder, bidAmount <= nowBidAmount, currentTime > deadline)
+
 			} else {
 				return err
 			}
@@ -217,7 +257,7 @@ func (me *T) GetNFTRecordByAddress(args struct {
 
 	}
 
-	//普通账户见的NFT转账 ,去掉市场
+	//普通账户见的NFT转账 ,去掉和市场之间的转账
 	// 获取NFT的Transfer
 	var raw2 []map[string]interface{}
 	err1 := me.GetNep11TransferByAddress(struct {
@@ -231,37 +271,58 @@ func (me *T) GetNFTRecordByAddress(args struct {
 		return err1
 	}
 	for _, item := range raw2 {
-
 		from := item["from"].(string)
 		to := item["to"].(string)
-		if from == args.Address.Val() && to != args.MarketContractHash.Val() {
+		if from != args.MarketContractHash.Val() && to != args.MarketContractHash.Val() {
 			rr := make(map[string]interface{})
+
+			asset := item["contract"].(string)
+			tokenid := item["tokenId"].(string)
+
 			rr["event"] = "transfer"
 			rr["user"] = item["user"]
-			rr["asset"] = item["contract"]
-			rr["tokenid"] = item["tokenid"]
+			rr["asset"] = asset
+			rr["tokenid"] = tokenid
 			rr["timestamp"] = item["timestamp"]
 			rr["from"] = from
 			rr["to"] = to
 			rr["auctionAsset"] = ""
 			rr["auctionAmount"] = ""
-			rr["state"] = NFTevent.Send.Val()
-			result = append(result, rr)
-		} else if to == args.Address.Val() && from != args.MarketContractHash.Val() {
-			rr := make(map[string]interface{})
-			rr["event"] = "transfer"
-			rr["user"] = item["user"]
-			rr["asset"] = item["contract"]
-			rr["tokenid"] = item["tokenid"]
-			rr["timestamp"] = item["timestamp"]
-			rr["from"] = from
-			rr["to"] = to
-			rr["auctionAsset"] = ""
-			rr["auctionAmount"] = ""
-			rr["state"] = NFTevent.Receive.Val()
+
+			//获取nft的属性
+			var raw3 map[string]interface{}
+			err := getNFTProperties(strval.T(tokenid), h160.T(asset), me, ret, args.Filter, &raw3)
+			if err != nil {
+				return err
+			}
+
+			extendData := raw3["properties"].(string)
+			var dat map[string]interface{}
+			if err := json.Unmarshal([]byte(extendData), &dat); err == nil {
+				value, ok := dat["image"]
+				if ok {
+					rr["image"] = value
+				} else {
+					rr["image"] = ""
+				}
+				value1, ok1 := dat["name"]
+				if ok1 {
+					rr["name"] = value1
+				} else {
+					rr["name"] = ""
+				}
+
+			} else {
+				return err
+			}
+
+			if from == args.Address.Val() && to != args.MarketContractHash.Val() {
+				rr["state"] = NFTevent.Send.Val()
+			} else if to == args.Address.Val() && from != args.MarketContractHash.Val() {
+				rr["state"] = NFTevent.Receive.Val()
+			}
 			result = append(result, rr)
 		}
-
 	}
 	num, err := strconv.ParseInt(strconv.Itoa(len(result)), 10, 64)
 	if err != nil {
@@ -277,5 +338,36 @@ func (me *T) GetNFTRecordByAddress(args struct {
 	}
 
 	*ret = json.RawMessage(r)
+	return nil
+}
+func getNFTProperties(tokenId strval.T, contractHash h160.T, me *T, ret *json.RawMessage, filter map[string]interface{}, Raw *map[string]interface{}) error {
+	r4 := make([]map[string]interface{}, 0)
+
+	r1, err := me.Client.QueryOne(struct {
+		Collection string
+		Index      string
+		Sort       bson.M
+		Filter     bson.M
+		Query      []string
+	}{
+		Collection: "Nep11Properties",
+		Index:      "getNFTProperties",
+		Sort:       bson.M{"balance": -1},
+		Filter:     bson.M{"asset": contractHash.TransferredVal(), "tokenid": tokenId},
+		Query:      []string{},
+	}, ret)
+	if err != nil {
+		return err
+	}
+	filter1, err := me.Filter(r1, filter)
+	if err != nil {
+		return err
+	}
+
+	r4 = append(r4, filter1)
+
+	if Raw != nil {
+		*Raw = r1
+	}
 	return nil
 }
