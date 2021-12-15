@@ -106,15 +106,15 @@ func (me *T) GetNFTByContractHashTokenId(args struct {
 		extendData := raw3["properties"].(string)
 		var dat map[string]interface{}
 		if err := json.Unmarshal([]byte(extendData), &dat); err == nil {
-			value, ok := dat["image"]
+			image, ok := dat["image"]
 			if ok {
-				r1["image"] = value
+				r1["image"] = image
 			} else {
 				r1["image"] = ""
 			}
-			value1, ok1 := dat["name"]
-			if ok1 {
-				r1["name"] = value1
+			name, ok := dat["name"]
+			if ok {
+				r1["name"] = name
 			} else {
 				r1["name"] = ""
 			}

@@ -273,7 +273,7 @@ func execCommand(pathFile string, w http.ResponseWriter, m map[string]string) st
 	//cmd := exec.Command("ls")
 	//根据用户上传参数选择对应的编译器
 	cmd := exec.Command("echo")
- 
+
 	if getVersion(m) == "neo3-boa" {
 		cmd = exec.Command("/bin/sh", "-c", "/go/application/pythonExec.sh")
 		log2.Infof("Compiler: neo3-boa, Command: neo3-boa")

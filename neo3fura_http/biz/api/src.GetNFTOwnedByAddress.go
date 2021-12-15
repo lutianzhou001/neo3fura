@@ -88,19 +88,18 @@ func (me *T) GetNFTOwnedByAddress(args struct {
 		extendData := raw3["properties"].(string)
 		var data map[string]interface{}
 		if err := json.Unmarshal([]byte(extendData), &data); err == nil {
-			value, ok := data["image"]
+			image, ok := data["image"]
 			if ok {
-				item["image"] = value
+				item["image"] = image
 			} else {
 				item["image"] = ""
 			}
-			value1, ok1 := data["name"]
-			if ok1 {
-				item["name"] = value1
+			name, ok := data["name"]
+			if ok {
+				item["name"] = name
 			} else {
 				item["name"] = ""
 			}
-
 		} else {
 			return err
 		}

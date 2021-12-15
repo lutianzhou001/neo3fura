@@ -54,7 +54,7 @@ func (me *T) GetNFTRecordByAddress(args struct {
 
 	for _, item := range r1 {
 		rr := make(map[string]interface{})
-		tokenids := []strval.T{}
+		var tokenids []strval.T
 		asset := item["asset"].(string)
 		tokenid := item["tokenid"].(string)
 		tokenids = append(tokenids, strval.T(tokenid))
@@ -77,15 +77,15 @@ func (me *T) GetNFTRecordByAddress(args struct {
 		extendData := raw2["properties"].(string)
 		var dat map[string]interface{}
 		if err := json.Unmarshal([]byte(extendData), &dat); err == nil {
-			value, ok := dat["image"]
+			image, ok := dat["image"]
 			if ok {
-				rr["image"] = value
+				rr["image"] = image
 			} else {
 				rr["image"] = ""
 			}
-			value1, ok1 := dat["name"]
-			if ok1 {
-				rr["name"] = value1
+			name, ok := dat["name"]
+			if ok {
+				rr["name"] = name
 			} else {
 				rr["name"] = ""
 			}
@@ -194,9 +194,8 @@ func (me *T) GetNFTRecordByAddress(args struct {
 				rr["to"] = ""
 
 				for _, it := range raw2 {
-					ba := reflect.ValueOf(it["bidAmount"]) //获取竞价数组
-					bd := reflect.ValueOf(it["bidder"])    //获取竞价数组
-					println(" ")
+					ba := reflect.ValueOf(it["bidAmount"])                                        //获取竞价数组
+					bd := reflect.ValueOf(it["bidder"])                                           //获取竞价数组
 					if nowNFTState == NFTstate.Auction.Val() && raw2[0]["nonce"] == it["nonce"] { //最新上架  拍卖中 2种状态：已退回  正常s
 						if bidAmount == ba.Index(0).Int() && user == bd.Index(0).String() {
 							rr["state"] = NFTevent.Auction_Bid.Val() //state :正常
@@ -209,14 +208,11 @@ func (me *T) GetNFTRecordByAddress(args struct {
 						} else {
 							rr["state"] = NFTevent.Auction_Return.Val() //state :已退回
 						}
-
 					}
 				}
-
 			} else {
 				return err
 			}
-
 		} else if item["eventname"].(string) == "Claim" { //  领取  （买家事件）
 			extendData := item["extendData"].(string)
 			var dat map[string]interface{}
@@ -252,9 +248,7 @@ func (me *T) GetNFTRecordByAddress(args struct {
 				return err
 			}
 		}
-
 		result = append(result, rr)
-
 	}
 
 	//普通账户见的NFT转账 ,去掉和市场之间的转账
@@ -299,19 +293,18 @@ func (me *T) GetNFTRecordByAddress(args struct {
 			extendData := raw3["properties"].(string)
 			var dat map[string]interface{}
 			if err := json.Unmarshal([]byte(extendData), &dat); err == nil {
-				value, ok := dat["image"]
+				image, ok := dat["image"]
 				if ok {
-					rr["image"] = value
+					rr["image"] = image
 				} else {
 					rr["image"] = ""
 				}
-				value1, ok1 := dat["name"]
-				if ok1 {
-					rr["name"] = value1
+				name, ok := dat["name"]
+				if ok {
+					rr["name"] = name
 				} else {
 					rr["name"] = ""
 				}
-
 			} else {
 				return err
 			}
@@ -328,6 +321,7 @@ func (me *T) GetNFTRecordByAddress(args struct {
 	if err != nil {
 		return err
 	}
+	// 这里分页会不会有问题：分页的数据是r1，实际返回的是result，result和r1之间是否为一一对应？否则会有分页问题
 	r2, err := me.FilterArrayAndAppendCount(result, num, args.Filter)
 	if err != nil {
 		return err

@@ -2,7 +2,6 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"neo3fura_http/lib/type/NFTstate"
@@ -16,20 +15,19 @@ import (
 func (me *T) GetNFTMarket(args struct {
 	ContractHash h160.T   //  asset
 	AssetHash    h160.T   // auctionType
-	NFTState     strval.T //state:aution  sale  notlisted  unclaimed
-	Sort         strval.T //listedTime  price
-	Order        int64    //-1:降序  +1：升序
+	NFTState     strval.T // state:aution  sale  notlisted  unclaimed
+	Sort         strval.T // listedTime  price
+	Order        int64    // -1: 降序  +1: 升序
 	Limit        int64
 	Skip         int64
 	Filter       map[string]interface{}
 	Raw          *map[string]interface{}
 }, ret *json.RawMessage) error {
 	currentTime := time.Now().UnixMilli()
-	pipeline := []bson.M{}
+	var pipeline []bson.M
 
-	fmt.Printf("", args.NFTState.Val() == NFTstate.Auction.Val())
-
-	if args.NFTState.Val() == NFTstate.Auction.Val() { //拍卖中  accont >0 && auctionType =2 &&  owner=market && runtime <deadline
+	if args.NFTState.Val() == NFTstate.Auction.Val() {
+		//拍卖中 accont>0 && auctionType=2 &&  owner=market && runtime <deadline
 		pipeline = []bson.M{
 			bson.M{"$skip": args.Skip},
 			bson.M{"$limit": args.Limit},
@@ -39,7 +37,6 @@ func (me *T) GetNFTMarket(args struct {
 			bson.M{"$project": bson.M{"_id": 1, "asset": 1, "tokenid": 1, "amount": 1, "owner": 1, "market": 1, "difference": bson.M{"$eq": []string{"$owner", "$market"}}, "auctionType": 1, "auctor": 1, "auctionAsset": 1, "auctionAmount": 1, "deadline": 1, "bidder": 1, "bidAmount": 1, "timestamp": 1, "state": "auction"}},
 			bson.M{"$match": bson.M{"difference": true}},
 		}
-
 	} else if args.NFTState.Val() == NFTstate.Sale.Val() { //出售中 accont >0 && auctionType =1 && owner=market && runtime <deadline
 		pipeline = []bson.M{
 			bson.M{"$skip": args.Skip},
@@ -50,7 +47,6 @@ func (me *T) GetNFTMarket(args struct {
 			bson.M{"$project": bson.M{"_id": 1, "asset": 1, "tokenid": 1, "amount": 1, "owner": 1, "market": 1, "difference": bson.M{"$eq": []string{"$owner", "$market"}}, "auctionType": 1, "auctor": 1, "auctionAsset": 1, "auctionAmount": 1, "deadline": 1, "bidder": 1, "bidAmount": 1, "timestamp": 1, "state": "sale"}},
 			bson.M{"$match": bson.M{"difference": true}},
 		}
-
 	} else if args.NFTState.Val() == NFTstate.NotListed.Val() { //未上架  accont >0 && owner != market
 		pipeline = []bson.M{
 			bson.M{"$skip": args.Skip},
@@ -59,7 +55,6 @@ func (me *T) GetNFTMarket(args struct {
 			bson.M{"$project": bson.M{"_id": 1, "asset": 1, "tokenid": 1, "amount": 1, "owner": 1, "market": 1, "difference": bson.M{"$eq": []string{"$owner", "$market"}}, "auctionType": 1, "auctor": 1, "auctionAsset": 1, "auctionAmount": 1, "deadline": 1, "bidder": 1, "bidAmount": 1, "timestamp": 1, "state": "notlisted"}},
 			bson.M{"$match": bson.M{"difference": false}},
 		}
-
 	} else if args.NFTState.Val() == NFTstate.Unclaimed.Val() { //未领取  accont >0 &&  runtime > deadline && owner== market && bidAccount >0
 		pipeline = []bson.M{
 			bson.M{"$skip": args.Skip},
@@ -70,7 +65,6 @@ func (me *T) GetNFTMarket(args struct {
 			bson.M{"$project": bson.M{"_id": 1, "asset": 1, "tokenid": 1, "amount": 1, "owner": 1, "market": 1, "difference": bson.M{"$eq": []string{"$owner", "$market"}}, "auctionType": 1, "auctor": 1, "auctionAsset": 1, "auctionAmount": 1, "deadline": 1, "bidder": 1, "bidAmount": 1, "timestamp": 1, "state": "unclaimed"}},
 			bson.M{"$match": bson.M{"difference": true}},
 		}
-
 	} else { //默认  account > 0
 		pipeline = []bson.M{
 			bson.M{"$skip": args.Skip},
@@ -161,7 +155,6 @@ func (me *T) GetNFTMarket(args struct {
 			} else {
 				item["state"] = ""
 			}
-
 		}
 
 		asset := item["asset"].(string)
@@ -175,23 +168,21 @@ func (me *T) GetNFTMarket(args struct {
 		extendData := raw3["properties"].(string)
 		var data map[string]interface{}
 		if err := json.Unmarshal([]byte(extendData), &data); err == nil {
-			value, ok := data["image"]
+			image, ok := data["image"]
 			if ok {
-				item["image"] = value
+				item["image"] = image
 			} else {
 				item["image"] = ""
 			}
-			value1, ok1 := data["name"]
-			if ok1 {
-				item["name"] = value1
+			name, ok := data["name"]
+			if ok {
+				item["name"] = name
 			} else {
 				item["name"] = ""
 			}
-
 		} else {
 			return err
 		}
-
 	}
 
 	//获取查询总量
@@ -233,9 +224,10 @@ func (me *T) GetNFTMarket(args struct {
 		return err
 	}
 
-	//r2, err := me.Filter(r1, args.Filter)
+	// r2, err := me.Filter(r1, args.Filter)
+	// r1的数组和r2的长度，会冲突吗？
 	r3, err := me.FilterAggragateAndAppendCount(r1, count, args.Filter)
-	//	r3, err := me.FilterArrayAndAppendCount(r1,count ,args.Filter)
+	//	r3, err := me.FilterArrayAndAppendCount(r1, count ,args.Filter)
 
 	if err != nil {
 		return err

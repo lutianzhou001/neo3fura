@@ -80,7 +80,6 @@ func (me *T) GetNFTRecordByContractHashTokenId(args struct {
 					auctionAsset := dat["auctionAsset"]
 					rr["auctionAsset"] = auctionAsset
 					rr["auctionAmount"] = bidAmount
-
 				} else {
 					return err
 				}
@@ -109,25 +108,22 @@ func (me *T) GetNFTRecordByContractHashTokenId(args struct {
 		extendData := r4["properties"].(string)
 		var dat map[string]interface{}
 		if err := json.Unmarshal([]byte(extendData), &dat); err == nil {
-			value, ok := dat["image"]
+			image, ok := dat["image"]
 			if ok {
-				rr["image"] = value
+				rr["image"] = image
 			} else {
 				rr["image"] = ""
 			}
-			value1, ok1 := dat["name"]
-			if ok1 {
-				rr["name"] = value1
+			name, ok := dat["name"]
+			if ok {
+				rr["name"] = name
 			} else {
 				rr["name"] = ""
 			}
-
 		} else {
 			return err
 		}
-
 		result = append(result, rr) //  通过市场流转
-
 	}
 
 	num, err := strconv.ParseInt(strconv.Itoa(len(result)), 10, 64)
