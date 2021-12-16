@@ -233,9 +233,7 @@ func (me *T) GetNFTMarket(args struct {
 		return err
 	}
 
-	//r2, err := me.Filter(r1, args.Filter)
 	r3, err := me.FilterAggragateAndAppendCount(r1, count, args.Filter)
-	//	r3, err := me.FilterArrayAndAppendCount(r1,count ,args.Filter)
 
 	if err != nil {
 		return err

@@ -45,8 +45,6 @@ func (me *T) GetNFTRecordByAddress(args struct {
 		Sort:       bson.M{},
 		Filter:     bson.M{"user": args.Address.Val()},
 		Query:      []string{},
-		Limit:      args.Limit,
-		Skip:       args.Skip,
 	}, ret)
 	if err != nil {
 		return err
