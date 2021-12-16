@@ -32,10 +32,6 @@ RUN  apt-get install -y dotnet-sdk-5.0
 
 RUN  apt-get install -y aspnetcore-runtime-5.0
 
-RUN apt-get install python
-
-RUN python3 -m venv venv
-
 RUN  tar -xvf compiler.tar.gz
 
 RUN  chmod 777 compiler/a/nccs

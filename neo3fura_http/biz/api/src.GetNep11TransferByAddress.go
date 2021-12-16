@@ -15,6 +15,7 @@ func (me *T) GetNep11TransferByAddress(args struct {
 	Limit   int64
 	Skip    int64
 	Filter  map[string]interface{}
+	Raw     *[]map[string]interface{}
 }, ret *json.RawMessage) error {
 	if args.Address.Valid() == false {
 		return stderr.ErrInvalidArgs
@@ -80,6 +81,9 @@ func (me *T) GetNep11TransferByAddress(args struct {
 	if err != nil {
 		return err
 
+	}
+	if args.Raw != nil {
+		*args.Raw = r1
 	}
 	*ret = json.RawMessage(r)
 	return nil

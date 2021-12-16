@@ -12,6 +12,7 @@ const (
 	Sale      T = "sale"
 	NotListed T = "notlisted"
 	Unclaimed T = "unclaimed"
+	Expired   T = "expired"
 )
 
 // Valid ...

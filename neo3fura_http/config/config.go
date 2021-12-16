@@ -101,6 +101,8 @@ var Apis = []string{
 	"GetNFTMarket",
 	"GetBidInfoByNFT",
 	"GetNFTOwnedByAddress",
-	"GetNFTRecords",
+	"GetNFTRecordByAddress",
 	"GetNFTByContractHashTokenId",
+	"GetNFTRecordByContractHashTokenId",
+	"GetAllBidInfoByNFT",
 }
