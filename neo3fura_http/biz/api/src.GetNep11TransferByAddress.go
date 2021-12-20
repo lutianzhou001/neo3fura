@@ -14,12 +14,33 @@ func (me *T) GetNep11TransferByAddress(args struct {
 	Address h160.T
 	Limit   int64
 	Skip    int64
+	Start   int64
+	End     int64
 	Filter  map[string]interface{}
 	Raw     *[]map[string]interface{}
 }, ret *json.RawMessage) error {
 	if args.Address.Valid() == false {
 		return stderr.ErrInvalidArgs
 	}
+	filter := bson.M{}
+	if args.Start > 0 && args.End > 0 {
+		if args.Start >= args.End {
+			return stderr.ErrArgsInner
+		}
+		filter = bson.M{"to": args.Address.TransferredVal(),
+			"$and": []interface{}{
+				bson.M{"timestamp": bson.M{"$gte": args.Start}},
+				bson.M{"timestamp": bson.M{"$lte": args.End}},
+			},
+		}
+	} else if args.Start > 0 && args.End == 0 {
+		filter = bson.M{"to": args.Address.TransferredVal(), "timestamp": bson.M{"$gte": args.Start}}
+	} else if args.Start == 0 && args.End > 0 {
+		filter = bson.M{"to": args.Address.TransferredVal(), "timestamp": bson.M{"$lte": args.Start}}
+	} else {
+		filter = bson.M{"to": args.Address.TransferredVal()}
+	}
+
 	r1, count, err := me.Client.QueryAll(struct {
 		Collection string
 		Index      string
@@ -32,13 +53,10 @@ func (me *T) GetNep11TransferByAddress(args struct {
 		Collection: "Nep11TransferNotification",
 		Index:      "GetNep11TransferByAddress",
 		Sort:       bson.M{},
-		Filter: bson.M{"$or": []interface{}{
-			bson.M{"from": args.Address.TransferredVal()},
-			bson.M{"to": args.Address.TransferredVal()},
-		}},
-		Query: []string{},
-		Limit: args.Limit,
-		Skip:  args.Skip,
+		Filter:     filter,
+		Query:      []string{},
+		Limit:      args.Limit,
+		Skip:       args.Skip,
 	}, ret)
 	if err != nil {
 		return err

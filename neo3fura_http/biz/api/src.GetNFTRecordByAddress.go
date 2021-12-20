@@ -45,8 +45,6 @@ func (me *T) GetNFTRecordByAddress(args struct {
 		Sort:       bson.M{},
 		Filter:     bson.M{"user": args.Address.Val()},
 		Query:      []string{},
-		Limit:      args.Limit,
-		Skip:       args.Skip,
 	}, ret)
 	if err != nil {
 		return err
@@ -264,6 +262,8 @@ func (me *T) GetNFTRecordByAddress(args struct {
 		Address h160.T
 		Limit   int64
 		Skip    int64
+		Start   int64
+		End     int64
 		Filter  map[string]interface{}
 		Raw     *[]map[string]interface{}
 	}{Address: args.Address, Raw: &raw2}, ret)
@@ -353,7 +353,7 @@ func getNFTProperties(tokenId strval.T, contractHash h160.T, me *T, ret *json.Ra
 		Collection: "Nep11Properties",
 		Index:      "getNFTProperties",
 		Sort:       bson.M{"balance": -1},
-		Filter:     bson.M{"asset": contractHash.TransferredVal(), "tokenid": tokenId},
+		Filter:     bson.M{"asset": contractHash.Val(), "tokenid": tokenId},
 		Query:      []string{},
 	}, ret)
 	if err != nil {

@@ -2,7 +2,6 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"neo3fura_http/lib/type/NFTstate"
@@ -24,10 +23,8 @@ func (me *T) GetNFTMarket(args struct {
 	Filter       map[string]interface{}
 	Raw          *map[string]interface{}
 }, ret *json.RawMessage) error {
-	currentTime := time.Now().UnixMilli()
+	currentTime := time.Now().UnixNano() / 1e6
 	pipeline := []bson.M{}
-
-	fmt.Printf("", args.NFTState.Val() == NFTstate.Auction.Val())
 
 	if args.NFTState.Val() == NFTstate.Auction.Val() { //拍卖中  accont >0 && auctionType =2 &&  owner=market && runtime <deadline
 		pipeline = []bson.M{
@@ -233,9 +230,7 @@ func (me *T) GetNFTMarket(args struct {
 		return err
 	}
 
-	//r2, err := me.Filter(r1, args.Filter)
 	r3, err := me.FilterAggragateAndAppendCount(r1, count, args.Filter)
-	//	r3, err := me.FilterArrayAndAppendCount(r1,count ,args.Filter)
 
 	if err != nil {
 		return err
