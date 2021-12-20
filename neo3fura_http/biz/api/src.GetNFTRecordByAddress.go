@@ -262,6 +262,8 @@ func (me *T) GetNFTRecordByAddress(args struct {
 		Address h160.T
 		Limit   int64
 		Skip    int64
+		Start   int64
+		End     int64
 		Filter  map[string]interface{}
 		Raw     *[]map[string]interface{}
 	}{Address: args.Address, Raw: &raw2}, ret)

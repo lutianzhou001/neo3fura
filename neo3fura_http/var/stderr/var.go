@@ -24,3 +24,6 @@ var ErrFind = jsonrpc2.NewError(-32001, "find document(s) error")
 
 // InsertJobErr
 var ErrInsert = jsonrpc2.NewError(-32001, "insert job error")
+
+// InsertJobErr
+var ErrArgsInner = jsonrpc2.NewError(-32001, "start must not bigger end")
