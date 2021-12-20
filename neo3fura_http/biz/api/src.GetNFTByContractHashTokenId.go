@@ -18,7 +18,7 @@ func (me *T) GetNFTByContractHashTokenId(args struct {
 	Filter       map[string]interface{}
 	Raw          *[]map[string]interface{}
 }, ret *json.RawMessage) error {
-	currentTime := time.Now().UnixMilli()
+	currentTime := time.Now().UnixNano() / 1e6
 	if args.ContractHash.Valid() == false {
 		return stderr.ErrInvalidArgs
 	}
@@ -61,8 +61,8 @@ func (me *T) GetNFTByContractHashTokenId(args struct {
 		}{
 			Collection: "Market",
 			Index:      "GetNFTByContractHashTokenId",
-			Sort:       bson.M{"auctionAsset": -1},
-			Filter:     bson.M{"asset": args.ContractHash, "tokenid": tokenId, "amount": bson.M{"$gt": 0}},
+			Sort:       bson.M{},
+			Filter:     bson.M{"asset": args.ContractHash.Val(), "tokenid": tokenId, "amount": bson.M{"$gt": 0}},
 			Query:      []string{},
 		}, ret)
 		if err != nil {

@@ -98,7 +98,7 @@ func (me *T) GetNFTRecordByContractHashTokenId(args struct {
 		}{
 			Collection: "Nep11Properties",
 			Index:      "GetNep11PropertiesByContractHashTokenId",
-			Sort:       bson.M{"balance": -1},
+			Sort:       bson.M{},
 			Filter:     bson.M{"asset": asset, "tokenid": tokenid},
 			Query:      []string{},
 		}, ret)

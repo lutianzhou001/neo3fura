@@ -351,7 +351,7 @@ func getNFTProperties(tokenId strval.T, contractHash h160.T, me *T, ret *json.Ra
 		Collection: "Nep11Properties",
 		Index:      "getNFTProperties",
 		Sort:       bson.M{"balance": -1},
-		Filter:     bson.M{"asset": contractHash.TransferredVal(), "tokenid": tokenId},
+		Filter:     bson.M{"asset": contractHash.Val(), "tokenid": tokenId},
 		Query:      []string{},
 	}, ret)
 	if err != nil {

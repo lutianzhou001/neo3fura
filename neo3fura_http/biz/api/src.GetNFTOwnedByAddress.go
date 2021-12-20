@@ -19,7 +19,7 @@ func (me *T) GetNFTOwnedByAddress(args struct {
 	Filter  map[string]interface{}
 	Raw     *map[string]interface{}
 }, ret *json.RawMessage) error {
-	currentTime := time.Now().UnixMilli()
+	currentTime := time.Now().UnixNano() / 1e6
 
 	if args.Address.Valid() == false {
 		return stderr.ErrInvalidArgs
