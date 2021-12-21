@@ -43,7 +43,9 @@ func (me *T) GetAllBidInfoByNFT(args struct {
 		Filter:     f,
 		Query:      []string{},
 	}, ret)
-
+	if err != nil {
+		return err
+	}
 	groups := utils.GroupByString(r1, "nonce")
 
 	result := make([]map[string]interface{}, 0)
@@ -54,7 +56,6 @@ func (me *T) GetAllBidInfoByNFT(args struct {
 		bidInfo["tokenid"] = items[0]["tokenid"]
 		bidInfo["nonce"] = items[0]["nonce"]
 
-		//var bal int64 = 0
 		bidAmounts := []int64{}
 		bidders := []string{}
 		for _, item := range items {

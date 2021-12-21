@@ -31,34 +31,37 @@ func (me *T) GetAssetHoldersListByContractHash(args struct {
 	}{
 		Collection: "Address-Asset",
 		Index:      "GetAssetHoldersListByContractHash",
-		Sort:       bson.M{"balance": -1},
+		Sort:       bson.M{"_id": -1},
 		Filter:     bson.M{"asset": args.ContractHash.Val(), "balance": bson.M{"$gt": 0}},
 		Query:      []string{},
 		Limit:      args.Limit,
 		Skip:       args.Skip,
 	}, ret)
 
+	// 获取资产的totaluspply
+	var raw1 map[string]interface{}
+	err = me.GetAssetInfoByContractHash(struct {
+		ContractHash h160.T
+		Filter       map[string]interface{}
+		Raw          *map[string]interface{}
+	}{ContractHash: args.ContractHash, Raw: &raw1}, ret)
+	if err != nil {
+		return err
+	}
+
+	it, _, err := raw1["totalsupply"].(primitive.Decimal128).BigInt()
+	if err != nil {
+		return err
+	}
+	itf := new(big.Float).SetInt(it)
+
 	for _, item := range r1 {
-		var raw1 map[string]interface{}
-		err = me.GetAssetInfoByContractHash(struct {
-			ContractHash h160.T
-			Filter       map[string]interface{}
-			Raw          *map[string]interface{}
-		}{ContractHash: args.ContractHash, Raw: &raw1}, ret)
-		if err != nil {
-			return err
-		}
+
 		ib, _, err := item["balance"].(primitive.Decimal128).BigInt()
 		if err != nil {
 			return err
 		}
-		// it, _ := new(big.Int).SetString(raw1["totalsupply"].(string), 10)
-		it, _, err := raw1["totalsupply"].(primitive.Decimal128).BigInt()
-		if err != nil {
-			return err
-		}
 		ibf := new(big.Float).SetInt(ib)
-		itf := new(big.Float).SetInt(it)
 		dv := new(big.Float).Quo(ibf, itf)
 		item["percentage"] = dv
 	}
