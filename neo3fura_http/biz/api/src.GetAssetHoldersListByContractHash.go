@@ -31,7 +31,7 @@ func (me *T) GetAssetHoldersListByContractHash(args struct {
 	}{
 		Collection: "Address-Asset",
 		Index:      "GetAssetHoldersListByContractHash",
-		Sort:       bson.M{"balance": -1},
+		Sort:       bson.M{"_id": -1},
 		Filter:     bson.M{"asset": args.ContractHash.Val(), "balance": bson.M{"$gt": 0}},
 		Query:      []string{},
 		Limit:      args.Limit,
@@ -48,7 +48,7 @@ func (me *T) GetAssetHoldersListByContractHash(args struct {
 	if err != nil {
 		return err
 	}
-	// it, _ := new(big.Int).SetString(raw1["totalsupply"].(string), 10)
+
 	it, _, err := raw1["totalsupply"].(primitive.Decimal128).BigInt()
 	if err != nil {
 		return err
