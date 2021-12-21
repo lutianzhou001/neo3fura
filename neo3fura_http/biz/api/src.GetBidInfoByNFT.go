@@ -38,6 +38,29 @@ func (me *T) GetBidInfoByNFT(args struct {
 			f = bson.M{"asset": args.AssetHash.Val(), "tokenid": args.TokenId.Val(), "eventname": "Bid"}
 		}
 	}
+
+	rs, _, err := me.Client.QueryAll(struct {
+		Collection string
+		Index      string
+		Sort       bson.M
+		Filter     bson.M
+		Query      []string
+		Limit      int64
+		Skip       int64
+	}{
+		Collection: "MarketNotification",
+		Index:      "GetBidInfoByNFT",
+		Sort:       bson.M{"nonce": -1},
+		Filter:     f,
+		Query:      []string{},
+		Limit:      1,
+	}, ret)
+	if err != nil {
+		return err
+	}
+	lastNonce := rs[0]["nonce"].(int64)
+	f["nonce"] = lastNonce
+
 	r1, count, err := me.Client.QueryAll(struct {
 		Collection string
 		Index      string
@@ -56,6 +79,7 @@ func (me *T) GetBidInfoByNFT(args struct {
 	if err != nil {
 		return err
 	}
+
 	result := make([]map[string]interface{}, 0)
 	for _, item := range r1 {
 		rr := make(map[string]interface{})
@@ -63,7 +87,7 @@ func (me *T) GetBidInfoByNFT(args struct {
 		rr["asset"] = item["asset"]
 		rr["bidder"] = item["user"]
 		rr["timestamp"] = item["timestamp"]
-
+		rr["nonce"] = item["nonce"]
 		extendData := item["extendData"].(string)
 		var dat map[string]interface{}
 		if err := json.Unmarshal([]byte(extendData), &dat); err == nil {
