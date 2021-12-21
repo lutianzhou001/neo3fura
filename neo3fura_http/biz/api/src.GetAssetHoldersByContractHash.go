@@ -108,28 +108,29 @@ func (me *T) GetAssetHoldersByContractHash(args struct {
 		*ret = json.RawMessage(r)
 	} else {
 		//Nep17
+		var raw1 map[string]interface{}
+		err = me.GetAssetInfoByContractHash(struct {
+			ContractHash h160.T
+			Filter       map[string]interface{}
+			Raw          *map[string]interface{}
+		}{ContractHash: args.ContractHash, Raw: &raw1}, ret)
+		if err != nil {
+			return err
+		}
+		it, _, err := raw1["totalsupply"].(primitive.Decimal128).BigInt()
+		itf := new(big.Float).SetInt(it)
+
 		for _, item := range r1 {
-			var raw1 map[string]interface{}
-			err = me.GetAssetInfoByContractHash(struct {
-				ContractHash h160.T
-				Filter       map[string]interface{}
-				Raw          *map[string]interface{}
-			}{ContractHash: args.ContractHash, Raw: &raw1}, ret)
-			if err != nil {
-				return err
-			}
 			ib, _, err := item["balance"].(primitive.Decimal128).BigInt()
 			if err != nil {
 				return err
 			}
-			// it, _ := new(big.Int).SetString(raw1["totalsupply"].(string), 10)
-			it, _, err := raw1["totalsupply"].(primitive.Decimal128).BigInt()
 
 			if err != nil {
 				return err
 			}
 			ibf := new(big.Float).SetInt(ib)
-			itf := new(big.Float).SetInt(it)
+
 			dv := new(big.Float).Quo(ibf, itf)
 			item["percentage"] = dv
 		}
