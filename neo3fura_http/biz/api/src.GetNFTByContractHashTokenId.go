@@ -69,13 +69,34 @@ func (me *T) GetNFTByContractHashTokenId(args struct {
 			return err
 		}
 
-		a := r1["amount"].(primitive.Decimal128).String()
-		amount, err := strconv.Atoi(a)
+		a := r1["amount"]
+		var a1 string
+		switch a.(type) {
+		case string:
+			a1 = r1["amount"].(string)
+		case primitive.Decimal128:
+			a1 = r1["amount"].(primitive.Decimal128).String()
+		}
+		//fmt.Printf("", r1)
+		//a := r1["amount"].(primitive.Decimal128).String()
+
+		//a := r1["amount"].(string)
+		amount, err := strconv.Atoi(a1)
 		if err != nil {
 			return err
 		}
 
-		ba := r1["bidAmount"].(primitive.Decimal128).String()
+		b := r1["bidAmount"]
+		var ba string
+		switch b.(type) {
+		case string:
+			ba = r1["bidAmount"].(string)
+		case primitive.Decimal128:
+			ba = r1["bidAmount"].(primitive.Decimal128).String()
+		}
+
+		//ba := r1["bidAmount"].(primitive.Decimal128).String()
+		//ba := r1["bidAmount"].(string)
 		bidAmount, err := strconv.ParseInt(ba, 10, 64)
 		if err != nil {
 			return err
