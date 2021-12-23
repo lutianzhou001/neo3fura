@@ -13,6 +13,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	log2 "neo3fura_http/lib/log"
+	limit2 "neo3fura_http/var/limit"
 	"neo3fura_http/var/stderr"
 )
 
@@ -108,6 +109,13 @@ func (me *T) QueryAll(args struct {
 	Limit      int64
 	Skip       int64
 }, ret *json.RawMessage) ([]map[string]interface{}, int64, error) {
+
+	if args.Limit == 0 {
+		args.Limit = limit2.DefaultLimit
+	} else if args.Limit > limit2.MaxLimit {
+		args.Limit = limit2.MaxLimit
+	}
+
 	var results []map[string]interface{}
 	convert := make([]map[string]interface{}, 0)
 	collection := me.C_online.Database(me.Db_online).Collection(args.Collection)
@@ -236,6 +244,19 @@ func (me *T) QueryAggregate(args struct {
 	Pipeline   []bson.M
 	Query      []string
 }, ret *json.RawMessage) ([]map[string]interface{}, error) {
+
+	for _, v := range args.Pipeline {
+		limit := v["$limit"]
+		if limit != nil {
+			if limit.(int64) == 0 {
+				v["$limit"] = limit2.DefaultLimit
+			}
+			if limit.(int64) > limit2.MaxLimit {
+				v["$limit"] = limit2.MaxLimit
+			}
+		}
+	}
+
 	var results []map[string]interface{}
 	convert := make([]map[string]interface{}, 0)
 	collection := me.C_online.Database(me.Db_online).Collection(args.Collection)
