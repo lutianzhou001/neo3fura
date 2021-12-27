@@ -161,6 +161,7 @@ func main() {
 			go j.GetHoldersByContractHash()
 			go j.GetTransactionList()
 			go j.GetBlockInfoList()
+			go j.GetHourlyTransactions()
 		})
 		if err != nil {
 			log2.Fatal("add job function error:%s", err)
