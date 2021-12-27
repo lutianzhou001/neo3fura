@@ -28,7 +28,7 @@ func (me *T) GetAssetInfoByContractHash(args struct {
 		Collection: "Asset",
 		Index:      "GetAssetInfoByContractHash",
 		Sort:       bson.M{},
-		Filter:     bson.M{"hash": args.ContractHash.Val()},
+		Filter:     bson.M{"hash": args.ContractHash.Val(), "totalsupply": bson.M{"$gt": 0}},
 		Query:      []string{},
 	}, ret)
 	if err != nil {
