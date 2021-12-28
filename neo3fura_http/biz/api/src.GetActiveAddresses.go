@@ -21,7 +21,7 @@ func (me *T) GetActiveAddresses(args struct {
 		Query      []string
 		Limit      int64
 		Skip       int64
-	}{Collection: "ActiveAddresses", Index: "GetActiveAddresses", Sort: bson.M{"id": -1}, Filter: bson.M{}, Query: []string{}, Limit: args.Days})
+	}{Collection: "ActiveAddresses", Index: "GetActiveAddresses", Sort: bson.M{"_id": -1}, Filter: bson.M{}, Query: []string{}, Limit: args.Days})
 	if err != nil {
 		return err
 	}

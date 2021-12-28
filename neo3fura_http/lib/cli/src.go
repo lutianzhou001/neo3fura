@@ -108,6 +108,13 @@ func (me *T) QueryAll(args struct {
 	Limit      int64
 	Skip       int64
 }, ret *json.RawMessage) ([]map[string]interface{}, int64, error) {
+
+	//if args.Limit == 0 {
+	//	args.Limit = limit2.DefaultLimit
+	//} else if args.Limit > limit2.MaxLimit {
+	//	args.Limit = limit2.MaxLimit
+	//}
+
 	var results []map[string]interface{}
 	convert := make([]map[string]interface{}, 0)
 	collection := me.C_online.Database(me.Db_online).Collection(args.Collection)
@@ -236,11 +243,30 @@ func (me *T) QueryAggregate(args struct {
 	Pipeline   []bson.M
 	Query      []string
 }, ret *json.RawMessage) ([]map[string]interface{}, error) {
+
+	//for _, v := range args.Pipeline {
+	//	limit := v["$limit"]
+	//	if limit != nil {
+	//		if limit.(int64) == 0 {
+	//			v["$limit"] = limit2.DefaultLimit
+	//		}
+	//		if limit.(int64) > limit2.MaxLimit {
+	//			v["$limit"] = limit2.MaxLimit
+	//		}
+	//	}
+	//}
+
 	var results []map[string]interface{}
 	convert := make([]map[string]interface{}, 0)
 	collection := me.C_online.Database(me.Db_online).Collection(args.Collection)
 	op := options.AggregateOptions{}
+
+	//start := time.Now().UnixMilli()
 	cursor, err := collection.Aggregate(me.Ctx, args.Pipeline, &op)
+	//end := time.Now().UnixMilli()
+	//costTime := end - start
+	//fmt.Printf("", start, end, costTime)
+
 	defer func(cursor *mongo.Cursor, ctx context.Context) {
 		err := cursor.Close(ctx)
 		if err != nil {
@@ -256,6 +282,7 @@ func (me *T) QueryAggregate(args struct {
 	if err = cursor.All(me.Ctx, &results); err != nil {
 		return nil, stderr.ErrFind
 	}
+
 	for _, item := range results {
 		if len(args.Query) == 0 {
 			convert = append(convert, item)
@@ -267,6 +294,7 @@ func (me *T) QueryAggregate(args struct {
 			convert = append(convert, temp)
 		}
 	}
+
 	r, err := json.Marshal(convert)
 	if err != nil {
 		return nil, stderr.ErrFind
