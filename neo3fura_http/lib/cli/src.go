@@ -14,7 +14,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	log2 "neo3fura_http/lib/log"
 	"neo3fura_http/var/stderr"
-	"time"
 )
 
 // T ...
@@ -262,11 +261,11 @@ func (me *T) QueryAggregate(args struct {
 	collection := me.C_online.Database(me.Db_online).Collection(args.Collection)
 	op := options.AggregateOptions{}
 
-	start := time.Now().UnixMilli()
+	//start := time.Now().UnixMilli()
 	cursor, err := collection.Aggregate(me.Ctx, args.Pipeline, &op)
-	end := time.Now().UnixMilli()
-	costTime := end - start
-	fmt.Printf("", start, end, costTime)
+	//end := time.Now().UnixMilli()
+	//costTime := end - start
+	//fmt.Printf("", start, end, costTime)
 
 	defer func(cursor *mongo.Cursor, ctx context.Context) {
 		err := cursor.Close(ctx)
