@@ -72,10 +72,10 @@ func (me *T) GetNFTRecordByAddress(args struct {
 			return err
 		}
 
-		extendData := raw2["properties"].(string)
-		if extendData != "" {
+		extendData := raw2["properties"]
+		if extendData != nil {
 			var dat map[string]interface{}
-			if err := json.Unmarshal([]byte(extendData), &dat); err == nil {
+			if err := json.Unmarshal([]byte(extendData.(string)), &dat); err == nil {
 				image, ok := dat["image"]
 				if ok {
 					rr["image"] = image
@@ -360,14 +360,15 @@ func (me *T) GetNFTRecordByAddress(args struct {
 	return nil
 }
 func getNFTProperties(tokenId strval.T, contractHash h160.T, me *T, ret *json.RawMessage, filter map[string]interface{}, Raw *map[string]interface{}) error {
-	r4 := make([]map[string]interface{}, 0)
 
-	r1, err := me.Client.QueryOne(struct {
+	r1, count, err := me.Client.QueryAll(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
 		Filter     bson.M
 		Query      []string
+		Limit      int64
+		Skip       int64
 	}{
 		Collection: "Nep11Properties",
 		Index:      "getNFTProperties",
@@ -378,15 +379,20 @@ func getNFTProperties(tokenId strval.T, contractHash h160.T, me *T, ret *json.Ra
 	if err != nil {
 		return err
 	}
-	filter1, err := me.Filter(r1, filter)
+
+	r2, err := me.FilterArrayAndAppendCount(r1, count, filter)
+	if err != nil {
+		return err
+	}
+	r, err := json.Marshal(r2)
 	if err != nil {
 		return err
 	}
 
-	r4 = append(r4, filter1)
-
 	if Raw != nil {
-		*Raw = r1
+		*Raw = r2
 	}
+
+	*ret = json.RawMessage(r)
 	return nil
 }

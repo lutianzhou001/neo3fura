@@ -142,10 +142,10 @@ func (me *T) GetNFTByContractHashTokenId(args struct {
 		if err1 != nil {
 			return err1
 		}
-		extendData := raw3["properties"].(string)
-		if extendData != "" {
+		extendData := raw3["properties"]
+		if extendData != nil {
 			var dat map[string]interface{}
-			if err := json.Unmarshal([]byte(extendData), &dat); err == nil {
+			if err := json.Unmarshal([]byte(extendData.(string)), &dat); err == nil {
 				value, ok := dat["image"]
 				if ok {
 					r1["image"] = value
