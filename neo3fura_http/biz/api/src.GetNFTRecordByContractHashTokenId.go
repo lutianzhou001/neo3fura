@@ -107,23 +107,28 @@ func (me *T) GetNFTRecordByContractHashTokenId(args struct {
 		}
 
 		extendData := r4["properties"].(string)
-		var dat map[string]interface{}
-		if err := json.Unmarshal([]byte(extendData), &dat); err == nil {
-			value, ok := dat["image"]
-			if ok {
-				rr["image"] = value
-			} else {
-				rr["image"] = ""
-			}
-			value1, ok1 := dat["name"]
-			if ok1 {
-				rr["name"] = value1
-			} else {
-				rr["name"] = ""
-			}
+		if extendData != "" {
+			var dat map[string]interface{}
+			if err := json.Unmarshal([]byte(extendData), &dat); err == nil {
+				image, ok := dat["image"]
+				if ok {
+					rr["image"] = image
+				} else {
+					rr["image"] = ""
+				}
+				name, ok1 := dat["name"]
+				if ok1 {
+					rr["name"] = name
+				} else {
+					rr["name"] = ""
+				}
 
+			} else {
+				return err
+			}
 		} else {
-			return err
+			rr["image"] = ""
+			rr["name"] = ""
 		}
 
 		result = append(result, rr) //  通过市场流转
