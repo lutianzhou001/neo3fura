@@ -62,7 +62,7 @@ func (me *T) GetNFTOwnedByAddress(args struct {
 
 	if args.NFTState.Val() == NFTstate.Auction.Val() { //拍卖中  accont >0 && auctionType =2 &&  owner=market && runtime <deadline
 		pipeline1 := []bson.M{
-			bson.M{"$match": bson.M{"owner": args.Address.Val()}},
+			bson.M{"$match": bson.M{"auctor": args.Address.Val()}},
 			bson.M{"$match": bson.M{"amount": bson.M{"$gt": 0}}},
 			bson.M{"$match": bson.M{"auctionType": bson.M{"$eq": 2}}},
 			bson.M{"$match": bson.M{"deadline": bson.M{"$gt": currentTime}}},
@@ -75,7 +75,7 @@ func (me *T) GetNFTOwnedByAddress(args struct {
 
 	} else if args.NFTState.Val() == NFTstate.Sale.Val() { //出售中 accont >0 && auctionType =1 && owner=market && runtime <deadline
 		pipeline1 := []bson.M{
-			bson.M{"$match": bson.M{"owner": args.Address.Val()}},
+			bson.M{"$match": bson.M{"auctor": args.Address.Val()}},
 			bson.M{"$match": bson.M{"amount": bson.M{"$gt": 0}}},
 			bson.M{"$match": bson.M{"auctionType": bson.M{"$eq": 1}}},
 			bson.M{"$match": bson.M{"deadline": bson.M{"$gt": currentTime}}},
@@ -88,7 +88,7 @@ func (me *T) GetNFTOwnedByAddress(args struct {
 
 	} else if args.NFTState.Val() == NFTstate.NotListed.Val() { //未上架  accont >0 && owner != market
 		pipeline1 := []bson.M{
-			bson.M{"$match": bson.M{"owner": args.Address.Val()}},
+			bson.M{"$match": bson.M{"auctor": args.Address.Val()}},
 			bson.M{"$match": bson.M{"amount": bson.M{"$gt": 0}}},
 			bson.M{"$project": bson.M{"_id": 1, "asset": 1, "tokenid": 1, "amount": 1, "owner": 1, "market": 1, "difference": bson.M{"$eq": []string{"$owner", "$market"}}, "auctionType": 1, "auctor": 1, "auctionAsset": 1, "auctionAmount": 1, "deadline": 1, "bidder": 1, "bidAmount": 1, "timestamp": 1, "state": "notlisted"}},
 			bson.M{"$match": bson.M{"difference": false}},
@@ -99,7 +99,7 @@ func (me *T) GetNFTOwnedByAddress(args struct {
 
 	} else if args.NFTState.Val() == NFTstate.Unclaimed.Val() { //未领取  accont >0 &&  runtime > deadline && owner== market && bidAccount >0
 		pipeline1 := []bson.M{
-			bson.M{"$match": bson.M{"owner": args.Address.Val()}},
+			bson.M{"$match": bson.M{"auctor": args.Address.Val()}},
 			bson.M{"$match": bson.M{"amount": bson.M{"$gt": 0}}},
 			//bson.M{"$match": bson.M{"bidAmount": bson.M{"$gt": 0}}},
 			bson.M{"$match": bson.M{"deadline": bson.M{"$lt": currentTime}}},
@@ -112,7 +112,7 @@ func (me *T) GetNFTOwnedByAddress(args struct {
 
 	} else { //默认  account > 0
 		pipeline1 := []bson.M{
-			bson.M{"$match": bson.M{"owner": args.Address.Val()}},
+			bson.M{"$match": bson.M{"auctor": args.Address.Val()}},
 			bson.M{"$match": bson.M{"amount": bson.M{"$gt": 0}}},
 			bson.M{"$project": bson.M{"_id": 1, "asset": 1, "tokenid": 1, "amount": 1, "owner": 1, "market": 1, "auctionType": 1, "auctor": 1, "auctionAsset": 1, "auctionAmount": 1, "deadline": 1, "bidder": 1, "bidAmount": 1, "timestamp": 1, "state": ""}},
 			bson.M{"$match": bson.M{"amount": bson.M{"$gt": 0}}},
@@ -183,24 +183,26 @@ func (me *T) GetNFTOwnedByAddress(args struct {
 		if err1 != nil {
 			return err1
 		}
-		extendData := raw3["properties"].(string)
-		var data map[string]interface{}
-		if err := json.Unmarshal([]byte(extendData), &data); err == nil {
-			value, ok := data["image"]
-			if ok {
-				item["image"] = value
-			} else {
-				item["image"] = ""
-			}
-			value1, ok1 := data["name"]
-			if ok1 {
-				item["name"] = value1
-			} else {
-				item["name"] = ""
-			}
+		extendData := raw3["properties"]
+		if extendData != nil {
+			var data map[string]interface{}
+			if err := json.Unmarshal([]byte(extendData.(string)), &data); err == nil {
+				value, ok := data["image"]
+				if ok {
+					item["image"] = value
+				} else {
+					item["image"] = ""
+				}
+				value1, ok1 := data["name"]
+				if ok1 {
+					item["name"] = value1
+				} else {
+					item["name"] = ""
+				}
 
-		} else {
-			return err
+			} else {
+				return err
+			}
 		}
 
 	}
