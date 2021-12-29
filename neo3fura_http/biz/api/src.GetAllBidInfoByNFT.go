@@ -3,10 +3,9 @@ package api
 import (
 	"encoding/json"
 	"go.mongodb.org/mongo-driver/bson"
-	"neo3fura_http/lib/mapsort"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"neo3fura_http/lib/type/h160"
 	"neo3fura_http/lib/type/strval"
-	"neo3fura_http/lib/utils"
 	"neo3fura_http/var/stderr"
 	"strconv"
 )
@@ -28,40 +27,50 @@ func (me *T) GetAllBidInfoByNFT(args struct {
 		f = bson.M{"asset": args.AssetHash.Val(), "tokenid": args.TokenId.Val(), "eventname": "Bid"}
 	}
 
-	r1, _, err := me.Client.QueryAll(struct {
-		Collection string
-		Index      string
-		Sort       bson.M
-		Filter     bson.M
-		Query      []string
-		Limit      int64
-		Skip       int64
-	}{
-		Collection: "MarketNotification",
-		Index:      "GetAllBidInfoByNFT",
-		Sort:       bson.M{"timestamp": -1},
-		Filter:     f,
-		Query:      []string{},
-	}, ret)
+	r11, err := me.Client.QueryAggregate(
+		struct {
+			Collection string
+			Index      string
+			Sort       bson.M
+			Filter     bson.M
+			Pipeline   []bson.M
+			Query      []string
+		}{
+			Collection: "MarketNotification",
+			Index:      "GetAllBidInfoByNFT",
+			Sort:       bson.M{},
+			Filter:     bson.M{},
+			Pipeline: []bson.M{
+				bson.M{"$match": f},
+				bson.M{"$group": bson.M{"_id": "$nonce",
+					"nonce":   bson.M{"$last": "$nonce"},
+					"asset":   bson.M{"$last": "$asset"},
+					"tokenid": bson.M{"$last": "$tokenid"},
+					"bidInfo": bson.M{"$push": "$$ROOT"}}},
+				bson.M{"$sort": bson.M{"_id": -1}},
+			},
+			Query: []string{},
+		}, ret)
+
 	if err != nil {
 		return err
 	}
-	groups := utils.GroupByString(r1, "nonce")
 
 	result := make([]map[string]interface{}, 0)
-	for _, items := range groups {
-		items = mapsort.MapSort(items, "timestamp") //
+	for _, items := range r11 {
 		bidInfo := make(map[string]interface{})
-		bidInfo["asset"] = items[0]["asset"]
-		bidInfo["tokenid"] = items[0]["tokenid"]
-		bidInfo["nonce"] = items[0]["nonce"]
-
+		bidinfos := items["bidInfo"].(primitive.A)
+		bidInfo["tokenid"] = items["tokenid"]
+		bidInfo["nonce"] = items["nonce"]
+		bidInfo["asset"] = items["asset"]
 		bidAmounts := []int64{}
 		bidders := []string{}
-		for _, item := range items {
-			bidder := item["user"].(string)
+		for _, i := range bidinfos {
+			info := i.(map[string]interface{})
+			bidder := info["user"].(string)
+			bidders = append(bidders, bidder)
 
-			extendData := item["extendData"].(string)
+			extendData := info["extendData"].(string)
 			var dat map[string]interface{}
 			if err := json.Unmarshal([]byte(extendData), &dat); err == nil {
 				bidAmount, err := strconv.ParseInt(dat["bidAmount"].(string), 10, 64)
@@ -72,13 +81,11 @@ func (me *T) GetAllBidInfoByNFT(args struct {
 			} else {
 				return err
 			}
-
-			bidders = append(bidders, bidder)
-
 		}
-		bidInfo["bidder"] = bidders
 		bidInfo["bidAmount"] = bidAmounts
+		bidInfo["bidder"] = bidders
 		result = append(result, bidInfo)
+
 	}
 
 	num, err := strconv.ParseInt(strconv.Itoa(len(result)), 10, 64)
