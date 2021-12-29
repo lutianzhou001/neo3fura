@@ -109,13 +109,18 @@ func (me *T) GetNFTByContractHashTokenId(args struct {
 		case float64:
 			deadline = f2i(dl.(float64), 0)
 		case int64:
-			deadline = at.(int64)
+			deadline = dl.(int64)
+		case int32:
+			deadline = int64(dl.(int32))
+
 		}
 		switch at.(type) {
 		case float64:
 			auctionType = f2i(at.(float64), 0)
 		case int64:
 			auctionType = at.(int64)
+		case int32:
+			deadline = int64(at.(int32))
 		}
 
 		if amount > 0 && auctionType == 2 && r1["owner"] == r1["market"] && deadline > currentTime {
