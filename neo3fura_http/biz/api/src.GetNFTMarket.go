@@ -80,25 +80,17 @@ func (me *T) GetNFTMarket(args struct {
 		}
 		pipeline = append(pipeline, pipeline1...)
 
-	} else if args.NFTState.Val() == NFTstate.NotListed.Val() { //未上架  accont >0 && owner != market
+	} else if args.NFTState.Val() == NFTstate.NotListed.Val() { //未上架  accont >0 && owner != market  ||  owner == market && deadline < currentTime
 		pipeline1 := []bson.M{
-
 			bson.M{"$match": bson.M{"amount": bson.M{"$gt": 0}}},
 			bson.M{"$project": bson.M{"_id": 1, "asset": 1, "tokenid": 1, "amount": 1, "owner": 1, "market": 1, "difference": bson.M{"$eq": []string{"$owner", "$market"}}, "auctionType": 1, "auctor": 1, "auctionAsset": 1, "auctionAmount": 1, "deadline": 1, "bidder": 1, "bidAmount": 1, "timestamp": 1, "state": "notlisted"}},
-			bson.M{"$match": bson.M{"difference": false}},
-			bson.M{"$skip": args.Skip},
-			bson.M{"$limit": args.Limit},
-		}
-		pipeline = append(pipeline, pipeline1...)
+			bson.M{"$match": bson.M{"$or": []interface{}{
+				bson.M{"difference": false},
+				bson.M{"$and": []interface{}{
+					bson.M{"deadline": bson.M{"$lt": currentTime}},
+					bson.M{"difference": true},
+				}}}}},
 
-	} else if args.NFTState.Val() == NFTstate.Unclaimed.Val() { //未领取  accont >0 &&  runtime > deadline && owner== market && bidAccount >0
-		pipeline1 := []bson.M{
-
-			bson.M{"$match": bson.M{"amount": bson.M{"$gt": 0}}},
-			bson.M{"$match": bson.M{"bidAmount": bson.M{"$gt": 0}}},
-			bson.M{"$match": bson.M{"deadline": bson.M{"$lt": currentTime}}},
-			bson.M{"$project": bson.M{"_id": 1, "asset": 1, "tokenid": 1, "amount": 1, "owner": 1, "market": 1, "difference": bson.M{"$eq": []string{"$owner", "$market"}}, "auctionType": 1, "auctor": 1, "auctionAsset": 1, "auctionAmount": 1, "deadline": 1, "bidder": 1, "bidAmount": 1, "timestamp": 1, "state": "unclaimed"}},
-			bson.M{"$match": bson.M{"difference": true}},
 			bson.M{"$skip": args.Skip},
 			bson.M{"$limit": args.Limit},
 		}
@@ -108,7 +100,7 @@ func (me *T) GetNFTMarket(args struct {
 		pipeline1 := []bson.M{
 
 			bson.M{"$match": bson.M{"amount": bson.M{"$gt": 0}}},
-			bson.M{"$project": bson.M{"_id": 1, "asset": 1, "tokenid": 1, "amount": 1, "owner": 1, "market": 1, "auctionType": 1, "auctor": 1, "auctionAsset": 1, "auctionAmount": 1, "deadline": 1, "bidder": 1, "bidAmount": 1, "timestamp": 1, "state": ""}},
+			bson.M{"$project": bson.M{"_id": 1, "asset": 1, "tokenid": 1, "amount": 1, "owner": 1, "market": 1, "auctionType": 1, "auctor": 1, "auctionAsset": 1, "auctionAmount": 1, "deadline": 1, "bidder": 1, "bidAmount": 1, "timestamp": 1, "state": "notlisted"}},
 			bson.M{"$match": bson.M{"amount": bson.M{"$gt": 0}}},
 			bson.M{"$skip": args.Skip},
 			bson.M{"$limit": args.Limit},
@@ -139,15 +131,15 @@ func (me *T) GetNFTMarket(args struct {
 
 	//获取nft的属性
 	for _, item := range r1 {
-		if args.NFTState.Val() != NFTstate.Auction.Val() && args.NFTState.Val() != NFTstate.Sale.Val() && args.NFTState.Val() != NFTstate.Expired.Val() && args.NFTState.Val() != NFTstate.Unclaimed.Val() {
+		if args.NFTState.Val() != NFTstate.Auction.Val() && args.NFTState.Val() != NFTstate.Sale.Val() && args.NFTState.Val() != NFTstate.NotListed.Val() {
 			a := item["amount"].(primitive.Decimal128).String()
 			amount, err := strconv.Atoi(a)
 			if err != nil {
 				return err
 			}
 
-			ba := item["bidAmount"].(primitive.Decimal128).String()
-			bidAmount, err := strconv.ParseInt(ba, 10, 64)
+			//ba := item["bidAmount"].(primitive.Decimal128).String()
+			//bidAmount, err := strconv.ParseInt(ba, 10, 64)
 			if err != nil {
 				return err
 			}
@@ -159,16 +151,9 @@ func (me *T) GetNFTMarket(args struct {
 				item["state"] = NFTstate.Auction.Val()
 			} else if amount > 0 && auctionType == 1 && item["owner"] == item["market"] && deadline > currentTime {
 				item["state"] = NFTstate.Sale.Val()
-			} else if amount > 0 && item["owner"] != item["market"] {
-				item["state"] = NFTstate.NotListed.Val()
-			} else if amount > 0 && bidAmount > 0 && deadline < currentTime && item["owner"] == item["market"] {
-				item["state"] = NFTstate.Unclaimed.Val()
-			} else if amount > 0 && deadline < currentTime && bidAmount == 0 && item["owner"] == item["market"] {
-				item["state"] = NFTstate.Expired.Val()
 			} else {
-				item["state"] = ""
+				item["state"] = NFTstate.NotListed.Val()
 			}
-
 		}
 
 		asset := item["asset"].(string)
@@ -180,23 +165,29 @@ func (me *T) GetNFTMarket(args struct {
 			return err1
 		}
 		extendData := raw3["properties"].(string)
-		var data map[string]interface{}
-		if err := json.Unmarshal([]byte(extendData), &data); err == nil {
-			value, ok := data["image"]
-			if ok {
-				item["image"] = value
+		if extendData != "" {
+			var data map[string]interface{}
+			if err := json.Unmarshal([]byte(extendData), &data); err == nil {
+				image, ok := data["image"]
+				if ok {
+					item["image"] = image
+				} else {
+					item["image"] = ""
+				}
+				name, ok1 := data["name"]
+				if ok1 {
+					item["name"] = name
+				} else {
+					item["name"] = ""
+				}
+
 			} else {
-				item["image"] = ""
-			}
-			value1, ok1 := data["name"]
-			if ok1 {
-				item["name"] = value1
-			} else {
-				item["name"] = ""
+				return err
 			}
 
 		} else {
-			return err
+			item["image"] = ""
+			item["name"] = ""
 		}
 
 	}

@@ -77,10 +77,7 @@ func (me *T) GetNFTByContractHashTokenId(args struct {
 		case primitive.Decimal128:
 			a1 = r1["amount"].(primitive.Decimal128).String()
 		}
-		//fmt.Printf("", r1)
-		//a := r1["amount"].(primitive.Decimal128).String()
 
-		//a := r1["amount"].(string)
 		amount, err := strconv.Atoi(a1)
 		if err != nil {
 			return err
@@ -125,23 +122,28 @@ func (me *T) GetNFTByContractHashTokenId(args struct {
 			return err1
 		}
 		extendData := raw3["properties"].(string)
-		var dat map[string]interface{}
-		if err := json.Unmarshal([]byte(extendData), &dat); err == nil {
-			value, ok := dat["image"]
-			if ok {
-				r1["image"] = value
-			} else {
-				r1["image"] = ""
-			}
-			value1, ok1 := dat["name"]
-			if ok1 {
-				r1["name"] = value1
-			} else {
-				r1["name"] = ""
-			}
+		if extendData != "" {
+			var dat map[string]interface{}
+			if err := json.Unmarshal([]byte(extendData), &dat); err == nil {
+				value, ok := dat["image"]
+				if ok {
+					r1["image"] = value
+				} else {
+					r1["image"] = ""
+				}
+				name, ok1 := dat["name"]
+				if ok1 {
+					r1["name"] = name
+				} else {
+					r1["name"] = ""
+				}
 
+			} else {
+				return err
+			}
 		} else {
-			return err
+			r1["image"] = ""
+			r1["name"] = ""
 		}
 
 		filter, err := me.Filter(r1, args.Filter)

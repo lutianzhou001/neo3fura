@@ -73,23 +73,29 @@ func (me *T) GetNFTRecordByAddress(args struct {
 		}
 
 		extendData := raw2["properties"].(string)
-		var dat map[string]interface{}
-		if err := json.Unmarshal([]byte(extendData), &dat); err == nil {
-			value, ok := dat["image"]
-			if ok {
-				rr["image"] = value
+		if extendData != "" {
+			var dat map[string]interface{}
+			if err := json.Unmarshal([]byte(extendData), &dat); err == nil {
+				image, ok := dat["image"]
+				if ok {
+					rr["image"] = image
+				} else {
+					rr["image"] = ""
+				}
+				name, ok1 := dat["name"]
+				if ok1 {
+					rr["name"] = name
+				} else {
+					rr["name"] = ""
+				}
+
 			} else {
-				rr["image"] = ""
-			}
-			value1, ok1 := dat["name"]
-			if ok1 {
-				rr["name"] = value1
-			} else {
-				rr["name"] = ""
+				return err
 			}
 
 		} else {
-			return err
+			rr["image"] = ""
+			rr["name"] = ""
 		}
 
 		//获取此时Nft的状态
@@ -297,23 +303,29 @@ func (me *T) GetNFTRecordByAddress(args struct {
 			}
 
 			extendData := raw3["properties"].(string)
-			var dat map[string]interface{}
-			if err := json.Unmarshal([]byte(extendData), &dat); err == nil {
-				value, ok := dat["image"]
-				if ok {
-					rr["image"] = value
+			if extendData != "" {
+				var dat map[string]interface{}
+				if err := json.Unmarshal([]byte(extendData), &dat); err == nil {
+					image, ok := dat["image"]
+					if ok {
+						rr["image"] = image
+					} else {
+						rr["image"] = ""
+					}
+					name, ok1 := dat["name"]
+					if ok1 {
+						rr["name"] = name
+					} else {
+						rr["name"] = ""
+					}
+
 				} else {
-					rr["image"] = ""
-				}
-				value1, ok1 := dat["name"]
-				if ok1 {
-					rr["name"] = value1
-				} else {
-					rr["name"] = ""
+					return err
 				}
 
 			} else {
-				return err
+				rr["image"] = ""
+				rr["name"] = ""
 			}
 
 			if from == args.Address.Val() && to != args.MarketContractHash.Val() {

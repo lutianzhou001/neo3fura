@@ -85,10 +85,6 @@ func (me *T) GetAssetInfoByContractHash(args struct {
 	if err != nil {
 		return err
 	}
-	r3, err := me.Client.QueryLastJob(struct{ Collection string }{Collection: "Holders"})
-	if err != nil {
-		return err
-	}
 
 	r1["ispopular"] = false
 	populars := r2["Populars"].(primitive.A)
@@ -98,15 +94,28 @@ func (me *T) GetAssetInfoByContractHash(args struct {
 		}
 	}
 
-	holders := r3["Holders"].(primitive.A)
-	for _, h := range holders {
-		m := h.(map[string]interface{})
-		for k, v := range m {
-			if r1["hash"] == k {
-				r1["holders"] = v
-			}
-		}
+	_, count, err := me.Client.QueryAll(struct {
+		Collection string
+		Index      string
+		Sort       bson.M
+		Filter     bson.M
+		Query      []string
+		Limit      int64
+		Skip       int64
+	}{
+		Collection: "Address-Asset",
+		Index:      "GetAssetInfos",
+		Sort:       bson.M{},
+		Filter:     bson.M{"asset": args.ContractHash.Val(), "balance": bson.M{"$gt": 0}},
+		Query:      []string{},
+	}, ret)
+	if err != nil {
+		return err
 	}
+	if args.Raw != nil {
+		*args.Raw = r1
+	}
+	r1["holders"] = count
 
 	r1, err = me.Filter(r1, args.Filter)
 	if err != nil {
