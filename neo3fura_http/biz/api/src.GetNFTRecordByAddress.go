@@ -277,8 +277,15 @@ func (me *T) GetNFTRecordByAddress(args struct {
 		return err1
 	}
 	for _, item := range raw2 {
-		from := item["from"].(string)
-		to := item["to"].(string)
+		from := ""
+		to := ""
+		if item["from"] != nil {
+			from = item["from"].(string)
+		}
+		if item["from"] != nil {
+			to = item["to"].(string)
+		}
+
 		if from != args.MarketContractHash.Val() && to != args.MarketContractHash.Val() {
 			rr := make(map[string]interface{})
 

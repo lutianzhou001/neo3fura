@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"math"
 	"neo3fura_http/lib/type/NFTstate"
 	"neo3fura_http/lib/type/h160"
 	"neo3fura_http/lib/type/strval"
@@ -99,8 +100,23 @@ func (me *T) GetNFTByContractHashTokenId(args struct {
 			return err
 		}
 
-		deadline, _ := r1["deadline"].(int64)
-		auctionType, _ := r1["auctionType"].(int32)
+		dl := r1["deadline"]
+
+		at := r1["auctionType"]
+
+		var deadline, auctionType int64
+		switch dl.(type) {
+		case float64:
+			deadline = f2i(dl.(float64), 0)
+		case int64:
+			deadline = at.(int64)
+		}
+		switch at.(type) {
+		case float64:
+			auctionType = f2i(at.(float64), 0)
+		case int64:
+			auctionType = at.(int64)
+		}
 
 		if amount > 0 && auctionType == 2 && r1["owner"] == r1["market"] && deadline > currentTime {
 			r1["state"] = NFTstate.Auction.Val()
@@ -168,4 +184,8 @@ func (me *T) GetNFTByContractHashTokenId(args struct {
 	*ret = json.RawMessage(r)
 
 	return nil
+}
+
+func f2i(num float64, retain int) int64 {
+	return int64(num * math.Pow10(retain))
 }

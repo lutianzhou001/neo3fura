@@ -39,7 +39,7 @@ func (me *T) GetBidInfoByNFT(args struct {
 		}
 	}
 
-	rs, _, err := me.Client.QueryAll(struct {
+	rs, count, err := me.Client.QueryAll(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
@@ -58,8 +58,10 @@ func (me *T) GetBidInfoByNFT(args struct {
 	if err != nil {
 		return err
 	}
-	lastNonce := rs[0]["nonce"].(int64)
-	f["nonce"] = lastNonce
+	if count > 0 {
+		lastNonce := rs[0]["nonce"].(int64)
+		f["nonce"] = lastNonce
+	}
 
 	r1, count, err := me.Client.QueryAll(struct {
 		Collection string
