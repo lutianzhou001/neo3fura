@@ -53,12 +53,14 @@ func (me *T) GetNFTByContractHashTokenId(args struct {
 			return stderr.ErrInvalidArgs
 		}
 
-		r1, err := me.Client.QueryOne(struct {
+		rr1, count, err := me.Client.QueryAll(struct {
 			Collection string
 			Index      string
 			Sort       bson.M
 			Filter     bson.M
 			Query      []string
+			Limit      int64
+			Skip       int64
 		}{
 			Collection: "Market",
 			Index:      "GetNFTByContractHashTokenId",
@@ -69,72 +71,91 @@ func (me *T) GetNFTByContractHashTokenId(args struct {
 		if err != nil {
 			return err
 		}
+		r1 := make(map[string]interface{})
+		if count > 0 {
 
-		a := r1["amount"]
-		var a1 string
-		switch a.(type) {
-		case string:
-			a1 = r1["amount"].(string)
-		case primitive.Decimal128:
-			a1 = r1["amount"].(primitive.Decimal128).String()
-		}
+			r1 = rr1[0]
+			a := r1["amount"]
+			var a1 string
+			switch a.(type) {
+			case string:
+				a1 = r1["amount"].(string)
+			case primitive.Decimal128:
+				a1 = r1["amount"].(primitive.Decimal128).String()
+			}
 
-		amount, err := strconv.Atoi(a1)
-		if err != nil {
-			return err
-		}
+			amount, err := strconv.Atoi(a1)
+			if err != nil {
+				return err
+			}
 
-		b := r1["bidAmount"]
-		var ba string
-		switch b.(type) {
-		case string:
-			ba = r1["bidAmount"].(string)
-		case primitive.Decimal128:
-			ba = r1["bidAmount"].(primitive.Decimal128).String()
-		}
+			b := r1["bidAmount"]
+			var ba string
+			switch b.(type) {
+			case string:
+				ba = r1["bidAmount"].(string)
+			case primitive.Decimal128:
+				ba = r1["bidAmount"].(primitive.Decimal128).String()
+			}
 
-		//ba := r1["bidAmount"].(primitive.Decimal128).String()
-		//ba := r1["bidAmount"].(string)
-		bidAmount, err := strconv.ParseInt(ba, 10, 64)
-		if err != nil {
-			return err
-		}
+			//ba := r1["bidAmount"].(primitive.Decimal128).String()
+			//ba := r1["bidAmount"].(string)
+			bidAmount, err := strconv.ParseInt(ba, 10, 64)
+			if err != nil {
+				return err
+			}
 
-		dl := r1["deadline"]
+			dl := r1["deadline"]
 
-		at := r1["auctionType"]
+			at := r1["auctionType"]
 
-		var deadline, auctionType int64
-		switch dl.(type) {
-		case float64:
-			deadline = f2i(dl.(float64), 0)
-		case int64:
-			deadline = dl.(int64)
-		case int32:
-			deadline = int64(dl.(int32))
+			var deadline, auctionType int64
+			switch dl.(type) {
+			case float64:
+				deadline = f2i(dl.(float64), 0)
+			case int64:
+				deadline = dl.(int64)
+			case int32:
+				deadline = int64(dl.(int32))
 
-		}
-		switch at.(type) {
-		case float64:
-			auctionType = f2i(at.(float64), 0)
-		case int64:
-			auctionType = at.(int64)
-		case int32:
-			deadline = int64(at.(int32))
-		}
+			}
+			switch at.(type) {
+			case float64:
+				auctionType = f2i(at.(float64), 0)
+			case int64:
+				auctionType = at.(int64)
+			case int32:
+				auctionType = int64(at.(int32))
+			}
 
-		if amount > 0 && auctionType == 2 && r1["owner"] == r1["market"] && deadline > currentTime {
-			r1["state"] = NFTstate.Auction.Val()
-		} else if amount > 0 && auctionType == 1 && r1["owner"] == r1["market"] && deadline > currentTime {
-			r1["state"] = NFTstate.Sale.Val()
-		} else if amount > 0 && r1["owner"] != r1["market"] {
-			r1["state"] = NFTstate.NotListed.Val()
-		} else if amount > 0 && bidAmount > 0 && deadline < currentTime && r1["owner"] == r1["market"] {
-			r1["state"] = NFTstate.Unclaimed.Val()
-		} else if amount > 0 && deadline < currentTime && bidAmount == 0 && r1["owner"] == r1["market"] {
-			r1["state"] = NFTstate.Expired.Val()
+			if amount > 0 && auctionType == 2 && r1["owner"] == r1["market"] && deadline > currentTime {
+				r1["state"] = NFTstate.Auction.Val()
+			} else if amount > 0 && auctionType == 1 && r1["owner"] == r1["market"] && deadline > currentTime {
+				r1["state"] = NFTstate.Sale.Val()
+			} else if amount > 0 && r1["owner"] != r1["market"] {
+				r1["state"] = NFTstate.NotListed.Val()
+			} else if amount > 0 && bidAmount > 0 && deadline < currentTime && r1["owner"] == r1["market"] {
+				r1["state"] = NFTstate.Unclaimed.Val()
+			} else if amount > 0 && deadline < currentTime && bidAmount == 0 && r1["owner"] == r1["market"] {
+				r1["state"] = NFTstate.Expired.Val()
+			} else {
+				r1["state"] = ""
+			}
 		} else {
-			r1["state"] = ""
+			r1["asset"] = args.ContractHash.Val()
+			r1["tokenid"] = tokenId
+			r1["state"] = NFTstate.NotListed.Val()
+			r1["auctionAmount"] = ""
+			r1["auctionAsset"] = ""
+			r1["auctionType"] = 0
+			r1["auctor"] = ""
+			r1["bidAmount"] = "0"
+			r1["bidder"] = ""
+			r1["deadline"] = "0"
+			r1["market"] = ""
+			r1["owner"] = ""
+			r1["timestamp"] = ""
+
 		}
 
 		var raw3 map[string]interface{}
@@ -173,6 +194,18 @@ func (me *T) GetNFTByContractHashTokenId(args struct {
 			return err
 		}
 		r4 = append(r4, filter)
+		//}else{
+		//	r1["asset"]=args.ContractHash.Val()
+		//	r1["tokenid"]=""
+		//	r1["asset"]=""
+		//	r1["asset"]=""
+		//	r1["asset"]=""
+		//	r1["asset"]=""
+		//
+		//
+		//
+		//}
+
 	}
 	r5, err := me.FilterArrayAndAppendCount(r4, int64(len(r4)), args.Filter)
 	if err != nil {

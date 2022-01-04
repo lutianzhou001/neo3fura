@@ -72,11 +72,11 @@ func (me *T) GetNFTRecordByAddress(args struct {
 			rr["image"] = ""
 			rr["name"] = ""
 		}
-		extendData := raw2["properties"].(string)
+		extendData := raw2["properties"]
 
-		if extendData != "" {
+		if extendData != nil {
 			var dat map[string]interface{}
-			if err := json.Unmarshal([]byte(extendData), &dat); err == nil {
+			if err := json.Unmarshal([]byte(extendData.(string)), &dat); err == nil {
 				image, ok := dat["image"]
 				if ok {
 					rr["image"] = image
