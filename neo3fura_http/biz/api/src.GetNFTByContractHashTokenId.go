@@ -140,7 +140,8 @@ func (me *T) GetNFTByContractHashTokenId(args struct {
 		var raw3 map[string]interface{}
 		err1 := getNFTProperties(tokenId, args.ContractHash, me, ret, args.Filter, &raw3)
 		if err1 != nil {
-			return err1
+			r1["image"] = ""
+			r1["name"] = ""
 		}
 		extendData := raw3["properties"]
 		if extendData != nil {

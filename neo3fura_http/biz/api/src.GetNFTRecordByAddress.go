@@ -69,13 +69,14 @@ func (me *T) GetNFTRecordByAddress(args struct {
 		var raw2 map[string]interface{}
 		err := getNFTProperties(strval.T(tokenid), h160.T(asset), me, ret, args.Filter, &raw2)
 		if err != nil {
-			return err
+			rr["image"] = ""
+			rr["name"] = ""
 		}
+		extendData := raw2["properties"].(string)
 
-		extendData := raw2["properties"]
-		if extendData != nil {
+		if extendData != "" {
 			var dat map[string]interface{}
-			if err := json.Unmarshal([]byte(extendData.(string)), &dat); err == nil {
+			if err := json.Unmarshal([]byte(extendData), &dat); err == nil {
 				image, ok := dat["image"]
 				if ok {
 					rr["image"] = image
