@@ -361,38 +361,33 @@ func (me *T) GetNFTRecordByAddress(args struct {
 }
 func getNFTProperties(tokenId strval.T, contractHash h160.T, me *T, ret *json.RawMessage, filter map[string]interface{}, Raw *map[string]interface{}) error {
 
-	r1, count, err := me.Client.QueryAll(struct {
+	r4 := make([]map[string]interface{}, 0)
+
+	r1, err := me.Client.QueryOne(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
 		Filter     bson.M
 		Query      []string
-		Limit      int64
-		Skip       int64
 	}{
 		Collection: "Nep11Properties",
 		Index:      "getNFTProperties",
 		Sort:       bson.M{"balance": -1},
-		Filter:     bson.M{"asset": contractHash.Val(), "tokenid": tokenId},
+		Filter:     bson.M{"asset": contractHash.TransferredVal(), "tokenid": tokenId},
 		Query:      []string{},
 	}, ret)
 	if err != nil {
 		return err
 	}
+	filter1, err := me.Filter(r1, filter)
+	if err != nil {
+		return err
+	}
 
-	r2, err := me.FilterArrayAndAppendCount(r1, count, filter)
-	if err != nil {
-		return err
-	}
-	r, err := json.Marshal(r2)
-	if err != nil {
-		return err
-	}
+	r4 = append(r4, filter1)
 
 	if Raw != nil {
-		*Raw = r2
+		*Raw = r1
 	}
-
-	*ret = json.RawMessage(r)
 	return nil
 }
