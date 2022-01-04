@@ -181,7 +181,8 @@ func (me *T) GetNFTOwnedByAddress(args struct {
 		var raw3 map[string]interface{}
 		err1 := getNFTProperties(strval.T(tokenid), h160.T(asset), me, ret, args.Filter, &raw3)
 		if err1 != nil {
-			return err1
+			item["image"] = ""
+			item["name"] = ""
 		}
 		extendData := raw3["properties"]
 		if extendData != nil {
