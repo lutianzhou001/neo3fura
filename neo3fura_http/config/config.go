@@ -105,4 +105,5 @@ var Apis = []string{
 	"GetNFTByContractHashTokenId",
 	"GetNFTRecordByContractHashTokenId",
 	"GetAllBidInfoByNFT",
+	"GetNFTClass",
 }
