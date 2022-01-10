@@ -47,122 +47,110 @@ func (me *T) GetNFTByContractHashTokenId(args struct {
 	} else {
 		tokenIds = args.TokenIds
 	}
-	r4 := make([]map[string]interface{}, 0)
+
+	orArray := []interface{}{}
 	for _, tokenId := range tokenIds {
+
 		if len(tokenId) <= 0 {
 			return stderr.ErrInvalidArgs
 		}
+		a := bson.M{"tokenid": tokenId.Val()}
+		orArray = append(orArray, a)
+	}
 
-		rr1, count, err := me.Client.QueryAll(struct {
-			Collection string
-			Index      string
-			Sort       bson.M
-			Filter     bson.M
-			Query      []string
-			Limit      int64
-			Skip       int64
-		}{
-			Collection: "Market",
-			Index:      "GetNFTByContractHashTokenId",
-			Sort:       bson.M{},
-			Filter:     bson.M{"asset": args.ContractHash.Val(), "tokenid": tokenId, "amount": bson.M{"$gt": 0}},
-			Query:      []string{},
-		}, ret)
+	rr1, count, err := me.Client.QueryAll(struct {
+		Collection string
+		Index      string
+		Sort       bson.M
+		Filter     bson.M
+		Query      []string
+		Limit      int64
+		Skip       int64
+	}{
+		Collection: "Market",
+		Index:      "GetNFTByContractHashTokenId",
+		Sort:       bson.M{},
+		Filter:     bson.M{"asset": args.ContractHash.Val(), "$or": orArray, "amount": bson.M{"$gt": 0}},
+		Query:      []string{},
+	}, ret)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range rr1 {
+		a := item["amount"]
+		tokenId := item["tokenid"].(string)
+		var a1 string
+		switch a.(type) {
+		case string:
+			a1 = item["amount"].(string)
+		case primitive.Decimal128:
+			a1 = item["amount"].(primitive.Decimal128).String()
+		}
+
+		amount, err := strconv.Atoi(a1)
 		if err != nil {
 			return err
 		}
-		r1 := make(map[string]interface{})
-		if count > 0 {
 
-			r1 = rr1[0]
-			a := r1["amount"]
-			var a1 string
-			switch a.(type) {
-			case string:
-				a1 = r1["amount"].(string)
-			case primitive.Decimal128:
-				a1 = r1["amount"].(primitive.Decimal128).String()
-			}
+		b := item["bidAmount"]
+		var ba string
+		switch b.(type) {
+		case string:
+			ba = item["bidAmount"].(string)
+		case primitive.Decimal128:
+			ba = item["bidAmount"].(primitive.Decimal128).String()
+		}
 
-			amount, err := strconv.Atoi(a1)
-			if err != nil {
-				return err
-			}
+		//ba := r1["bidAmount"].(primitive.Decimal128).String()
+		//ba := r1["bidAmount"].(string)
+		bidAmount, err := strconv.ParseInt(ba, 10, 64)
+		if err != nil {
+			return err
+		}
 
-			b := r1["bidAmount"]
-			var ba string
-			switch b.(type) {
-			case string:
-				ba = r1["bidAmount"].(string)
-			case primitive.Decimal128:
-				ba = r1["bidAmount"].(primitive.Decimal128).String()
-			}
+		dl := item["deadline"]
 
-			//ba := r1["bidAmount"].(primitive.Decimal128).String()
-			//ba := r1["bidAmount"].(string)
-			bidAmount, err := strconv.ParseInt(ba, 10, 64)
-			if err != nil {
-				return err
-			}
+		at := item["auctionType"]
 
-			dl := r1["deadline"]
+		var deadline, auctionType int64
+		switch dl.(type) {
+		case float64:
+			deadline = f2i(dl.(float64), 0)
+		case int64:
+			deadline = dl.(int64)
+		case int32:
+			deadline = int64(dl.(int32))
 
-			at := r1["auctionType"]
+		}
+		switch at.(type) {
+		case float64:
+			auctionType = f2i(at.(float64), 0)
+		case int64:
+			auctionType = at.(int64)
+		case int32:
+			auctionType = int64(at.(int32))
+		}
 
-			var deadline, auctionType int64
-			switch dl.(type) {
-			case float64:
-				deadline = f2i(dl.(float64), 0)
-			case int64:
-				deadline = dl.(int64)
-			case int32:
-				deadline = int64(dl.(int32))
-
-			}
-			switch at.(type) {
-			case float64:
-				auctionType = f2i(at.(float64), 0)
-			case int64:
-				auctionType = at.(int64)
-			case int32:
-				auctionType = int64(at.(int32))
-			}
-
-			if amount > 0 && auctionType == 2 && r1["owner"] == r1["market"] && deadline > currentTime {
-				r1["state"] = NFTstate.Auction.Val()
-			} else if amount > 0 && auctionType == 1 && r1["owner"] == r1["market"] && deadline > currentTime {
-				r1["state"] = NFTstate.Sale.Val()
-			} else if amount > 0 && r1["owner"] != r1["market"] {
-				r1["state"] = NFTstate.NotListed.Val()
-			} else if amount > 0 && bidAmount > 0 && deadline < currentTime && r1["owner"] == r1["market"] {
-				r1["state"] = NFTstate.Unclaimed.Val()
-			} else if amount > 0 && deadline < currentTime && bidAmount == 0 && r1["owner"] == r1["market"] {
-				r1["state"] = NFTstate.Expired.Val()
-			} else {
-				r1["state"] = ""
-			}
+		if amount > 0 && auctionType == 2 && item["owner"] == item["market"] && deadline > currentTime {
+			item["state"] = NFTstate.Auction.Val()
+		} else if amount > 0 && auctionType == 1 && item["owner"] == item["market"] && deadline > currentTime {
+			item["state"] = NFTstate.Sale.Val()
+		} else if amount > 0 && item["owner"] != item["market"] {
+			item["state"] = NFTstate.NotListed.Val()
+		} else if amount > 0 && bidAmount > 0 && deadline < currentTime && item["owner"] == item["market"] {
+			item["state"] = NFTstate.Unclaimed.Val()
+		} else if amount > 0 && deadline < currentTime && bidAmount == 0 && item["owner"] == item["market"] {
+			item["state"] = NFTstate.Expired.Val()
 		} else {
-			r1["asset"] = args.ContractHash.Val()
-			r1["tokenid"] = tokenId
-			r1["state"] = NFTstate.NotListed.Val()
-			r1["auctionAmount"] = ""
-			r1["auctionAsset"] = ""
-			r1["auctionType"] = 0
-			r1["auctor"] = ""
-			r1["bidAmount"] = "0"
-			r1["bidder"] = ""
-			r1["deadline"] = "0"
-			r1["market"] = ""
-			r1["owner"] = ""
-			r1["timestamp"] = ""
-
+			item["state"] = ""
 		}
 
 		var raw3 map[string]interface{}
-		err1 := getNFTProperties(tokenId, args.ContractHash, me, ret, args.Filter, &raw3)
+		err1 := getNFTProperties(strval.T(tokenId), args.ContractHash, me, ret, args.Filter, &raw3)
 		if err1 != nil {
-			r1["image"] = ""
-			r1["name"] = ""
+			item["image"] = ""
+			item["name"] = ""
 		}
 		extendData := raw3["properties"]
 		if extendData != nil {
@@ -170,50 +158,34 @@ func (me *T) GetNFTByContractHashTokenId(args struct {
 			if err := json.Unmarshal([]byte(extendData.(string)), &dat); err == nil {
 				value, ok := dat["image"]
 				if ok {
-					r1["image"] = value
+					item["image"] = value
 				} else {
-					r1["image"] = ""
+					item["image"] = ""
 				}
 				name, ok1 := dat["name"]
 				if ok1 {
-					r1["name"] = name
+					item["name"] = name
 				} else {
-					r1["name"] = ""
+					item["name"] = ""
 				}
 
 			} else {
 				return err
 			}
 		} else {
-			r1["image"] = ""
-			r1["name"] = ""
+			item["image"] = ""
+			item["name"] = ""
 		}
-
-		filter, err := me.Filter(r1, args.Filter)
-		if err != nil {
-			return err
-		}
-		r4 = append(r4, filter)
-		//}else{
-		//	r1["asset"]=args.ContractHash.Val()
-		//	r1["tokenid"]=""
-		//	r1["asset"]=""
-		//	r1["asset"]=""
-		//	r1["asset"]=""
-		//	r1["asset"]=""
-		//
-		//
-		//
-		//}
 
 	}
-	r5, err := me.FilterArrayAndAppendCount(r4, int64(len(r4)), args.Filter)
+
+	r5, err := me.FilterArrayAndAppendCount(rr1, count, args.Filter)
 	if err != nil {
 		return err
 	}
 
 	if args.Raw != nil {
-		*args.Raw = r4
+		*args.Raw = rr1
 	}
 
 	r, err := json.Marshal(r5)

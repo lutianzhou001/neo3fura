@@ -15,9 +15,11 @@ import (
 func (me *T) GetNFTMarket(args struct {
 	ContractHash h160.T   //  asset
 	AssetHash    h160.T   // auctionType
+	MarketHash   h160.T   //
 	NFTState     strval.T //state:aution  sale  notlisted  unclaimed
 	Sort         strval.T //listedTime  price
 	Order        int64    //-1:降序  +1：升序
+	SubClass     [][]strval.T
 	Limit        int64
 	Skip         int64
 	Filter       map[string]interface{}
@@ -25,8 +27,8 @@ func (me *T) GetNFTMarket(args struct {
 }, ret *json.RawMessage) error {
 	currentTime := time.Now().UnixNano() / 1e6
 	pipeline := []bson.M{}
-
-	if args.ContractHash != "" {
+	println(len(args.AssetHash))
+	if len(args.ContractHash) > 0 && args.ContractHash != "" {
 		if args.ContractHash.Valid() == false {
 			return stderr.ErrInvalidArgs
 		} else {
@@ -35,11 +37,20 @@ func (me *T) GetNFTMarket(args struct {
 		}
 	}
 
-	if args.AssetHash != "" {
+	if len(args.AssetHash) > 0 && args.AssetHash != "" {
 		if args.AssetHash.Valid() == false {
 			return stderr.ErrInvalidArgs
 		} else {
 			a := bson.M{"$match": bson.M{"auctionAsset": args.AssetHash}}
+			pipeline = append(pipeline, a)
+		}
+	}
+
+	if len(args.MarketHash) > 0 && args.MarketHash != "" {
+		if args.MarketHash.Valid() == false {
+			return stderr.ErrInvalidArgs
+		} else {
+			a := bson.M{"$match": bson.M{"market": args.MarketHash}}
 			pipeline = append(pipeline, a)
 		}
 	}

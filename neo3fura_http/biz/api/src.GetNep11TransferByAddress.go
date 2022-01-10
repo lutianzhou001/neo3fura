@@ -22,23 +22,25 @@ func (me *T) GetNep11TransferByAddress(args struct {
 	if args.Address.Valid() == false {
 		return stderr.ErrInvalidArgs
 	}
-	filter := bson.M{}
+	filter := bson.M{"$or": []interface{}{
+		bson.M{"from": args.Address.TransferredVal()},
+		bson.M{"to": args.Address.TransferredVal()},
+	}}
+
 	if args.Start > 0 && args.End > 0 {
 		if args.Start >= args.End {
 			return stderr.ErrArgsInner
 		}
-		filter = bson.M{"to": args.Address.TransferredVal(),
-			"$and": []interface{}{
-				bson.M{"timestamp": bson.M{"$gte": args.Start}},
-				bson.M{"timestamp": bson.M{"$lte": args.End}},
-			},
+		filter["$and"] = []interface{}{
+			bson.M{"timestamp": bson.M{"$gte": args.Start}},
+			bson.M{"timestamp": bson.M{"$lte": args.End}},
 		}
+
 	} else if args.Start > 0 && args.End == 0 {
-		filter = bson.M{"to": args.Address.TransferredVal(), "timestamp": bson.M{"$gte": args.Start}}
+		filter["timestamp"] = bson.M{"$gte": args.Start}
 	} else if args.Start == 0 && args.End > 0 {
-		filter = bson.M{"to": args.Address.TransferredVal(), "timestamp": bson.M{"$lte": args.Start}}
-	} else {
-		filter = bson.M{"to": args.Address.TransferredVal()}
+		filter["timestamp"] = bson.M{"$lte": args.Start}
+
 	}
 
 	r1, count, err := me.Client.QueryAll(struct {
