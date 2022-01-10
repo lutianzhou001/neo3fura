@@ -11,6 +11,7 @@ import (
 
 func (me *T) GetNFTRecordByContractHashTokenId(args struct {
 	ContractHash h160.T
+	MarketHash   h160.T
 	TokenId      strval.T
 	Filter       map[string]interface{}
 }, ret *json.RawMessage) error {
@@ -21,7 +22,10 @@ func (me *T) GetNFTRecordByContractHashTokenId(args struct {
 	if len(args.TokenId) <= 0 {
 		return stderr.ErrInvalidArgs
 	}
-
+	f := bson.M{"eventname": "Claim", "asset": args.ContractHash.Val(), "tokenid": args.TokenId.Val()}
+	if len(args.MarketHash) > 0 {
+		f["market"] = args.MarketHash.Val()
+	}
 	result := make([]map[string]interface{}, 0)
 
 	r1, _, err := me.Client.QueryAll(struct {
@@ -36,7 +40,7 @@ func (me *T) GetNFTRecordByContractHashTokenId(args struct {
 		Collection: "MarketNotification",
 		Index:      "GetNFTRecordByContractHashTokenId",
 		Sort:       bson.M{},
-		Filter:     bson.M{"eventname": "Claim", "asset": args.ContractHash.Val(), "tokenid": args.TokenId.Val()},
+		Filter:     f,
 		Query:      []string{},
 	}, ret)
 	if err != nil {

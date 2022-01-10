@@ -32,7 +32,7 @@ func (me *T) GetNFTOwnedByAddress(args struct {
 
 	pipeline := []bson.M{}
 
-	if args.ContractHash != "" {
+	if len(args.ContractHash) > 0 {
 		if args.ContractHash.Valid() == false {
 			return stderr.ErrInvalidArgs
 		} else {
@@ -41,7 +41,7 @@ func (me *T) GetNFTOwnedByAddress(args struct {
 		}
 	}
 
-	if args.AssetHash != "" {
+	if len(args.AssetHash) > 0 {
 		if args.AssetHash.Valid() == false {
 			return stderr.ErrInvalidArgs
 		} else {
@@ -99,7 +99,7 @@ func (me *T) GetNFTOwnedByAddress(args struct {
 
 	} else if args.NFTState.Val() == NFTstate.Unclaimed.Val() { //未领取  accont >0 &&  runtime > deadline && owner== market && bidAccount >0
 		pipeline1 := []bson.M{
-			bson.M{"$match": bson.M{"owner": args.Address.Val()}},
+			bson.M{"$match": bson.M{"auctor": args.Address.Val()}},
 			bson.M{"$match": bson.M{"amount": bson.M{"$gt": 0}}},
 			//bson.M{"$match": bson.M{"bidAmount": bson.M{"$gt": 0}}},
 			bson.M{"$match": bson.M{"deadline": bson.M{"$lt": currentTime}}},

@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"go.mongodb.org/mongo-driver/bson"
+	"math"
 	"neo3fura_http/lib/type/NFTevent"
 	"neo3fura_http/lib/type/NFTstate"
 	"neo3fura_http/lib/type/h160"
@@ -13,19 +14,22 @@ import (
 )
 
 func (me *T) GetNFTRecordByAddress(args struct {
-	Address            h160.T
-	MarketContractHash h160.T // market合约地址
-	Limit              int64
-	Skip               int64
-	Filter             map[string]interface{}
+	Address    h160.T
+	MarketHash h160.T // market合约地址
+	Limit      int64
+	Skip       int64
+	Filter     map[string]interface{}
 }, ret *json.RawMessage) error {
 	if args.Address.Valid() == false {
 		return stderr.ErrInvalidArgs
 	}
 
-	if args.MarketContractHash != "" {
-		if args.MarketContractHash.Valid() == false {
+	f := bson.M{"user": args.Address.Val()}
+	if len(args.MarketHash) > 0 {
+		if args.MarketHash.Valid() == false {
 			return stderr.ErrInvalidArgs
+		} else {
+			f["market"] = args.MarketHash.Val()
 		}
 	}
 	result := make([]map[string]interface{}, 0)
@@ -43,7 +47,7 @@ func (me *T) GetNFTRecordByAddress(args struct {
 		Collection: "MarketNotification",
 		Index:      "GetNFTRecordByAddress",
 		Sort:       bson.M{},
-		Filter:     bson.M{"user": args.Address.Val()},
+		Filter:     f,
 		Query:      []string{},
 	}, ret)
 	if err != nil {
@@ -110,155 +114,158 @@ func (me *T) GetNFTRecordByAddress(args struct {
 		if err1 != nil {
 			return err1
 		}
-		nowNFTState := raw1[0]["state"]
+		if len(raw1) > 0 {
+			nowNFTState := raw1[0]["state"]
 
-		// 上架过期 （卖家事件）
-		if nowNFTState == NFTstate.Expired.Val() {
-			rr1 := make(map[string]interface{})
-			rr1["event"] = ""
-			rr1["user"] = ""
-			rr1["asset"] = raw1[0]["asset"]
-			rr1["tokenid"] = raw1[0]["tokenid"]
-			rr1["timestamp"] = raw1[0]["timestamp"]
-			rr1["auctionAsset"] = raw1[0]["auctionAsset"]
-			rr1["auctionAmount"] = raw1[0]["auctionAmount"]
-			rr1["from"] = raw1[0]["timestamp"]
-			rr1["to"] = ""
-			auctionType, _ := raw1[0]["auctionType"].(int32)
-			if auctionType == 1 {
-				rr1["state"] = NFTevent.Sell_Expired.Val() //上架过期
-			} else if auctionType == 1 {
-				rr1["state"] = NFTevent.Auction_Expired.Val() //拍卖过期
-			}
-
-			result = append(result, rr1)
-		}
-
-		if item["eventname"].(string) == "Auction" { //2种状态   正常   已过期  (卖家事件)
-			extendData := item["extendData"].(string)
-			var dat map[string]interface{}
-			if err := json.Unmarshal([]byte(extendData), &dat); err == nil {
-				auctionType, err := strconv.ParseInt(dat["auctionType"].(string), 10, 64)
-				if err != nil {
-					return err
-				}
-				auctionAsset := dat["auctionAsset"]
-				auctionAmount, err := strconv.ParseInt(dat["auctionAmount"].(string), 10, 64)
-
-				if err != nil {
-					return err
-				}
-				rr["auctionAsset"] = auctionAsset
-				rr["auctionAmount"] = auctionAmount
-				rr["from"] = item["user"]
-				rr["to"] = ""
-				if auctionType == 1 {
-					rr["state"] = NFTevent.Sell_Listed.Val() //上架  正常状态
-				} else if auctionType == 2 {
-					rr["state"] = NFTevent.Auction_Listed.Val() // 拍卖  正常状态
-				}
-			} else {
-				return err
-			}
-
-		} else if item["eventname"].(string) == "Cancel" { //下架  (卖家事件)
-
-			rr["auctionAsset"] = ""
-			rr["auctionAmount"] = ""
-			rr["from"] = ""
-			rr["to"] = item["user"]
-			rr["state"] = NFTevent.Cancel.Val()
-
-		} else if item["eventname"].(string) == "Bid" { //3种状态  正常 已过期  已成交 (买家事件)
-
-			//获取nft所有的bid信息
-			var raw2 []map[string]interface{}
-			err4 := me.GetAllBidInfoByNFT(struct {
-				AssetHash h160.T
-				TokenId   strval.T
-				Filter    map[string]interface{}
-				Raw       *[]map[string]interface{}
-			}{AssetHash: h160.T(asset), TokenId: strval.T(tokenid), Raw: &raw2}, ret) //nonce 分组，并按时间排序
-			if err4 != nil {
-				return err4
-			}
-
-			extendData := item["extendData"].(string)
-			var dat map[string]interface{}
-			if err := json.Unmarshal([]byte(extendData), &dat); err == nil {
-
-				bidAmount, err := strconv.ParseInt(dat["bidAmount"].(string), 10, 64)
-				if err != nil {
-					return err
-				}
-
-				auctionAsset := dat["auctionAsset"]
-				rr["auctionAsset"] = auctionAsset
-				rr["auctionAmount"] = bidAmount
-				rr["from"] = user
-				rr["to"] = ""
-
-				for _, it := range raw2 {
-					ba := reflect.ValueOf(it["bidAmount"]) //获取竞价数组
-					bd := reflect.ValueOf(it["bidder"])    //获取竞价数组
-					println(" ")
-					if nowNFTState == NFTstate.Auction.Val() && raw2[0]["nonce"] == it["nonce"] { //最新上架  拍卖中 2种状态：已退回  正常s
-						if bidAmount == ba.Index(0).Int() && user == bd.Index(0).String() {
-							rr["state"] = NFTevent.Auction_Bid.Val() //state :正常
-						} else {
-							rr["state"] = NFTevent.Auction_Return.Val() //state :已退回
-						}
-					} else {
-						if bidAmount == ba.Index(0).Int() && user == bd.Index(0).String() { //上架 ：2种状态： 已成交  已退回
-							rr["state"] = NFTevent.Auction_Bid_Deal.Val() //state :已成交
-						} else {
-							rr["state"] = NFTevent.Auction_Return.Val() //state :已退回
-						}
-
-					}
-				}
-
-			} else {
-				return err
-			}
-
-		} else if item["eventname"].(string) == "Claim" { //  领取  （买家事件）
-			extendData := item["extendData"].(string)
-			var dat map[string]interface{}
-			if err := json.Unmarshal([]byte(extendData), &dat); err == nil {
-				bidAmount, err := strconv.ParseInt(dat["bidAmount"].(string), 10, 64)
-				auctionType, err := strconv.ParseInt(dat["auctionType"].(string), 10, 64)
-				if err != nil {
-					return err
-				}
-				auctionAsset := dat["auctionAsset"]
-				user := item["user"]
-				rr["auctionAsset"] = auctionAsset
-				rr["auctionAmount"] = bidAmount
-				rr["from"] = raw1[0]["auctor"]
-				rr["to"] = user
-				//卖家售出事件
+			// 上架过期 （卖家事件）
+			if nowNFTState == NFTstate.Expired.Val() {
 				rr1 := make(map[string]interface{})
-				rr1 = rr
-				rr1["from"] = rr["to"]
-				rr1["to"] = rr["from"]
-
+				rr1["event"] = ""
+				rr1["user"] = ""
+				rr1["asset"] = raw1[0]["asset"]
+				rr1["tokenid"] = raw1[0]["tokenid"]
+				rr1["timestamp"] = raw1[0]["timestamp"]
+				rr1["auctionAsset"] = raw1[0]["auctionAsset"]
+				rr1["auctionAmount"] = raw1[0]["auctionAmount"]
+				rr1["from"] = raw1[0]["timestamp"]
+				rr1["to"] = ""
+				auctionType, _ := raw1[0]["auctionType"].(int32)
 				if auctionType == 1 {
-					rr["state"] = NFTevent.Sell_Buy.Val()   // 直买直卖 购买(买家)
-					rr1["state"] = NFTevent.Sell_Sold.Val() // 直买直卖  售出(卖家)
-
-				} else if auctionType == 2 {
-					rr["state"] = NFTevent.Auction_Withdraw.Val() //拍卖:领取（买家）
-					rr1["state"] = NFTevent.Aucion_Deal.Val()     //拍卖:成交（卖家）
+					rr1["state"] = NFTevent.Sell_Expired.Val() //上架过期
+				} else if auctionType == 1 {
+					rr1["state"] = NFTevent.Auction_Expired.Val() //拍卖过期
 				}
+
 				result = append(result, rr1)
-
-			} else {
-				return err
 			}
-		}
 
-		result = append(result, rr)
+			if item["eventname"].(string) == "Auction" { //2种状态   正常   已过期  (卖家事件)
+				extendData := item["extendData"].(string)
+				var dat map[string]interface{}
+				if err := json.Unmarshal([]byte(extendData), &dat); err == nil {
+					auctionType, err := strconv.ParseInt(dat["auctionType"].(string), 10, 64)
+					if err != nil {
+						return err
+					}
+					auctionAsset := dat["auctionAsset"]
+					auctionAmount, err := strconv.ParseInt(dat["auctionAmount"].(string), 10, 64)
+
+					if err != nil {
+						return err
+					}
+					rr["auctionAsset"] = auctionAsset
+					rr["auctionAmount"] = auctionAmount
+					rr["from"] = item["user"]
+					rr["to"] = ""
+					if auctionType == 1 {
+						rr["state"] = NFTevent.Sell_Listed.Val() //上架  正常状态
+					} else if auctionType == 2 {
+						rr["state"] = NFTevent.Auction_Listed.Val() // 拍卖  正常状态
+					}
+				} else {
+					return err
+				}
+
+			} else if item["eventname"].(string) == "Cancel" { //下架  (卖家事件)
+
+				rr["auctionAsset"] = ""
+				rr["auctionAmount"] = ""
+				rr["from"] = ""
+				rr["to"] = item["user"]
+				rr["state"] = NFTevent.Cancel.Val()
+
+			} else if item["eventname"].(string) == "Bid" { //3种状态  正常 已过期  已成交 (买家事件)
+
+				//获取nft所有的bid信息
+				var raw2 []map[string]interface{}
+				err4 := me.GetAllBidInfoByNFT(struct {
+					AssetHash  h160.T
+					TokenId    strval.T
+					MarketHash h160.T
+					Filter     map[string]interface{}
+					Raw        *[]map[string]interface{}
+				}{AssetHash: h160.T(asset), TokenId: strval.T(tokenid), MarketHash: args.MarketHash, Raw: &raw2}, ret) //nonce 分组，并按时间排序
+				if err4 != nil {
+					return err4
+				}
+
+				extendData := item["extendData"].(string)
+				var dat map[string]interface{}
+				if err := json.Unmarshal([]byte(extendData), &dat); err == nil {
+
+					bidAmount, err := strconv.ParseInt(dat["bidAmount"].(string), 10, 64)
+					if err != nil {
+						return err
+					}
+
+					auctionAsset := dat["auctionAsset"]
+					rr["auctionAsset"] = auctionAsset
+					rr["auctionAmount"] = bidAmount
+					rr["from"] = user
+					rr["to"] = ""
+
+					for _, it := range raw2 {
+						ba := reflect.ValueOf(it["bidAmount"]) //获取竞价数组
+						bd := reflect.ValueOf(it["bidder"])    //获取竞价数组
+						println(" ")
+						if nowNFTState == NFTstate.Auction.Val() && raw2[0]["nonce"] == it["nonce"] { //最新上架  拍卖中 2种状态：已退回  正常s
+							if bidAmount == ba.Index(0).Int() && user == bd.Index(0).String() {
+								rr["state"] = NFTevent.Auction_Bid.Val() //state :正常
+							} else {
+								rr["state"] = NFTevent.Auction_Return.Val() //state :已退回
+							}
+						} else {
+							if bidAmount == ba.Index(0).Int() && user == bd.Index(0).String() { //上架 ：2种状态： 已成交  已退回
+								rr["state"] = NFTevent.Auction_Bid_Deal.Val() //state :已成交
+							} else {
+								rr["state"] = NFTevent.Auction_Return.Val() //state :已退回
+							}
+
+						}
+					}
+
+				} else {
+					return err
+				}
+
+			} else if item["eventname"].(string) == "Claim" { //  领取  （买家事件）
+				extendData := item["extendData"].(string)
+				var dat map[string]interface{}
+				if err := json.Unmarshal([]byte(extendData), &dat); err == nil {
+					bidAmount, err := strconv.ParseInt(dat["bidAmount"].(string), 10, 64)
+					auctionType, err := strconv.ParseInt(dat["auctionType"].(string), 10, 64)
+					if err != nil {
+						return err
+					}
+					auctionAsset := dat["auctionAsset"]
+					user := item["user"]
+					rr["auctionAsset"] = auctionAsset
+					rr["auctionAmount"] = bidAmount
+					rr["from"] = raw1[0]["auctor"]
+					rr["to"] = user
+					//卖家售出事件
+					rr1 := make(map[string]interface{})
+					rr1 = rr
+					rr1["from"] = rr["to"]
+					rr1["to"] = rr["from"]
+
+					if auctionType == 1 {
+						rr["state"] = NFTevent.Sell_Buy.Val()   // 直买直卖 购买(买家)
+						rr1["state"] = NFTevent.Sell_Sold.Val() // 直买直卖  售出(卖家)
+
+					} else if auctionType == 2 {
+						rr["state"] = NFTevent.Auction_Withdraw.Val() //拍卖:领取（买家）
+						rr1["state"] = NFTevent.Aucion_Deal.Val()     //拍卖:成交（卖家）
+					}
+					result = append(result, rr1)
+
+				} else {
+					return err
+				}
+			}
+
+			result = append(result, rr)
+		}
 
 	}
 
@@ -280,14 +287,14 @@ func (me *T) GetNFTRecordByAddress(args struct {
 	for _, item := range raw2 {
 		from := ""
 		to := ""
-		if item["from"] != nil {
+		if item["from"] != nil && item["from"] != "" {
 			from = item["from"].(string)
 		}
-		if item["from"] != nil {
+		if item["to"] != nil && item["to"] != "" {
 			to = item["to"].(string)
 		}
 
-		if from != args.MarketContractHash.Val() && to != args.MarketContractHash.Val() {
+		if from != args.MarketHash.Val() && to != args.MarketHash.Val() {
 			rr := make(map[string]interface{})
 
 			asset := item["contract"].(string)
@@ -336,19 +343,35 @@ func (me *T) GetNFTRecordByAddress(args struct {
 				rr["name"] = ""
 			}
 
-			if from == args.Address.Val() && to != args.MarketContractHash.Val() {
+			if from == args.Address.Val() && to != args.MarketHash.Val() {
 				rr["state"] = NFTevent.Send.Val()
-			} else if to == args.Address.Val() && from != args.MarketContractHash.Val() {
+			} else if to == args.Address.Val() && from != args.MarketHash.Val() {
 				rr["state"] = NFTevent.Receive.Val()
 			}
 			result = append(result, rr)
 		}
 	}
+
+	if args.Limit == 0 {
+		args.Limit = int64(math.Inf(1))
+	}
+
+	pagedNFT := make([]map[string]interface{}, 0)
+	for i, item := range result {
+		if int64(i) < args.Skip {
+			continue
+		} else if int64(i) > args.Skip+args.Limit-1 {
+			continue
+		} else {
+			pagedNFT = append(pagedNFT, item)
+		}
+	}
+
 	num, err := strconv.ParseInt(strconv.Itoa(len(result)), 10, 64)
 	if err != nil {
 		return err
 	}
-	r2, err := me.FilterArrayAndAppendCount(result, num, args.Filter)
+	r2, err := me.FilterArrayAndAppendCount(pagedNFT, num, args.Filter)
 	if err != nil {
 		return err
 	}

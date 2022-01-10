@@ -19,9 +19,10 @@ func (me *T) GetNFTClass(args struct {
 	if args.AssetHash.Valid() == false {
 		return stderr.ErrInvalidArgs
 	}
-	//if args.MarketHash.Valid() == false {
-	//	return stderr.ErrInvalidArgs
-	//}
+
+	if args.MarketHash.Valid() == false {
+		return stderr.ErrInvalidArgs
+	}
 
 	length := 0
 	cond := bson.M{}
@@ -32,7 +33,6 @@ func (me *T) GetNFTClass(args struct {
 			if len(i) != 2 || i[0] > i[1] {
 				return stderr.ErrInvalidArgs
 			} else {
-				//a:=bson.M{"$and":[]interface{}{bson.M{"tokenid":bson.M{"$gte":i[0].Val()}},bson.M{"tokenid":bson.M{"$lte":i[1].Val()}}}}
 				a := bson.M{"$and": []interface{}{bson.M{"$gte": []interface{}{"$tokenid", i[0].Val()}}, bson.M{"$lte": []interface{}{"$tokenid", i[1].Val()}}}}
 				if length == 0 {
 					b = bson.M{"if": a, "then": length, "else": length - 1}
@@ -48,13 +48,11 @@ func (me *T) GetNFTClass(args struct {
 	}
 
 	pipeline := []bson.M{
-		//bson.M{"$match": bson.M{"market": args.AssetHash}},
+		bson.M{"$match": bson.M{"market": args.MarketHash}},
 		bson.M{"$match": bson.M{"asset": args.AssetHash}},
 		bson.M{"$match": bson.M{"eventname": "Claim"}},
 		bson.M{"$project": bson.M{"class": cond, "asset": 1, "tokenid": 1, "extendData": 1}},
 		bson.M{"$group": bson.M{"_id": "$class", "asset": bson.M{"$last": "$asset"}, "tokenid": bson.M{"$last": "$tokenid"}, "extendData": bson.M{"$last": "$extendData"}, "claimed": bson.M{"$sum": 1}}},
-
-		//bson.M{"$project":bson.M{"class":bson.M{"if":bson.M{"$and":[]interface{}{bson.M{"$gte":}}}}}},
 	}
 
 	var r1, err = me.Client.QueryAggregate(
@@ -67,7 +65,7 @@ func (me *T) GetNFTClass(args struct {
 			Query      []string
 		}{
 			Collection: "MarketNotification",
-			Index:      "GetNFTMarket",
+			Index:      "GetNFTClass",
 			Sort:       bson.M{},
 			Filter:     bson.M{},
 			Pipeline:   pipeline,
