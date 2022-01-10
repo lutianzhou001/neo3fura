@@ -184,7 +184,7 @@ func (me *T) GetNFTRecordByAddress(args struct {
 					MarketHash h160.T
 					Filter     map[string]interface{}
 					Raw        *[]map[string]interface{}
-				}{AssetHash: h160.T(asset), TokenId: strval.T(tokenid), MarketHash: args.MarketHash, Raw: &raw2}, ret) //nonce 分组，并按时间排序
+				}{AssetHash: h160.T(asset), TokenId: strval.T(tokenid), Raw: &raw2}, ret) //nonce 分组，并按时间排序
 				if err4 != nil {
 					return err4
 				}
