@@ -145,9 +145,10 @@ func (me *T) GetNFTRecordByAddress(args struct {
 			}
 
 			if item["eventname"].(string) == "Auction" { //2种状态   正常   已过期  (卖家事件)
-				extendData := item["extendData"].(string)
+
+				extendData1 := item["extendData"].(string)
 				var dat map[string]interface{}
-				if err := json.Unmarshal([]byte(extendData), &dat); err == nil {
+				if err := json.Unmarshal([]byte(extendData1), &dat); err == nil {
 					auctionType, err := strconv.ParseInt(dat["auctionType"].(string), 10, 64)
 					if err != nil {
 						return err
@@ -167,6 +168,51 @@ func (me *T) GetNFTRecordByAddress(args struct {
 					} else if auctionType == 2 {
 						rr["state"] = NFTevent.Auction_Listed.Val() // 拍卖  正常状态
 					}
+					////卖家售出事件
+					nonce1 := item["nonce"]
+					tokenid1 := item["tokenid"]
+					asset1 := item["asset"]
+
+					rr1, count, err := me.Client.QueryAll(struct {
+						Collection string
+						Index      string
+						Sort       bson.M
+						Filter     bson.M
+						Query      []string
+						Limit      int64
+						Skip       int64
+					}{
+						Collection: "MarketNotification",
+						Index:      "someindex",
+						Sort:       bson.M{},
+						Filter:     bson.M{"nonce": nonce1, "eventname": "Claim", "asset": asset1, "tokenid": tokenid1},
+						Query:      []string{},
+					}, ret)
+					if err != nil {
+						return err
+					}
+					if count > 0 {
+						//卖家售出事件
+
+						rr2 := make(map[string]interface{})
+						rr2 = rr
+						for _, it := range rr1 {
+							rr2["from"] = it["to"]
+							rr2["to"] = it["from"]
+
+							if auctionType == 1 {
+
+								rr2["state"] = NFTevent.Sell_Sold.Val() // 直买直卖  售出(卖家)
+
+							} else if auctionType == 2 {
+
+								rr2["state"] = NFTevent.Aucion_Deal.Val() //拍卖:成交（卖家）
+							}
+							result = append(result, rr2)
+						}
+
+					}
+
 				} else {
 					return err
 				}
@@ -182,21 +228,21 @@ func (me *T) GetNFTRecordByAddress(args struct {
 			} else if item["eventname"].(string) == "Bid" { //3种状态  正常 已过期  已成交 (买家事件)
 
 				//获取nft所有的bid信息
-				var raw2 []map[string]interface{}
+				var raw3 []map[string]interface{}
 				err4 := me.GetAllBidInfoByNFT(struct {
 					AssetHash  h160.T
 					TokenId    strval.T
 					MarketHash h160.T
 					Filter     map[string]interface{}
 					Raw        *[]map[string]interface{}
-				}{AssetHash: h160.T(asset), TokenId: strval.T(tokenid), MarketHash: args.MarketHash, Raw: &raw2}, ret) //nonce 分组，并按时间排序
+				}{AssetHash: h160.T(asset), TokenId: strval.T(tokenid), MarketHash: args.MarketHash, Raw: &raw3}, ret) //nonce 分组，并按时间排序
 				if err4 != nil {
 					return err4
 				}
 
-				extendData := item["extendData"].(string)
+				extendData2 := item["extendData"].(string)
 				var dat map[string]interface{}
-				if err := json.Unmarshal([]byte(extendData), &dat); err == nil {
+				if err := json.Unmarshal([]byte(extendData2), &dat); err == nil {
 
 					bidAmount, err := strconv.ParseInt(dat["bidAmount"].(string), 10, 64)
 					if err != nil {
@@ -209,11 +255,11 @@ func (me *T) GetNFTRecordByAddress(args struct {
 					rr["from"] = user
 					rr["to"] = ""
 
-					for _, it := range raw2 {
+					for _, it := range raw3 {
 						ba := reflect.ValueOf(it["bidAmount"]) //获取竞价数组
 						bd := reflect.ValueOf(it["bidder"])    //获取竞价数组
 						println(" ")
-						if nowNFTState == NFTstate.Auction.Val() && raw2[0]["nonce"] == it["nonce"] { //最新上架  拍卖中 2种状态：已退回  正常s
+						if nowNFTState == NFTstate.Auction.Val() && raw3[0]["nonce"] == it["nonce"] { //最新上架  拍卖中 2种状态：已退回  正常s
 							if bidAmount == ba.Index(0).Int() && user == bd.Index(0).String() {
 								rr["state"] = NFTevent.Auction_Bid.Val() //state :正常
 							} else {
@@ -234,9 +280,9 @@ func (me *T) GetNFTRecordByAddress(args struct {
 				}
 
 			} else if item["eventname"].(string) == "Claim" { //  领取  （买家事件）
-				extendData := item["extendData"].(string)
+				extendData3 := item["extendData"].(string)
 				var dat map[string]interface{}
-				if err := json.Unmarshal([]byte(extendData), &dat); err == nil {
+				if err := json.Unmarshal([]byte(extendData3), &dat); err == nil {
 					bidAmount, err := strconv.ParseInt(dat["bidAmount"].(string), 10, 64)
 					auctionType, err := strconv.ParseInt(dat["auctionType"].(string), 10, 64)
 					if err != nil {
@@ -248,21 +294,21 @@ func (me *T) GetNFTRecordByAddress(args struct {
 					rr["auctionAmount"] = bidAmount
 					rr["from"] = raw1[0]["auctor"]
 					rr["to"] = user
-					//卖家售出事件
-					rr1 := make(map[string]interface{})
-					rr1 = rr
-					rr1["from"] = rr["to"]
-					rr1["to"] = rr["from"]
+					////卖家售出事件
+					//rr1 := make(map[string]interface{})
+					//rr1 = rr
+					//rr1["from"] = rr["to"]
+					//rr1["to"] = rr["from"]
 
 					if auctionType == 1 {
-						rr["state"] = NFTevent.Sell_Buy.Val()   // 直买直卖 购买(买家)
-						rr1["state"] = NFTevent.Sell_Sold.Val() // 直买直卖  售出(卖家)
+						rr["state"] = NFTevent.Sell_Buy.Val() // 直买直卖 购买(买家)
+						//rr1["state"] = NFTevent.Sell_Sold.Val() // 直买直卖  售出(卖家)
 
 					} else if auctionType == 2 {
 						rr["state"] = NFTevent.Auction_Withdraw.Val() //拍卖:领取（买家）
-						rr1["state"] = NFTevent.Aucion_Deal.Val()     //拍卖:成交（卖家）
+						//rr1["state"] = NFTevent.Aucion_Deal.Val()     //拍卖:成交（卖家）
 					}
-					result = append(result, rr1)
+					//result = append(result, rr1)
 
 				} else {
 					return err
