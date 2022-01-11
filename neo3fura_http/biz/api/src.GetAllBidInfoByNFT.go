@@ -32,7 +32,7 @@ func (me *T) GetAllBidInfoByNFT(args struct {
 		if args.MarketHash.Valid() == false {
 			return stderr.ErrInvalidArgs
 		} else {
-			f["market"] = args.MarketHash.Valid()
+			f["market"] = args.MarketHash.Val()
 		}
 	}
 
