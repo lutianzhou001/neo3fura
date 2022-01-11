@@ -3,12 +3,16 @@ package api
 import (
 	"encoding/json"
 	"go.mongodb.org/mongo-driver/bson"
+	"gopkg.in/yaml.v2"
 	"math"
+	log2 "neo3fura_http/lib/log"
 	"neo3fura_http/lib/type/NFTevent"
 	"neo3fura_http/lib/type/NFTstate"
 	"neo3fura_http/lib/type/h160"
 	"neo3fura_http/lib/type/strval"
 	"neo3fura_http/var/stderr"
+	"os"
+	"path/filepath"
 	"reflect"
 	"strconv"
 )
@@ -68,6 +72,7 @@ func (me *T) GetNFTRecordByAddress(args struct {
 		rr["timestamp"] = item["timestamp"]
 		nonce := item["nonce"].(int64)
 		rr["nonce"] = nonce
+		rr["market"] = item["market"]
 
 		//获取Nft的属性
 		var raw2 map[string]interface{}
@@ -271,20 +276,45 @@ func (me *T) GetNFTRecordByAddress(args struct {
 
 	//普通账户见的NFT转账 ,去掉和市场之间的转账
 	// 获取NFT的Transfer
-	var raw2 []map[string]interface{}
-	err1 := me.GetNep11TransferByAddress(struct {
-		Address h160.T
-		Limit   int64
-		Skip    int64
-		Start   int64
-		End     int64
-		Filter  map[string]interface{}
-		Raw     *[]map[string]interface{}
-	}{Address: args.Address, Raw: &raw2}, ret)
-	if err1 != nil {
-		return err1
+	market, err := OpenMarketHashFile()
+	marketArray := market.MarketHash
+	if err != nil {
+		return stderr.ErrAMarketConfig
 	}
-	for _, item := range raw2 {
+	andArrayto := []interface{}{}
+	for _, item := range marketArray {
+		andArrayto = append(andArrayto, item)
+	}
+	filter := bson.M{"$and": []interface{}{
+		bson.M{"to": bson.M{"$nin": marketArray}},
+		bson.M{"from": bson.M{"$nin": marketArray}},
+	}}
+	filter["$or"] = []interface{}{
+		bson.M{"from": args.Address.TransferredVal()},
+		bson.M{"to": args.Address.TransferredVal()},
+	}
+
+	r3, _, err := me.Client.QueryAll(struct {
+		Collection string
+		Index      string
+		Sort       bson.M
+		Filter     bson.M
+		Query      []string
+		Limit      int64
+		Skip       int64
+	}{
+		Collection: "Nep11TransferNotification",
+		Index:      "GetNep11TransferByAddress",
+		Sort:       bson.M{},
+		Filter:     filter,
+		Query:      []string{},
+		Limit:      args.Limit,
+		Skip:       args.Skip,
+	}, ret)
+	if err != nil {
+		return err
+	}
+	for _, item := range r3 {
 		from := ""
 		to := ""
 		if item["from"] != nil && item["from"] != "" {
@@ -414,4 +444,29 @@ func getNFTProperties(tokenId strval.T, contractHash h160.T, me *T, ret *json.Ra
 		*Raw = r1
 	}
 	return nil
+}
+
+func OpenMarketHashFile() (Config, error) {
+	absPath, _ := filepath.Abs("./markethash.yml")
+	f, err := os.Open(absPath)
+	if err != nil {
+		return Config{}, err
+	}
+	defer func(f *os.File) {
+		err := f.Close()
+		if err != nil {
+			log2.Fatalf("Closing file error: %v", err)
+		}
+	}(f)
+	var cfg Config
+	decoder := yaml.NewDecoder(f)
+	err = decoder.Decode(&cfg)
+	if err != nil {
+		return Config{}, err
+	}
+	return cfg, err
+}
+
+type Config struct {
+	MarketHash []string `yaml:"MarketHash"`
 }
