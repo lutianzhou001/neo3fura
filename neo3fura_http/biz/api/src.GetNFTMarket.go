@@ -27,7 +27,7 @@ func (me *T) GetNFTMarket(args struct {
 }, ret *json.RawMessage) error {
 	currentTime := time.Now().UnixNano() / 1e6
 	pipeline := []bson.M{}
-	println(len(args.AssetHash))
+
 	if len(args.ContractHash) > 0 && args.ContractHash != "" {
 		if args.ContractHash.Valid() == false {
 			return stderr.ErrInvalidArgs
@@ -142,15 +142,15 @@ func (me *T) GetNFTMarket(args struct {
 
 	//获取nft的属性
 	for _, item := range r1 {
-		if args.NFTState.Val() != NFTstate.Auction.Val() && args.NFTState.Val() != NFTstate.Sale.Val() && args.NFTState.Val() != NFTstate.NotListed.Val() {
+		if args.NFTState.Val() != NFTstate.Auction.Val() && args.NFTState.Val() != NFTstate.Sale.Val() {
 			a := item["amount"].(primitive.Decimal128).String()
 			amount, err := strconv.Atoi(a)
 			if err != nil {
 				return err
 			}
 
-			//ba := item["bidAmount"].(primitive.Decimal128).String()
-			//bidAmount, err := strconv.ParseInt(ba, 10, 64)
+			ba := item["bidAmount"].(primitive.Decimal128).String()
+			bidAmount, err := strconv.ParseInt(ba, 10, 64)
 			if err != nil {
 				return err
 			}
@@ -162,8 +162,14 @@ func (me *T) GetNFTMarket(args struct {
 				item["state"] = NFTstate.Auction.Val()
 			} else if amount > 0 && auctionType == 1 && item["owner"] == item["market"] && deadline > currentTime {
 				item["state"] = NFTstate.Sale.Val()
-			} else {
+			} else if amount > 0 && item["owner"] != item["market"] {
 				item["state"] = NFTstate.NotListed.Val()
+			} else if amount > 0 && bidAmount > 0 && deadline < currentTime && item["owner"] == item["market"] {
+				item["state"] = NFTstate.Unclaimed.Val()
+			} else if amount > 0 && deadline < currentTime && bidAmount == 0 && item["owner"] == item["market"] {
+				item["state"] = NFTstate.Expired.Val()
+			} else {
+				item["state"] = ""
 			}
 		}
 
