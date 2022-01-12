@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"neo3fura_http/lib/mapsort"
 	"neo3fura_http/lib/type/h160"
 	"neo3fura_http/lib/type/strval"
 	"neo3fura_http/var/stderr"
@@ -56,7 +57,7 @@ func (me *T) GetAllBidInfoByNFT(args struct {
 					"asset":   bson.M{"$last": "$asset"},
 					"tokenid": bson.M{"$last": "$tokenid"},
 					"bidInfo": bson.M{"$push": "$$ROOT"}}},
-				bson.M{"$sort": bson.M{"_id": -1}},
+				bson.M{"$sort": bson.M{"timestamp": -1}},
 			},
 			Query: []string{},
 		}, ret)
@@ -74,23 +75,41 @@ func (me *T) GetAllBidInfoByNFT(args struct {
 		bidInfo["asset"] = items["asset"]
 		bidAmounts := []int64{}
 		bidders := []string{}
+		//bis:=make([]map[string]interface{}, 0)
+		//for _, i := range bidinfos {
+		//	info := i.(map[string]interface{})
+		//	bis = append(bis, info)
+		//}
+		//mapsort.MapSort(bis,"")
+		bidinfos2 := make([]map[string]interface{}, 0)
 		for _, i := range bidinfos {
 			info := i.(map[string]interface{})
-			bidder := info["user"].(string)
-			bidders = append(bidders, bidder)
 
 			extendData := info["extendData"].(string)
 			var dat map[string]interface{}
-			if err := json.Unmarshal([]byte(extendData), &dat); err == nil {
-				bidAmount, err := strconv.ParseInt(dat["bidAmount"].(string), 10, 64)
-				if err != nil {
-					return err
+			if err1 := json.Unmarshal([]byte(extendData), &dat); err1 == nil {
+				bidAmount, err2 := strconv.ParseInt(dat["bidAmount"].(string), 10, 64)
+				info["bidAmount"] = bidAmount
+				if err2 != nil {
+					return err2
 				}
-				bidAmounts = append(bidAmounts, bidAmount)
+				//bidAmounts = append(bidAmounts, bidAmount)
 			} else {
-				return err
+				return err1
 			}
+			bidinfos2 = append(bidinfos2, info)
 		}
+
+		bidinfos2 = mapsort.MapSort(bidinfos2, "bidAmount")
+
+		for _, i := range bidinfos2 {
+			bidder := i["user"].(string)
+			bidAmount := i["bidAmount"].(int64)
+			bidAmounts = append(bidAmounts, bidAmount)
+			bidders = append(bidders, bidder)
+
+		}
+
 		bidInfo["bidAmount"] = bidAmounts
 		bidInfo["bidder"] = bidders
 		result = append(result, bidInfo)
