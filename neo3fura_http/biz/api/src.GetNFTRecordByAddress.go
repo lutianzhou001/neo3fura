@@ -76,8 +76,8 @@ func (me *T) GetNFTRecordByAddress(args struct {
 
 		//获取Nft的属性
 		var raw2 map[string]interface{}
-		err := getNFTProperties(strval.T(tokenid), h160.T(asset), me, ret, args.Filter, &raw2)
-		if err != nil {
+		err2 := getNFTProperties(strval.T(tokenid), h160.T(asset), me, ret, args.Filter, &raw2)
+		if err2 != nil {
 			rr["image"] = ""
 			rr["name"] = ""
 		}
@@ -148,16 +148,16 @@ func (me *T) GetNFTRecordByAddress(args struct {
 
 				extendData1 := item["extendData"].(string)
 				var dat map[string]interface{}
-				if err := json.Unmarshal([]byte(extendData1), &dat); err == nil {
-					auctionType, err := strconv.ParseInt(dat["auctionType"].(string), 10, 64)
-					if err != nil {
-						return err
+				if err11 := json.Unmarshal([]byte(extendData1), &dat); err11 == nil {
+					auctionType, err12 := strconv.ParseInt(dat["auctionType"].(string), 10, 64)
+					if err12 != nil {
+						return err12
 					}
 					auctionAsset := dat["auctionAsset"]
-					auctionAmount, err := strconv.ParseInt(dat["auctionAmount"].(string), 10, 64)
+					auctionAmount, err13 := strconv.ParseInt(dat["auctionAmount"].(string), 10, 64)
 
-					if err != nil {
-						return err
+					if err13 != nil {
+						return err13
 					}
 					rr["auctionAsset"] = auctionAsset
 					rr["auctionAmount"] = auctionAmount
@@ -173,7 +173,7 @@ func (me *T) GetNFTRecordByAddress(args struct {
 					tokenid1 := item["tokenid"]
 					asset1 := item["asset"]
 
-					rr1, count, err := me.Client.QueryAll(struct {
+					rr1, count, err14 := me.Client.QueryAll(struct {
 						Collection string
 						Index      string
 						Sort       bson.M
@@ -188,8 +188,8 @@ func (me *T) GetNFTRecordByAddress(args struct {
 						Filter:     bson.M{"nonce": nonce1, "eventname": "Claim", "asset": asset1, "tokenid": tokenid1},
 						Query:      []string{},
 					}, ret)
-					if err != nil {
-						return err
+					if err14 != nil {
+						return err14
 					}
 					if count > 0 {
 						//卖家售出事件
@@ -221,7 +221,7 @@ func (me *T) GetNFTRecordByAddress(args struct {
 					}
 
 				} else {
-					return err
+					return err11
 				}
 
 			} else if item["eventname"].(string) == "Cancel" { //下架  (卖家事件)
@@ -249,11 +249,11 @@ func (me *T) GetNFTRecordByAddress(args struct {
 
 				extendData2 := item["extendData"].(string)
 				var dat map[string]interface{}
-				if err := json.Unmarshal([]byte(extendData2), &dat); err == nil {
+				if err21 := json.Unmarshal([]byte(extendData2), &dat); err21 == nil {
 
-					bidAmount, err := strconv.ParseInt(dat["bidAmount"].(string), 10, 64)
-					if err != nil {
-						return err
+					bidAmount, err22 := strconv.ParseInt(dat["bidAmount"].(string), 10, 64)
+					if err22 != nil {
+						return err22
 					}
 
 					auctionAsset := dat["auctionAsset"]
@@ -283,24 +283,27 @@ func (me *T) GetNFTRecordByAddress(args struct {
 					}
 
 				} else {
-					return err
+					return err21
 				}
 
 			} else if item["eventname"].(string) == "Claim" { //  领取  （买家事件）
 				extendData3 := item["extendData"].(string)
 				var dat map[string]interface{}
-				if err := json.Unmarshal([]byte(extendData3), &dat); err == nil {
-					bidAmount, err := strconv.ParseInt(dat["bidAmount"].(string), 10, 64)
-					auctionType, err := strconv.ParseInt(dat["auctionType"].(string), 10, 64)
-					if err != nil {
-						return err
+				if err31 := json.Unmarshal([]byte(extendData3), &dat); err31 == nil {
+					bidAmount, err32 := strconv.ParseInt(dat["bidAmount"].(string), 10, 64)
+					if err32 != nil {
+						return err32
+					}
+					auctionType, err33 := strconv.ParseInt(dat["auctionType"].(string), 10, 64)
+					if err33 != nil {
+						return err33
 					}
 					auctionAsset := dat["auctionAsset"]
-					user := item["user"]
+					user1 := item["user"]
 					rr["auctionAsset"] = auctionAsset
 					rr["auctionAmount"] = bidAmount
 					rr["from"] = raw1[0]["auctor"]
-					rr["to"] = user
+					rr["to"] = user1
 					////卖家售出事件
 					//rr1 := make(map[string]interface{})
 					//rr1 = rr
@@ -318,7 +321,7 @@ func (me *T) GetNFTRecordByAddress(args struct {
 					//result = append(result, rr1)
 
 				} else {
-					return err
+					return err31
 				}
 			}
 			result = append(result, rr)
@@ -394,15 +397,15 @@ func (me *T) GetNFTRecordByAddress(args struct {
 
 			//获取nft的属性
 			var raw3 map[string]interface{}
-			err := getNFTProperties(strval.T(tokenid), h160.T(asset), me, ret, args.Filter, &raw3)
-			if err != nil {
-				return err
+			err3 := getNFTProperties(strval.T(tokenid), h160.T(asset), me, ret, args.Filter, &raw3)
+			if err3 != nil {
+				return err3
 			}
 
 			extendData := raw3["properties"].(string)
 			if extendData != "" {
 				var dat map[string]interface{}
-				if err := json.Unmarshal([]byte(extendData), &dat); err == nil {
+				if err2 := json.Unmarshal([]byte(extendData), &dat); err2 == nil {
 					image, ok := dat["image"]
 					if ok {
 						rr["image"] = image
@@ -417,7 +420,7 @@ func (me *T) GetNFTRecordByAddress(args struct {
 					}
 
 				} else {
-					return err
+					return err2
 				}
 
 			} else {
