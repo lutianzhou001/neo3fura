@@ -428,10 +428,10 @@ func (me *T) GetNFTRecordByAddress(args struct {
 			}
 
 			if from == args.Address.Val() && to != args.MarketHash.Val() {
-				rr["user"] = item["from"]
+				rr["user"] = from
 				rr["state"] = NFTevent.Send.Val()
 			} else if to == args.Address.Val() && from != args.MarketHash.Val() {
-				rr["user"] = item["to"]
+				rr["user"] = to
 				rr["state"] = NFTevent.Receive.Val()
 			}
 			result = append(result, rr)
