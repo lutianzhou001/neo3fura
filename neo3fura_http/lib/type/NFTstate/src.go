@@ -13,6 +13,10 @@ const (
 	NotListed T = "notlisted"
 	Unclaimed T = "unclaimed"
 	Expired   T = "expired"
+	//一级市场
+	Mint    T = "mint"
+	Listed  T = "listed"
+	Selling T = "selling"
 )
 
 // Valid ...
