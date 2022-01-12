@@ -321,8 +321,6 @@ func (me *T) GetNFTRecordByAddress(args struct {
 					return err
 				}
 			}
-			s := rr
-			println(rr, s)
 			result = append(result, rr)
 		}
 
