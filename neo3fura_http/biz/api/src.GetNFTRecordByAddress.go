@@ -195,10 +195,17 @@ func (me *T) GetNFTRecordByAddress(args struct {
 						//卖家售出事件
 
 						rr2 := make(map[string]interface{})
-						rr2 = rr
 						for _, it := range rr1 {
-							rr2["from"] = it["to"]
-							rr2["to"] = it["from"]
+							rr2["asset"] = it["asset"]
+							rr2["tokenid"] = it["tokenid"]
+							rr2["timestamp"] = it["timestamp"]
+							rr2["event"] = it["event"]
+							rr2["market"] = it["market"]
+							rr2["nonce"] = it["nonce"]
+							rr2["image"] = rr["image"]
+							rr2["name"] = rr["name"]
+							rr2["from"] = it["market"]
+							rr2["to"] = it["user"]
 
 							if auctionType == 1 {
 
@@ -314,7 +321,8 @@ func (me *T) GetNFTRecordByAddress(args struct {
 					return err
 				}
 			}
-
+			s := rr
+			println(rr, s)
 			result = append(result, rr)
 		}
 
@@ -377,7 +385,7 @@ func (me *T) GetNFTRecordByAddress(args struct {
 			tokenid := item["tokenId"].(string)
 
 			rr["event"] = "transfer"
-			rr["user"] = item["user"]
+
 			rr["asset"] = asset
 			rr["tokenid"] = tokenid
 			rr["timestamp"] = item["timestamp"]
@@ -420,8 +428,10 @@ func (me *T) GetNFTRecordByAddress(args struct {
 			}
 
 			if from == args.Address.Val() && to != args.MarketHash.Val() {
+				rr["user"] = item["from"]
 				rr["state"] = NFTevent.Send.Val()
 			} else if to == args.Address.Val() && from != args.MarketHash.Val() {
+				rr["user"] = item["to"]
 				rr["state"] = NFTevent.Receive.Val()
 			}
 			result = append(result, rr)
