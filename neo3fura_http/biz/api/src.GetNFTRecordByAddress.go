@@ -199,7 +199,7 @@ func (me *T) GetNFTRecordByAddress(args struct {
 							rr2["asset"] = it["asset"]
 							rr2["tokenid"] = it["tokenid"]
 							rr2["timestamp"] = it["timestamp"]
-							rr2["event"] = it["event"]
+							rr2["event"] = it["eventname"]
 							rr2["market"] = it["market"]
 							rr2["nonce"] = it["nonce"]
 							rr2["image"] = rr["image"]
