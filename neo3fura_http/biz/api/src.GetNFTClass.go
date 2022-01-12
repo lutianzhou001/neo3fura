@@ -106,12 +106,6 @@ func (me *T) GetNFTClass(args struct {
 						} else {
 							item["name"] = ""
 						}
-						//owner, ok2 := data["owner"]
-						//if ok2{
-						//	item["owner"] = owner
-						//} else {
-						//	item["owner"] = ""
-						//}
 
 					} else {
 						return err1
@@ -125,6 +119,7 @@ func (me *T) GetNFTClass(args struct {
 				delete(item, "properties")
 				item["price"] = "——"
 				item["sellAsset"] = "——"
+				item["claimed"] = 0
 				result = append(result, item)
 			}
 

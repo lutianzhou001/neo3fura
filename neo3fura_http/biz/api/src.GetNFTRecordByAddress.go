@@ -265,15 +265,17 @@ func (me *T) GetNFTRecordByAddress(args struct {
 					for _, it := range raw3 {
 						ba := reflect.ValueOf(it["bidAmount"]) //获取竞价数组
 						bd := reflect.ValueOf(it["bidder"])    //获取竞价数组
-						println(" ")
+
 						if nowNFTState == NFTstate.Auction.Val() && raw3[0]["nonce"] == it["nonce"] { //最新上架  拍卖中 2种状态：已退回  正常s
-							if bidAmount == ba.Index(0).Int() && user == bd.Index(0).String() {
+							if bidAmount == ba.Index(0).Int() && user == bd.Index(0).String() { //最高竞价人
 								rr["state"] = NFTevent.Auction_Bid.Val() //state :正常
+
 							} else {
 								rr["state"] = NFTevent.Auction_Return.Val() //state :已退回
+
 							}
-						} else {
-							if bidAmount == ba.Index(0).Int() && user == bd.Index(0).String() { //上架 ：2种状态： 已成交  已退回
+						} else { //历史上架 ：2种状态： 已成交  已退回
+							if bidAmount == ba.Index(0).Int() && user == bd.Index(0).String() {
 								rr["state"] = NFTevent.Auction_Bid_Deal.Val() //state :已成交
 							} else {
 								rr["state"] = NFTevent.Auction_Return.Val() //state :已退回
