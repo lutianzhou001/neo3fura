@@ -277,7 +277,7 @@ func (me *T) GetNFTMarket(args struct {
 
 	}
 	//  按上架时间排序
-	if args.Sort == "listedTime" {
+	if args.Sort == "timestamp" {
 		if args.Order == 1 {
 			mapsort.MapSort(r1, "listedTimestamp")
 		} else {
