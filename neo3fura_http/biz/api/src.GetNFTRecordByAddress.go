@@ -186,7 +186,7 @@ func (me *T) GetNFTRecordByAddress(args struct {
 						Collection: "MarketNotification",
 						Index:      "someindex",
 						Sort:       bson.M{},
-						Filter:     bson.M{"nonce": nonce1, "eventname": "Claim", "asset": asset1, "tokenid": tokenid1},
+						Filter:     bson.M{"nonce": nonce1, "eventname": "Claim", "asset": asset1, "tokenid": tokenid1, "market": args.MarketHash},
 						Query:      []string{},
 					}, ret)
 					if err14 != nil {
@@ -208,12 +208,12 @@ func (me *T) GetNFTRecordByAddress(args struct {
 							rr2["from"] = it["market"]
 							rr2["to"] = it["user"]
 
-							extendData2 := item["extendData"].(string)
+							extendData2 := it["extendData"].(string)
 							var dat2 map[string]interface{}
 							if err3 := json.Unmarshal([]byte(extendData2), &dat2); err3 == nil {
 
 								auctionAsset1 := dat2["auctionAsset"]
-								auctionAmount1 := dat2["auctionAmount"]
+								auctionAmount1 := dat2["bidAmount"]
 								rr2["auctionAsset"] = auctionAsset1
 								rr2["auctionAmount"] = auctionAmount1
 							} else {
