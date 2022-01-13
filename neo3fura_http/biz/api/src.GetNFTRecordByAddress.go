@@ -6,6 +6,7 @@ import (
 	"gopkg.in/yaml.v2"
 	"math"
 	log2 "neo3fura_http/lib/log"
+	"neo3fura_http/lib/mapsort"
 	"neo3fura_http/lib/type/NFTevent"
 	"neo3fura_http/lib/type/NFTstate"
 	"neo3fura_http/lib/type/h160"
@@ -206,6 +207,18 @@ func (me *T) GetNFTRecordByAddress(args struct {
 							rr2["name"] = rr["name"]
 							rr2["from"] = it["market"]
 							rr2["to"] = it["user"]
+
+							extendData2 := item["extendData"].(string)
+							var dat2 map[string]interface{}
+							if err3 := json.Unmarshal([]byte(extendData2), &dat2); err3 == nil {
+
+								auctionAsset1 := dat2["auctionAsset"]
+								auctionAmount1 := dat2["auctionAmount"]
+								rr2["auctionAsset"] = auctionAsset1
+								rr2["auctionAmount"] = auctionAmount1
+							} else {
+								return err1
+							}
 
 							if auctionType == 1 {
 
@@ -441,6 +454,7 @@ func (me *T) GetNFTRecordByAddress(args struct {
 		}
 	}
 
+	mapsort.MapSort(result, "timestamp") //按时间排序
 	if args.Limit == 0 {
 		args.Limit = int64(math.Inf(1))
 	}

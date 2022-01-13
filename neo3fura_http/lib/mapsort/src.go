@@ -48,7 +48,7 @@ func (m *MapsSort2) Len() int {
 
 //如果index为i的元素小于index为j的元素，则返回true，否则返回false
 func (m *MapsSort2) Less(i, j int) bool {
-	return m.MapList[i][m.Key].(int64) > m.MapList[j][m.Key].(int64)
+	return m.MapList[i][m.Key].(int64) < m.MapList[j][m.Key].(int64)
 }
 
 //Swap 交换索引为 i 和 j 的元素
