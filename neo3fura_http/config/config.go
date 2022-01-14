@@ -108,4 +108,5 @@ var Apis = []string{
 	"GetNFTClass",
 	"GetNFTByWords",
 	"GetMarketIndexByAsset",
+	"GetNeoFsImage",
 }
