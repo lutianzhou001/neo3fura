@@ -25,6 +25,7 @@ type T struct {
 	Ctx       context.Context
 	RpcCli    *rpc.RpcClient
 	RpcPorts  []string
+	NeoFs string
 }
 
 func (me *T) QueryOne(args struct {
