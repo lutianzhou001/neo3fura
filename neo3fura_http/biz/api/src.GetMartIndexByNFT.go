@@ -7,6 +7,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"io/ioutil"
+	"neo3fura_http/lib/mapsort"
 	"neo3fura_http/lib/type/h160"
 	"neo3fura_http/lib/utils"
 	"neo3fura_http/var/stderr"
@@ -190,23 +191,16 @@ func (me *T) GetMarketIndexByAsset(args struct {
 						return err2
 					}
 
-					content, err3 := GetPrice(auctionAsset) //
-
-					p := content[1:2]
-
+					price, err3 := GetPrice(auctionAsset) //
 					if err3 != nil {
 						return err3
 					}
-					price, err4 := strconv.ParseFloat(p, 64)
+
 					if price == 0 {
 						price = 1
 					}
-					if err4 != nil {
-						return err4
-					}
-					tb := bidAmount / decimal
-					txprice := float64(tb) * price
 
+					txprice := float64(bidAmount) * price / float64(decimal)
 					txAmount += txprice
 
 				} else {
@@ -220,8 +214,7 @@ func (me *T) GetMarketIndexByAsset(args struct {
 
 	result["totaltxamount"] = txAmount
 	//地板价
-	var limit int64 = 1
-	var skip int64 = 0
+
 	r5, err := me.Client.QueryAggregate(
 		struct {
 			Collection string
@@ -237,10 +230,6 @@ func (me *T) GetMarketIndexByAsset(args struct {
 			Filter:     bson.M{},
 			Pipeline: []bson.M{
 				bson.M{"$match": bson.M{"asset": args.AssetHash.Val(), "market": args.MarketHash.Val(), "auctionType": bson.M{"$eq": 1}}},
-				//bson.M{"$sort":bson.M{"auctionAmount":1}},
-
-				bson.M{"$skip": skip},
-				bson.M{"$limit": limit},
 			},
 
 			Query: []string{},
@@ -250,9 +239,37 @@ func (me *T) GetMarketIndexByAsset(args struct {
 		return err
 	}
 
+	for _, item := range r5 {
+		auctionAsset := item["auctionAsset"].(string)
+		aa := item["auctionAmount"].(primitive.Decimal128).String()
+		auctionAmount, err2 := strconv.ParseInt(aa, 10, 64)
+		if err2 != nil {
+			return err
+		}
+
+		//价格转换
+		dd, _ := OpenAssetHashFile()
+		decimal := dd[auctionAsset] //获取精度
+		if decimal == 0 {
+			decimal = 1
+		}
+		price, err3 := GetPrice(auctionAsset) //  获取价格
+		if err3 != nil {
+			return err3
+		}
+		if price == 0 {
+			price = 1
+		}
+		amount := float64(auctionAmount) * price / float64(decimal)
+		item["conAmount"] = amount
+
+	}
+	mapsort.MapSort3(r5, "conAmount")
+
 	if len(r5) > 0 {
 		result["auctionAsset"] = r5[0]["auctionAsset"]
 		result["auctionAmount"] = r5[0]["auctionAmount"]
+		result["conAmount"] = r5[0]["conAmount"]
 	} else {
 		result["auctionAsset"] = "——"
 		result["auctionAmount"] = "——"
@@ -270,7 +287,7 @@ func (me *T) GetMarketIndexByAsset(args struct {
 	return nil
 }
 
-func GetPrice(asset string) (string, error) {
+func GetPrice(asset string) (float64, error) {
 
 	client := &http.Client{}
 	reqBody := []byte(`["` + asset + `"]`)
@@ -281,15 +298,21 @@ func GetPrice(asset string) (string, error) {
 	req.Header.Set("Content-Type", "application/json")
 	resp, err := client.Do(req)
 	if err != nil {
-		return "0", stderr.ErrPrice
+		return 0, stderr.ErrPrice
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 
 	if err != nil {
-		return "0", stderr.ErrPrice
+		return 0, stderr.ErrPrice
 	}
-	return string(body), nil
+	response := string(body)
+	re := response[1 : len(response)-1]
+	price, err1 := strconv.ParseFloat(re, 64)
+	if err1 != nil {
+		return 0, stderr.ErrPrice
+	}
+	return price, nil
 }
 
 func OpenAssetHashFile() (map[string]int64, error) {
