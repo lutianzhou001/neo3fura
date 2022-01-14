@@ -20,7 +20,6 @@ func (me *T) GetNFTMarket(args struct {
 	NFTState     strval.T //state:aution  sale  notlisted  unclaimed
 	Sort         strval.T //listedTime  price  deadline
 	Order        int64    //-1:降序  +1：升序
-	SubClass     [][]strval.T
 	Limit        int64
 	Skip         int64
 	Filter       map[string]interface{}
@@ -227,7 +226,7 @@ func (me *T) GetNFTMarket(args struct {
 		}
 		//获得上架时间
 
-		if item["marketnotification"] != "" {
+		if item["marketnotification"] != nil {
 			marketnotification := item["marketnotification"].(primitive.A)
 			if len(marketnotification) > 0 {
 				mn := []interface{}(marketnotification)[0].(map[string]interface{})
