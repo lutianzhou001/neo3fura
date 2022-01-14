@@ -54,7 +54,7 @@ func (me *T) GetNep11TransferByAddress(args struct {
 	}{
 		Collection: "Nep11TransferNotification",
 		Index:      "GetNep11TransferByAddress",
-		Sort:       bson.M{},
+		Sort:       bson.M{"timestamp": -1},
 		Filter:     filter,
 		Query:      []string{},
 		Limit:      args.Limit,
