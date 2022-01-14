@@ -8,6 +8,7 @@ import (
 	"neo3fura_http/lib/type/h160"
 	"neo3fura_http/lib/type/strval"
 	"neo3fura_http/var/stderr"
+	"strings"
 )
 
 func (me *T) GetNFTClass(args struct {
@@ -103,17 +104,35 @@ func (me *T) GetNFTClass(args struct {
 						name, ok1 := data["name"]
 						if ok1 {
 							item["name"] = name
+							number := strings.Split(name.(string), "#")[1]
+							item["number"] = number
 						} else {
 							item["name"] = ""
 						}
+						series, ok2 := data["series"]
+						if ok2 {
+							item["series"] = series
+						} else {
+							item["series"] = ""
+						}
+						supply, ok3 := data["supply"]
+						if ok3 {
+							item["supply"] = supply
+						} else {
+							item["supply"] = ""
+						}
 
 					} else {
-						return err1
+						return err
 					}
 
 				} else {
 					item["image"] = ""
 					item["name"] = ""
+					item["series"] = ""
+					item["supply"] = ""
+					item["number"] = ""
+
 				}
 				delete(item, "_id")
 				delete(item, "properties")
@@ -190,8 +209,22 @@ func (me *T) GetNFTClass(args struct {
 						name, ok1 := data["name"]
 						if ok1 {
 							item["name"] = name
+							number := strings.Split(name.(string), "#")[1]
+							item["number"] = number
 						} else {
 							item["name"] = ""
+						}
+						series, ok2 := data["series"]
+						if ok2 {
+							item["series"] = series
+						} else {
+							item["series"] = ""
+						}
+						supply, ok3 := data["supply"]
+						if ok3 {
+							item["supply"] = supply
+						} else {
+							item["supply"] = ""
 						}
 
 					} else {
@@ -201,6 +234,10 @@ func (me *T) GetNFTClass(args struct {
 				} else {
 					item["image"] = ""
 					item["name"] = ""
+					item["series"] = ""
+					item["supply"] = ""
+					item["number"] = ""
+
 				}
 				delete(item, "_id")
 				delete(item, "extendData")
@@ -277,17 +314,35 @@ func (me *T) GetNFTClass(args struct {
 						name, ok1 := data["name"]
 						if ok1 {
 							item["name"] = name
+							number := strings.Split(name.(string), "#")[1]
+							item["number"] = number
 						} else {
 							item["name"] = ""
 						}
+						series, ok2 := data["series"]
+						if ok2 {
+							item["series"] = series
+						} else {
+							item["series"] = ""
+						}
+						supply, ok3 := data["supply"]
+						if ok3 {
+							item["supply"] = supply
+						} else {
+							item["supply"] = ""
+						}
 
 					} else {
-						return err2
+						return err
 					}
 
 				} else {
 					item["image"] = ""
 					item["name"] = ""
+					item["series"] = ""
+					item["supply"] = ""
+					item["number"] = ""
+
 				}
 				delete(item, "_id")
 				delete(item, "extendData")
@@ -302,7 +357,7 @@ func (me *T) GetNFTClass(args struct {
 		return stderr.ErrInvalidArgs
 	}
 
-	count := len(args.SubClass)
+	count := len(result)
 
 	r3, err := me.FilterAggragateAndAppendCount(result, count, args.Filter)
 
