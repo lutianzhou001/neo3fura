@@ -299,8 +299,7 @@ func (me *T) GetNFTMarket(args struct {
 			item["usdAuctionAmount"] = big.NewFloat(0)
 		}
 		//获得上架时间
-		a := item["marketnotification"]
-		print(a)
+
 		if item["marketnotification"] != nil {
 			switch item["marketnotification"].(type) {
 			case string:
