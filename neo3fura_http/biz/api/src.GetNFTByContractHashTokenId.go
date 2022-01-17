@@ -93,7 +93,7 @@ func (me *T) GetNFTByContractHashTokenId(args struct {
 			return err
 		}
 
-		bidAmount := item["bidAmount"]
+		bidAmount := item["bidAmount"].(primitive.Decimal128).String()
 		//b := item["bidAmount"]
 		//var ba string
 		//switch b.(type) {
