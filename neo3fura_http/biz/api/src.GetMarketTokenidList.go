@@ -53,7 +53,6 @@ func (me *T) GetMarketTokenidList(args struct {
 		bson.M{"$match": bson.M{"auctionType": bson.M{"$eq": 1}}},
 		bson.M{"$match": bson.M{"market": bson.M{"$eq": args.MarketHash.Val()}}},
 		bson.M{"$match": bson.M{"asset": bson.M{"$eq": args.AssetHash.Val()}}},
-		//bson.M{"$match": bson.M{"deadline": bson.M{"$gt": currentTime}}},
 
 		bson.M{"$project": bson.M{"class": cond, "_id": 1, "asset": 1, "tokenid": 1, "amount": 1, "owner": 1, "market": 1, "difference": bson.M{"$eq": []string{"$owner", "$market"}}, "auctionType": 1, "auctor": 1, "auctionAsset": 1, "auctionAmount": 1, "deadline": 1, "bidder": 1, "bidAmount": 1, "timestamp": 1}},
 		bson.M{"$match": bson.M{"difference": true}},
@@ -84,15 +83,32 @@ func (me *T) GetMarketTokenidList(args struct {
 	result := make([]map[string]interface{}, 0)
 
 	for _, item := range r1 {
+		res := make([]map[string]interface{}, 0)
+		tokenids := item["tokenid"]
+		if tokenids != nil {
+			tokenidArr := tokenids.(primitive.A)
+			for _, it := range tokenidArr {
+				r := make(map[string]interface{})
+				nft := it.(map[string]interface{})
+				r["tokenid"] = nft["tokenid"]
+
+				res = append(res, r)
+			}
+			mapsort.MapSort8(res, "tokenid")
+			item["tokenidArr"] = res
+		}
+
+	}
+
+	for _, item := range r1 {
 
 		id := item["_id"].(int32)
 		if id != -1 {
 			re := make(map[string]interface{})
-			tokenidArr := item["tokenid"].(primitive.A)
+			tokenidArr := item["tokenidArr"].([]map[string]interface{})
 			tokenids := []string{}
 			for _, tk := range tokenidArr {
-				it := tk.(map[string]interface{})
-				tokenids = append(tokenids, it["tokenid"].(string))
+				tokenids = append(tokenids, tk["tokenid"].(string))
 			}
 			re["tokenid"] = tokenids
 			re["id"] = id

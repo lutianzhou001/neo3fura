@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"neo3fura_http/lib/mapsort"
 	"neo3fura_http/lib/type/h160"
 	"neo3fura_http/lib/type/strval"
@@ -54,7 +55,7 @@ func (me *T) GetNFTClass(args struct {
 		bson.M{"$match": bson.M{"asset": args.AssetHash}},
 		bson.M{"$match": bson.M{"eventname": "Auction"}},
 		bson.M{"$project": bson.M{"class": cond, "asset": 1, "tokenid": 1, "extendData": 1}},
-		bson.M{"$group": bson.M{"_id": "$class", "asset": bson.M{"$last": "$asset"}, "tokenid": bson.M{"$last": "$tokenid"}, "extendData": bson.M{"$last": "$extendData"}}},
+		bson.M{"$group": bson.M{"_id": "$class", "asset": bson.M{"$last": "$asset"}, "tokenid": bson.M{"$last": "$tokenid"}, "tokenidArr": bson.M{"$push": "$$ROOT"}, "extendData": bson.M{"$last": "$extendData"}}},
 	}
 
 	var r1, err = me.Client.QueryAggregate(
@@ -84,7 +85,7 @@ func (me *T) GetNFTClass(args struct {
 		bson.M{"$match": bson.M{"asset": args.AssetHash}},
 		bson.M{"$match": bson.M{"eventname": "Claim"}},
 		bson.M{"$project": bson.M{"class": cond, "asset": 1, "tokenid": 1, "extendData": 1}},
-		bson.M{"$group": bson.M{"_id": "$class", "asset": bson.M{"$last": "$asset"}, "tokenid": bson.M{"$last": "$tokenid"}, "extendData": bson.M{"$last": "$extendData"}, "claimed": bson.M{"$sum": 1}}},
+		bson.M{"$group": bson.M{"_id": "$class", "asset": bson.M{"$last": "$asset"}, "tokenid": bson.M{"$last": "$tokenid"}, "claimedInfo": bson.M{"$push": "$$ROOT"}, "extendData": bson.M{"$last": "$extendData"}, "claimed": bson.M{"$sum": 1}}},
 	}
 
 	r2, err := me.Client.QueryAggregate(
@@ -113,6 +114,17 @@ func (me *T) GetNFTClass(args struct {
 			asset := item["asset"].(string)
 			tokenid := item["tokenid"].(string)
 			extendData := item["extendData"].(string)
+			//
+			tokenidList := make(map[string]interface{})
+			if item["tokenidArr"] != nil {
+				tokenidArr := item["tokenidArr"].(primitive.A)
+
+				for _, it := range tokenidArr {
+					nft := it.(map[string]interface{})
+					tokenidList[nft["tokenid"].(string)] = 1
+				}
+			}
+
 			var dat map[string]interface{}
 			if err1 := json.Unmarshal([]byte(extendData), &dat); err1 == nil {
 
@@ -180,16 +192,13 @@ func (me *T) GetNFTClass(args struct {
 				item["number"] = ""
 
 			}
-			delete(item, "_id")
-			delete(item, "extendData")
-			delete(item, "tokenid")
 
-			//获取climed
+			//获取claimed
 			if len(r2) > 0 {
 				for _, item1 := range r2 {
-
-					if item["asset"] == item1["asset"] && tokenid == item1["tokenid"] {
+					if item["_id"] == item1["_id"] {
 						item["claimed"] = item1["claimed"]
+						break
 					} else {
 						item["claimed"] = 0
 					}
@@ -198,6 +207,10 @@ func (me *T) GetNFTClass(args struct {
 			} else {
 				item["claimed"] = 0
 			}
+			delete(item, "_id")
+			delete(item, "extendData")
+			delete(item, "tokenid")
+			delete(item, "tokenidArr")
 			result = append(result, item)
 		}
 	}

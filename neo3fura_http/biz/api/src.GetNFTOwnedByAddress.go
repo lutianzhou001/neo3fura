@@ -16,6 +16,7 @@ import (
 
 func (me *T) GetNFTOwnedByAddress(args struct {
 	Address      h160.T
+	MarketHash   h160.T
 	ContractHash h160.T   //  asset
 	AssetHash    h160.T   // auctionType
 	NFTState     strval.T //state:aution  sale  notlisted  unclaimed
@@ -61,19 +62,45 @@ func (me *T) GetNFTOwnedByAddress(args struct {
 		}
 		pipeline = append(pipeline, b)
 	}
-	//if args.Sort == "timestamp" || args.Sort == "price" {
-	//	b := bson.M{}
-	//	if args.Order == -1 || args.Order == 1 {
-	//		b = bson.M{"$sort": bson.M{args.Sort.Val(): args.Order}}
-	//	} else {
-	//		b = bson.M{"$sort": bson.M{args.Sort.Val(): 1}}
-	//	}
-	//	pipeline = append(pipeline, b)
-	//}
+
+	//白名单
+	raw1 := make(map[string]interface{})
+	err1 := me.GetMarketWhiteList(struct {
+		MarketHash h160.T
+		Filter     map[string]interface{}
+		Raw        *map[string]interface{}
+	}{MarketHash: args.MarketHash, Raw: &raw1}, ret) //nonce 分组，并按时间排序
+	if err1 != nil {
+		return err1
+	}
+
+	whiteList := raw1["whiteList"]
+	if whiteList == nil || whiteList == "" {
+		return stderr.ErrWhiteList
+	}
+	s := whiteList.([]string)
+	var wl []interface{}
+	for _, w := range s {
+		wl = append(wl, w)
+	}
+	if len(wl) > 0 {
+		white := bson.M{"$match": bson.M{"asset": bson.M{"$in": wl}}}
+		pipeline = append(pipeline, white)
+	}
+
+	if args.NFTState.Val() == NFTstate.Auction.Val() && args.NFTState.Val() == NFTstate.Sale.Val() && args.NFTState.Val() == NFTstate.Unclaimed.Val() {
+		if args.MarketHash.Valid() == false {
+			return stderr.ErrInvalidArgs
+		} else {
+			a := bson.M{"$match": bson.M{"market": args.MarketHash}}
+			pipeline = append(pipeline, a)
+		}
+	}
 
 	if args.NFTState.Val() == NFTstate.Auction.Val() { //拍卖中  accont >0 && auctionType =2 &&  owner=market && runtime <deadline
 		pipeline1 := []bson.M{
 			bson.M{"$match": bson.M{"auctor": args.Address.Val()}},
+			bson.M{"$match": bson.M{"asset": bson.M{"$in": whiteList.(primitive.A)}}},
 			bson.M{"$match": bson.M{"amount": bson.M{"$gt": 0}}},
 			bson.M{"$match": bson.M{"auctionType": bson.M{"$eq": 2}}},
 			bson.M{"$match": bson.M{"deadline": bson.M{"$gt": currentTime}}},
@@ -197,6 +224,7 @@ func (me *T) GetNFTOwnedByAddress(args struct {
 
 	} else { //默认  account > 0
 		pipeline1 := []bson.M{
+
 			bson.M{"$match": bson.M{"$or": []interface{}{
 				bson.M{"auctor": args.Address.Val()},
 				bson.M{"owner": args.Address.Val()}}}},
@@ -204,16 +232,16 @@ func (me *T) GetNFTOwnedByAddress(args struct {
 
 			bson.M{"$lookup": bson.M{
 				"from": "MarketNotification",
-				"let":  bson.M{"asset": "$asset", "tokenid": "$tokenid", "market": "$market"},
+				"let":  bson.M{"asset": "$asset", "tokenid": "$tokenid"},
 				"pipeline": []bson.M{
 					bson.M{"$match": bson.M{"user": args.Address.Val()}},
 					bson.M{"$match": bson.M{"eventname": "Auction"}},
 					bson.M{"$match": bson.M{"$expr": bson.M{"$and": []interface{}{
 						bson.M{"$eq": []interface{}{"$tokenid", "$$tokenid"}},
 						bson.M{"$eq": []interface{}{"$asset", "$$asset"}},
-						bson.M{"$eq": []interface{}{"$market", "$$market"}},
+						//bson.M{"$eq": []interface{}{"$market", "$$market"}},
 					}}}},
-					bson.M{"$group": bson.M{"_id": bson.M{"tokenid": "$$tokenid", "asset": "$$asset", "market": "$$market"},
+					bson.M{"$group": bson.M{"_id": bson.M{"tokenid": "$$tokenid", "asset": "$$asset"},
 						"nonce":     bson.M{"$last": "$nonce"},
 						"asset":     bson.M{"$last": "$asset"},
 						"tokenid":   bson.M{"$last": "$tokenid"},
