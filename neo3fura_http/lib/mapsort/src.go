@@ -167,3 +167,84 @@ func MapSort5(ms []map[string]interface {
 	sort.Sort(&mapsSort)
 	return mapsSort.MapList
 }
+
+//*big float
+
+type MapsSort6 struct {
+	Key     string
+	MapList []map[string]interface {
+	}
+}
+
+// Len 为集合内元素的总数
+func (m *MapsSort6) Len() int {
+	return len(m.MapList)
+}
+
+//如果index为i的元素小于index为j的元素，则返回true，否则返回false
+func (m *MapsSort6) Less(i, j int) bool { //降序
+	ii := m.MapList[i][m.Key].(*big.Float)
+	jj := m.MapList[j][m.Key].(*big.Float)
+
+	flag := ii.Cmp(jj)
+	if flag == 1 {
+		return true
+	} else {
+		return false
+	}
+}
+
+//Swap 交换索引为 i 和 j 的元素
+func (m *MapsSort6) Swap(i, j int) {
+	m.MapList[i], m.MapList[j] = m.MapList[j], m.MapList[i]
+}
+
+func MapSort6(ms []map[string]interface {
+}, key string) []map[string]interface {
+} {
+	mapsSort := MapsSort6{}
+	mapsSort.Key = key
+	mapsSort.MapList = ms
+	sort.Sort(&mapsSort)
+	return mapsSort.MapList
+}
+
+type MapsSort7 struct {
+	Key     string
+	MapList []map[string]interface {
+	}
+}
+
+// Len 为集合内元素的总数
+func (m *MapsSort7) Len() int {
+	return len(m.MapList)
+}
+
+//如果index为i的元素小于index为j的元素，则返回true，否则返回false
+func (m *MapsSort7) Less(i, j int) bool { //升序
+	ii := m.MapList[i][m.Key].(*big.Float)
+	jj := m.MapList[j][m.Key].(*big.Float)
+
+	//flag := ii.Cmp(jj)
+	flag := jj.Cmp(ii)
+	if flag == 1 {
+		return true
+	} else {
+		return false
+	}
+}
+
+//Swap 交换索引为 i 和 j 的元素
+func (m *MapsSort7) Swap(i, j int) {
+	m.MapList[i], m.MapList[j] = m.MapList[j], m.MapList[i]
+}
+
+func MapSort7(ms []map[string]interface {
+}, key string) []map[string]interface {
+} {
+	mapsSort := MapsSort7{}
+	mapsSort.Key = key
+	mapsSort.MapList = ms
+	sort.Sort(&mapsSort)
+	return mapsSort.MapList
+}

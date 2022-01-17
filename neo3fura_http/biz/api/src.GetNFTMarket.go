@@ -293,10 +293,14 @@ func (me *T) GetNFTMarket(args struct {
 				usdAuctionAmount := new(big.Float).Quo(ffprice, big.NewFloat(float64(decimal)))
 				item["usdAuctionAmount"] = usdAuctionAmount
 			} else {
-				item["usdAuctionAmount"] = 0
+				item["usdAuctionAmount"] = big.NewFloat(0)
 			}
+		} else {
+			item["usdAuctionAmount"] = big.NewFloat(0)
 		}
 		//获得上架时间
+		a := item["marketnotification"]
+		print(a)
 		if item["marketnotification"] != nil {
 			switch item["marketnotification"].(type) {
 			case string:
@@ -348,9 +352,9 @@ func (me *T) GetNFTMarket(args struct {
 	//按价格排序
 	if args.Sort == "price" {
 		if args.Order == 1 {
-			mapsort.MapSort(r1, "usdAuctionAmount")
+			mapsort.MapSort7(r1, "usdAuctionAmount")
 		} else {
-			mapsort.MapSort2(r1, "usdAuctionAmount")
+			mapsort.MapSort6(r1, "usdAuctionAmount")
 		}
 
 	}
