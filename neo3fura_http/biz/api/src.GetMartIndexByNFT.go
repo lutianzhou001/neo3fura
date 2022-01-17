@@ -59,8 +59,11 @@ func (me *T) GetMarketIndexByAsset(args struct {
 	if err != nil {
 		return err
 	}
-
-	result["totalsupply"] = r1[0]["count"]
+	if len(r1) > 0 {
+		result["totalsupply"] = r1[0]["count"]
+	} else {
+		result["totalsupply"] = 0
+	}
 
 	//获取上架记录
 	r2, err := me.Client.QueryAggregate(
@@ -140,14 +143,13 @@ func (me *T) GetMarketIndexByAsset(args struct {
 	}
 
 	if len(r3) > 0 {
+		for _, item := range r3 {
+			item["account"] = item["owner"]
+			owner = append(owner, item)
+		}
 
-	}
-	for _, item := range r3 {
-		item["account"] = item["owner"]
-		owner = append(owner, item)
 	}
 	ownerGroup := utils.GroupBy(owner, "account") // owner 分组
-
 	ownerCount := len(ownerGroup)
 	result["totalowner"] = ownerCount
 
@@ -243,8 +245,7 @@ func (me *T) GetMarketIndexByAsset(args struct {
 
 	for _, item := range r5 {
 		auctionAsset := item["auctionAsset"].(string)
-		aa := item["auctionAmount"].(primitive.Decimal128).String()
-		auctionAmount, err2 := strconv.ParseInt(aa, 10, 64)
+		auctionAmount, _, err2 := item["auctionAmount"].(primitive.Decimal128).BigInt()
 		if err2 != nil {
 			return err
 		}
@@ -262,24 +263,32 @@ func (me *T) GetMarketIndexByAsset(args struct {
 		if price == 0 {
 			price = 1
 		}
-		amount := float64(auctionAmount) * price / float64(decimal)
-		item["conAmount"] = amount
+
+		bfauctionAmount := new(big.Float).SetInt(auctionAmount)
+		flag := auctionAmount.Cmp(big.NewInt(0))
+
+		if flag == 1 {
+			bfprice := big.NewFloat(price)
+			ffprice := big.NewFloat(1).Mul(bfprice, bfauctionAmount)
+			usdAuctionAmount := new(big.Float).Quo(ffprice, big.NewFloat(float64(decimal)))
+			item["usdAmount"] = usdAuctionAmount
+		} else {
+			item["usdAmount"] = 0
+		}
 
 	}
-	mapsort.MapSort3(r5, "conAmount")
+	mapsort.MapSort7(r5, "usdAmount")
 
 	if len(r5) > 0 {
 		result["auctionAsset"] = r5[0]["auctionAsset"]
 		result["auctionAmount"] = r5[0]["auctionAmount"]
-		result["conAmount"] = r5[0]["conAmount"]
+		result["usdAmount"] = r5[0]["usdAmount"]
 	} else {
 		result["auctionAsset"] = "——"
 		result["auctionAmount"] = "——"
+		result["usdAmount"] = "——"
 	}
 
-	if err != nil {
-		return err
-	}
 	r, err := json.Marshal(result)
 	if err != nil {
 		return err
