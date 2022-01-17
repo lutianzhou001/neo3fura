@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"math/big"
+	"neo3fura_http/lib/mapsort"
 	"neo3fura_http/lib/type/NFTstate"
 	"neo3fura_http/lib/type/h160"
 	"neo3fura_http/lib/type/strval"
@@ -50,15 +52,24 @@ func (me *T) GetNFTOwnedByAddress(args struct {
 		}
 	}
 
-	if args.Sort == "timestamp" || args.Sort == "price" {
+	if args.Sort == "deadline" { //按截止时间排序
 		b := bson.M{}
 		if args.Order == -1 || args.Order == 1 {
 			b = bson.M{"$sort": bson.M{args.Sort.Val(): args.Order}}
 		} else {
-			b = bson.M{"$sort": bson.M{args.Sort.Val(): 1}}
+			b = bson.M{"$sort": bson.M{args.Sort.Val(): -1}}
 		}
 		pipeline = append(pipeline, b)
 	}
+	//if args.Sort == "timestamp" || args.Sort == "price" {
+	//	b := bson.M{}
+	//	if args.Order == -1 || args.Order == 1 {
+	//		b = bson.M{"$sort": bson.M{args.Sort.Val(): args.Order}}
+	//	} else {
+	//		b = bson.M{"$sort": bson.M{args.Sort.Val(): 1}}
+	//	}
+	//	pipeline = append(pipeline, b)
+	//}
 
 	if args.NFTState.Val() == NFTstate.Auction.Val() { //拍卖中  accont >0 && auctionType =2 &&  owner=market && runtime <deadline
 		pipeline1 := []bson.M{
@@ -66,7 +77,28 @@ func (me *T) GetNFTOwnedByAddress(args struct {
 			bson.M{"$match": bson.M{"amount": bson.M{"$gt": 0}}},
 			bson.M{"$match": bson.M{"auctionType": bson.M{"$eq": 2}}},
 			bson.M{"$match": bson.M{"deadline": bson.M{"$gt": currentTime}}},
-			bson.M{"$project": bson.M{"_id": 1, "asset": 1, "tokenid": 1, "amount": 1, "owner": 1, "market": 1, "difference": bson.M{"$eq": []string{"$owner", "$market"}}, "auctionType": 1, "auctor": 1, "auctionAsset": 1, "auctionAmount": 1, "deadline": 1, "bidder": 1, "bidAmount": 1, "timestamp": 1, "state": "auction"}},
+			bson.M{"$lookup": bson.M{
+				"from": "MarketNotification",
+				"let":  bson.M{"asset": "$asset", "tokenid": "$tokenid", "market": "$market"},
+				"pipeline": []bson.M{
+					bson.M{"$match": bson.M{"user": args.Address.Val()}},
+					bson.M{"$match": bson.M{"eventname": "Auction"}},
+					bson.M{"$match": bson.M{"$expr": bson.M{"$and": []interface{}{
+						bson.M{"$eq": []interface{}{"$tokenid", "$$tokenid"}},
+						bson.M{"$eq": []interface{}{"$asset", "$$asset"}},
+						bson.M{"$eq": []interface{}{"$market", "$$market"}},
+					}}}},
+					bson.M{"$group": bson.M{"_id": bson.M{"tokenid": "$$tokenid", "asset": "$$asset", "market": "$$market"},
+						"nonce":     bson.M{"$last": "$nonce"},
+						"asset":     bson.M{"$last": "$asset"},
+						"tokenid":   bson.M{"$last": "$tokenid"},
+						"timestamp": bson.M{"$last": "$timestamp"},
+					}},
+					bson.M{"$project": bson.M{"asset": 1, "nonce": 1, "tokenid": 1, "timestamp": 1}},
+				},
+				"as": "marketnotification"},
+			},
+			bson.M{"$project": bson.M{"_id": 1, "asset": 1, "marketnotification": 1, "tokenid": 1, "amount": 1, "owner": 1, "market": 1, "difference": bson.M{"$eq": []string{"$owner", "$market"}}, "auctionType": 1, "auctor": 1, "auctionAsset": 1, "auctionAmount": 1, "deadline": 1, "bidder": 1, "bidAmount": 1, "timestamp": 1, "state": "auction"}},
 			bson.M{"$match": bson.M{"difference": true}},
 			bson.M{"$skip": args.Skip},
 			bson.M{"$limit": args.Limit},
@@ -79,7 +111,28 @@ func (me *T) GetNFTOwnedByAddress(args struct {
 			bson.M{"$match": bson.M{"amount": bson.M{"$gt": 0}}},
 			bson.M{"$match": bson.M{"auctionType": bson.M{"$eq": 1}}},
 			bson.M{"$match": bson.M{"deadline": bson.M{"$gt": currentTime}}},
-			bson.M{"$project": bson.M{"_id": 1, "asset": 1, "tokenid": 1, "amount": 1, "owner": 1, "market": 1, "difference": bson.M{"$eq": []string{"$owner", "$market"}}, "auctionType": 1, "auctor": 1, "auctionAsset": 1, "auctionAmount": 1, "deadline": 1, "bidder": 1, "bidAmount": 1, "timestamp": 1, "state": "sale"}},
+			bson.M{"$lookup": bson.M{
+				"from": "MarketNotification",
+				"let":  bson.M{"asset": "$asset", "tokenid": "$tokenid", "market": "$market"},
+				"pipeline": []bson.M{
+					bson.M{"$match": bson.M{"user": args.Address.Val()}},
+					bson.M{"$match": bson.M{"eventname": "Auction"}},
+					bson.M{"$match": bson.M{"$expr": bson.M{"$and": []interface{}{
+						bson.M{"$eq": []interface{}{"$tokenid", "$$tokenid"}},
+						bson.M{"$eq": []interface{}{"$asset", "$$asset"}},
+						bson.M{"$eq": []interface{}{"$market", "$$market"}},
+					}}}},
+					bson.M{"$group": bson.M{"_id": bson.M{"tokenid": "$$tokenid", "asset": "$$asset", "market": "$$market"},
+						"nonce":     bson.M{"$last": "$nonce"},
+						"asset":     bson.M{"$last": "$asset"},
+						"tokenid":   bson.M{"$last": "$tokenid"},
+						"timestamp": bson.M{"$last": "$timestamp"},
+					}},
+					bson.M{"$project": bson.M{"asset": 1, "nonce": 1, "tokenid": 1, "timestamp": 1}},
+				},
+				"as": "marketnotification"},
+			},
+			bson.M{"$project": bson.M{"_id": 1, "asset": 1, "marketnotification": 1, "tokenid": 1, "amount": 1, "owner": 1, "market": 1, "difference": bson.M{"$eq": []string{"$owner", "$market"}}, "auctionType": 1, "auctor": 1, "auctionAsset": 1, "auctionAmount": 1, "deadline": 1, "bidder": 1, "bidAmount": 1, "timestamp": 1, "state": "sale"}},
 			bson.M{"$match": bson.M{"difference": true}},
 			bson.M{"$skip": args.Skip},
 			bson.M{"$limit": args.Limit},
@@ -90,20 +143,52 @@ func (me *T) GetNFTOwnedByAddress(args struct {
 		pipeline1 := []bson.M{
 			bson.M{"$match": bson.M{"owner": args.Address.Val()}},
 			bson.M{"$match": bson.M{"amount": bson.M{"$gt": 0}}},
-			bson.M{"$project": bson.M{"_id": 1, "asset": 1, "tokenid": 1, "amount": 1, "owner": 1, "market": 1, "difference": bson.M{"$eq": []string{"$owner", "$market"}}, "auctionType": 1, "auctor": 1, "auctionAsset": 1, "auctionAmount": 1, "deadline": 1, "bidder": 1, "bidAmount": 1, "timestamp": 1, "state": "notlisted"}},
+
+			bson.M{"$project": bson.M{"_id": 1, "asset": 1, "marketnotification": 1, "tokenid": 1, "amount": 1, "owner": 1, "market": 1, "difference": bson.M{"$eq": []string{"$owner", "$market"}}, "auctionType": 1, "auctor": 1, "auctionAsset": 1, "auctionAmount": 1, "deadline": 1, "bidder": 1, "bidAmount": 1, "timestamp": 1, "state": "notlisted"}},
 			bson.M{"$match": bson.M{"difference": false}},
 			bson.M{"$skip": args.Skip},
 			bson.M{"$limit": args.Limit},
 		}
 		pipeline = append(pipeline, pipeline1...)
 
-	} else if args.NFTState.Val() == NFTstate.Unclaimed.Val() { //未领取  accont >0 &&  runtime > deadline && owner== market && bidAccount >0
+	} else if args.NFTState.Val() == NFTstate.Unclaimed.Val() { //未领取 (买家和卖家) accont >0 &&  runtime > deadline && owner== market && bidAccount >0
 		pipeline1 := []bson.M{
-			bson.M{"$match": bson.M{"auctor": args.Address.Val()}},
+			bson.M{"$match": bson.M{"$or": []interface{}{
+				bson.M{"$and": []interface{}{ //卖家未领取(过期)
+					bson.M{"auctor": args.Address.Val()},
+					bson.M{"bidAmount": bson.M{"$eq": 0}},
+				}},
+				bson.M{"$and": []interface{}{ //买家未领取
+					bson.M{"bidder": args.Address.Val()},
+					bson.M{"bidAmount": bson.M{"$gt": 0}},
+				}},
+			}}},
 			bson.M{"$match": bson.M{"amount": bson.M{"$gt": 0}}},
 			//bson.M{"$match": bson.M{"bidAmount": bson.M{"$gt": 0}}},
 			bson.M{"$match": bson.M{"deadline": bson.M{"$lt": currentTime}}},
-			bson.M{"$project": bson.M{"_id": 1, "asset": 1, "tokenid": 1, "amount": 1, "owner": 1, "market": 1, "difference": bson.M{"$eq": []string{"$owner", "$market"}}, "auctionType": 1, "auctor": 1, "auctionAsset": 1, "auctionAmount": 1, "deadline": 1, "bidder": 1, "bidAmount": 1, "timestamp": 1, "state": "unclaimed"}},
+
+			bson.M{"$lookup": bson.M{
+				"from": "MarketNotification",
+				"let":  bson.M{"asset": "$asset", "tokenid": "$tokenid", "market": "$market"},
+				"pipeline": []bson.M{
+					bson.M{"$match": bson.M{"user": args.Address.Val()}},
+					bson.M{"$match": bson.M{"eventname": "Auction"}},
+					bson.M{"$match": bson.M{"$expr": bson.M{"$and": []interface{}{
+						bson.M{"$eq": []interface{}{"$tokenid", "$$tokenid"}},
+						bson.M{"$eq": []interface{}{"$asset", "$$asset"}},
+						bson.M{"$eq": []interface{}{"$market", "$$market"}},
+					}}}},
+					bson.M{"$group": bson.M{"_id": bson.M{"tokenid": "$$tokenid", "asset": "$$asset", "market": "$$market"},
+						"nonce":     bson.M{"$last": "$nonce"},
+						"asset":     bson.M{"$last": "$asset"},
+						"tokenid":   bson.M{"$last": "$tokenid"},
+						"timestamp": bson.M{"$last": "$timestamp"},
+					}},
+					bson.M{"$project": bson.M{"asset": 1, "nonce": 1, "tokenid": 1, "timestamp": 1}},
+				},
+				"as": "marketnotification"},
+			},
+			bson.M{"$project": bson.M{"_id": 1, "asset": 1, "marketnotification": 1, "tokenid": 1, "amount": 1, "owner": 1, "market": 1, "difference": bson.M{"$eq": []string{"$owner", "$market"}}, "auctionType": 1, "auctor": 1, "auctionAsset": 1, "auctionAmount": 1, "deadline": 1, "bidder": 1, "bidAmount": 1, "timestamp": 1, "state": "unclaimed"}},
 			bson.M{"$match": bson.M{"difference": true}},
 			bson.M{"$skip": args.Skip},
 			bson.M{"$limit": args.Limit},
@@ -116,7 +201,30 @@ func (me *T) GetNFTOwnedByAddress(args struct {
 				bson.M{"auctor": args.Address.Val()},
 				bson.M{"owner": args.Address.Val()}}}},
 			bson.M{"$match": bson.M{"amount": bson.M{"$gt": 0}}},
-			bson.M{"$project": bson.M{"_id": 1, "asset": 1, "tokenid": 1, "amount": 1, "owner": 1, "market": 1, "auctionType": 1, "auctor": 1, "auctionAsset": 1, "auctionAmount": 1, "deadline": 1, "bidder": 1, "bidAmount": 1, "timestamp": 1, "state": ""}},
+
+			bson.M{"$lookup": bson.M{
+				"from": "MarketNotification",
+				"let":  bson.M{"asset": "$asset", "tokenid": "$tokenid", "market": "$market"},
+				"pipeline": []bson.M{
+					bson.M{"$match": bson.M{"user": args.Address.Val()}},
+					bson.M{"$match": bson.M{"eventname": "Auction"}},
+					bson.M{"$match": bson.M{"$expr": bson.M{"$and": []interface{}{
+						bson.M{"$eq": []interface{}{"$tokenid", "$$tokenid"}},
+						bson.M{"$eq": []interface{}{"$asset", "$$asset"}},
+						bson.M{"$eq": []interface{}{"$market", "$$market"}},
+					}}}},
+					bson.M{"$group": bson.M{"_id": bson.M{"tokenid": "$$tokenid", "asset": "$$asset", "market": "$$market"},
+						"nonce":     bson.M{"$last": "$nonce"},
+						"asset":     bson.M{"$last": "$asset"},
+						"tokenid":   bson.M{"$last": "$tokenid"},
+						"timestamp": bson.M{"$last": "$timestamp"},
+					}},
+					bson.M{"$project": bson.M{"asset": 1, "nonce": 1, "tokenid": 1, "timestamp": 1}},
+				},
+				"as": "marketnotification"},
+			},
+
+			bson.M{"$project": bson.M{"_id": 1, "asset": 1, "marketnotification": 1, "tokenid": 1, "amount": 1, "owner": 1, "market": 1, "auctionType": 1, "auctor": 1, "auctionAsset": 1, "auctionAmount": 1, "deadline": 1, "bidder": 1, "bidAmount": 1, "timestamp": 1, "state": ""}},
 			bson.M{"$skip": args.Skip},
 			bson.M{"$limit": args.Limit},
 		}
@@ -153,11 +261,7 @@ func (me *T) GetNFTOwnedByAddress(args struct {
 				return err
 			}
 
-			//ba := item["bidAmount"].(primitive.Decimal128).String()
-			//bidAmount, err := strconv.ParseInt(ba, 10, 64)
-			if err != nil {
-				return err
-			}
+			bidAmount := item["bidAmount"].(primitive.Decimal128).String()
 
 			deadline, _ := item["deadline"].(int64)
 			auctionType, _ := item["auctionType"].(int32)
@@ -168,13 +272,64 @@ func (me *T) GetNFTOwnedByAddress(args struct {
 				item["state"] = NFTstate.Sale.Val()
 			} else if amount > 0 && item["owner"] != item["market"] {
 				item["state"] = NFTstate.NotListed.Val()
-			} else if amount > 0 && deadline < currentTime && item["owner"] == item["market"] {
+			} else if amount > 0 && bidAmount == "0" && deadline < currentTime && item["owner"] == item["market"] {
 				item["state"] = NFTstate.Unclaimed.Val()
+			} else if amount > 0 && deadline < currentTime && bidAmount == "0" && item["owner"] == item["market"] {
+				item["state"] = NFTstate.Expired.Val()
 			} else {
 				item["state"] = ""
 			}
-
 		}
+
+		//价格转换
+		auctionAsset := item["auctionAsset"]
+		auctionAmount, _, err2 := item["auctionAmount"].(primitive.Decimal128).BigInt()
+		if err2 != nil {
+			return err2
+		}
+		if auctionAsset != nil {
+			dd, _ := OpenAssetHashFile()
+			decimal := dd[auctionAsset.(string)] //获取精度
+			if decimal == 0 {
+				decimal = 1
+			}
+			price, err3 := GetPrice(auctionAsset.(string)) //  获取价格
+			if err3 != nil {
+				return err3
+			}
+			if price == 0 {
+				price = 1
+			}
+
+			bfauctionAmount := new(big.Float).SetInt(auctionAmount)
+			flag := auctionAmount.Cmp(big.NewInt(0))
+
+			if flag == 1 {
+				bfprice := big.NewFloat(price)
+				ffprice := big.NewFloat(1).Mul(bfprice, bfauctionAmount)
+				usdAuctionAmount := new(big.Float).Quo(ffprice, big.NewFloat(float64(decimal)))
+				item["usdAuctionAmount"] = usdAuctionAmount
+			} else {
+				item["usdAuctionAmount"] = 0
+			}
+		}
+
+		//获得上架时间
+		if item["marketnotification"] != nil {
+			switch item["marketnotification"].(type) {
+			case string:
+				item["listedTimestamp"] = 0
+			case primitive.A:
+				marketnotification := item["marketnotification"].(primitive.A)
+				if len(marketnotification) > 0 {
+					mn := []interface{}(marketnotification)[0].(map[string]interface{})
+					item["listedTimestamp"] = mn["timestamp"]
+				}
+			}
+		} else {
+			item["listedTimestamp"] = 0
+		}
+		delete(item, "marketnotification")
 
 		asset := item["asset"].(string)
 		tokenid := item["tokenid"].(string)
@@ -184,29 +339,56 @@ func (me *T) GetNFTOwnedByAddress(args struct {
 		if err1 != nil {
 			item["image"] = ""
 			item["name"] = ""
+			item["number"] = ""
+			item["video"] = ""
+			item["supply"] = ""
+			item["series"] = ""
 		}
-		extendData := raw3["properties"]
-		if extendData != nil {
-			var data map[string]interface{}
-			if err := json.Unmarshal([]byte(extendData.(string)), &data); err == nil {
-				value, ok := data["image"]
-				if ok {
-					item["image"] = value
-				} else {
-					item["image"] = ""
-				}
-				value1, ok1 := data["name"]
-				if ok1 {
-					item["name"] = value1
-				} else {
-					item["name"] = ""
-				}
 
-			} else {
-				return err
+		item["image"] = raw3["image"]
+		item["name"] = raw3["name"]
+		item["number"] = raw3["number"]
+		item["video"] = raw3["video"]
+		item["supply"] = raw3["supply"]
+		item["series"] = raw3["series"]
+	}
+
+	//  按上架时间排序
+	if args.Sort == "timestamp" {
+		if args.Order == 1 {
+			mapsort.MapSort(r1, "listedTimestamp")
+		} else {
+			mapsort.MapSort2(r1, "listedTimestamp")
+		}
+
+	}
+
+	//按价格排序
+	if args.Sort == "price" {
+		if args.Order == 1 {
+			mapsort.MapSort(r1, "usdAuctionAmount")
+		} else {
+			mapsort.MapSort2(r1, "usdAuctionAmount")
+		}
+
+	}
+
+	// 按上架时间排序
+	if args.Sort == "deadline" {
+		count := 0
+		var arr []int
+		for _, i := range r1 {
+			count++
+			if i["state"] == "unclaimed" {
+				arr = append(arr, count)
 			}
 		}
+		//删除未领取的nft
+		for i := len(arr) - 1; i >= 0; i-- {
+			num := arr[i]
+			r1 = append(r1[:num-1], r1[num:]...)
 
+		}
 	}
 
 	//获取查询总量

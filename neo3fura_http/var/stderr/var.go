@@ -30,4 +30,6 @@ var ErrArgsInner = jsonrpc2.NewError(-32001, "start must not bigger end")
 
 var ErrAMarketConfig = jsonrpc2.NewError(-32001, "market config error")
 
-var ErrPrice = jsonrpc2.NewError(-32001, "asset convent price error")
+var ErrPrice = jsonrpc2.NewError(-32001, "asset conversion price error")
+
+var ErrData = jsonrpc2.NewError(-32001, "data conversion error")

@@ -7,6 +7,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"io/ioutil"
+	"math/big"
 	"neo3fura_http/lib/mapsort"
 	"neo3fura_http/lib/type/h160"
 	"neo3fura_http/lib/utils"
@@ -88,17 +89,18 @@ func (me *T) GetMarketIndexByAsset(args struct {
 	}
 	owner := make([]map[string]interface{}, 0)
 	for _, item := range r2 {
-		ba := item["bidAmount"].(primitive.Decimal128).String()
-		bidAmount, err2 := strconv.ParseInt(ba, 10, 64)
+		bidAmount, _, err2 := item["bidAmount"].(primitive.Decimal128).BigInt()
+		bidAmountFlag := bidAmount.Cmp(big.NewInt(0))
+		//bidAmount, err2 := strconv.ParseInt(ba, 10, 64)
 		if err2 != nil {
 			return err
 		}
 		deadline, _ := item["deadline"].(int64)
 		if item["owner"] == item["market"] && deadline > currentTime { //在售
 			item["account"] = item["auctor"]
-		} else if bidAmount > 0 && deadline < currentTime && item["owner"] == item["market"] { //未领取
+		} else if bidAmountFlag == 1 && deadline < currentTime && item["owner"] == item["market"] { //未领取
 			item["account"] = item["bidder"]
-		} else if deadline < currentTime && bidAmount == 0 && item["owner"] == item["market"] { //过期
+		} else if deadline < currentTime && bidAmountFlag == 0 && item["owner"] == item["market"] { //过期
 			item["account"] = item["auctor"]
 		} else {
 			item["account"] = ""
