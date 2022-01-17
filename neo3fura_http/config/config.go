@@ -110,4 +110,5 @@ var Apis = []string{
 	"GetMarketIndexByAsset",
 	"GetNeoFsImage",
 	"GetMarketTokenidList",
+	"GetMarketWhiteList",
 }

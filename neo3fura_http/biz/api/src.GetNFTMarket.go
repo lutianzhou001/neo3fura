@@ -49,7 +49,7 @@ func (me *T) GetNFTMarket(args struct {
 		}
 	}
 
-	if len(args.MarketHash) > 0 && args.MarketHash != "" {
+	if len(args.MarketHash) > 0 && args.MarketHash != "" && args.NFTState.Val() == NFTstate.Auction.Val() && args.NFTState.Val() == NFTstate.Sale.Val() {
 		if args.MarketHash.Valid() == false {
 			return stderr.ErrInvalidArgs
 		} else {
@@ -57,22 +57,6 @@ func (me *T) GetNFTMarket(args struct {
 			pipeline = append(pipeline, a)
 		}
 	}
-
-	//if len(args.SecondaryMarket) > 0 && args.SecondaryMarket != "" {
-	//	if args.SecondaryMarket.Valid() == false {
-	//		return stderr.ErrInvalidArgs
-	//	} else {
-	//		a := bson.M{"$match": bson.M{"market": args.SecondaryMarket}}
-	//		pipeline = append(pipeline, a)
-	//	}
-	//} else {
-	//	if args.PrimaryMarket.Valid() == false {
-	//		return stderr.ErrInvalidArgs
-	//	} else {
-	//		a := bson.M{"$match": bson.M{"market": bson.M{"$ne": args.PrimaryMarket.Val()}}}
-	//		pipeline = append(pipeline, a)
-	//	}
-	//}
 
 	if args.Sort == "deadline" { //按截止时间排序
 		b := bson.M{}
@@ -83,15 +67,6 @@ func (me *T) GetNFTMarket(args struct {
 		}
 		pipeline = append(pipeline, b)
 	}
-	//else if args.Sort == "price" { //按上架价格排序
-	//	b := bson.M{}
-	//	if args.Order == -1 || args.Order == 1 {
-	//		b = bson.M{"$sort": bson.M{"auctionAmount": args.Order}}
-	//	} else {
-	//		b = bson.M{"$sort": bson.M{"auctionAmount": 1}}
-	//	}
-	//	pipeline = append(pipeline, b)
-	//}
 
 	if args.NFTState.Val() == NFTstate.Auction.Val() { //拍卖中  accont >0 && auctionType =2 &&  owner=market && runtime <deadline
 		pipeline1 := []bson.M{
