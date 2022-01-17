@@ -101,8 +101,8 @@ func (me *T) GetBidInfoByNFT(args struct {
 		rr["nonce"] = item["nonce"]
 		extendData := item["extendData"].(string)
 		var dat map[string]interface{}
-		if err := json.Unmarshal([]byte(extendData), &dat); err == nil {
-			if err != nil {
+		if err1 := json.Unmarshal([]byte(extendData), &dat); err1 == nil {
+			if err1 != nil {
 				return err
 			}
 			auctionAsset := dat["auctionAsset"]

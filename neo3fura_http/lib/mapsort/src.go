@@ -248,3 +248,33 @@ func MapSort7(ms []map[string]interface {
 	sort.Sort(&mapsSort)
 	return mapsSort.MapList
 }
+
+//String
+
+type MapsSort8 struct {
+	Key     string
+	MapList []map[string]interface {
+	}
+}
+
+func (m *MapsSort8) Len() int {
+	return len(m.MapList)
+}
+
+func (m *MapsSort8) Less(i, j int) bool {
+	return m.MapList[i][m.Key].(string) < m.MapList[j][m.Key].(string)
+}
+
+func (m *MapsSort8) Swap(i, j int) {
+	m.MapList[i], m.MapList[j] = m.MapList[j], m.MapList[i]
+}
+
+func MapSort8(ms []map[string]interface {
+}, key string) []map[string]interface {
+} {
+	mapsSort := MapsSort8{}
+	mapsSort.Key = key
+	mapsSort.MapList = ms
+	sort.Sort(&mapsSort)
+	return mapsSort.MapList
+}
