@@ -129,6 +129,9 @@ func (me *T) GetNFTClass(args struct {
 			if err1 != nil {
 				item["image"] = ""
 				item["name"] = ""
+				item["series"] = ""
+				item["supply"] = ""
+				item["number"] = ""
 			}
 			properties := raw3["properties"].(string)
 			if properties != "" {
@@ -149,7 +152,6 @@ func (me *T) GetNFTClass(args struct {
 							return err12
 						}
 						item["number"] = number
-
 					} else {
 						item["name"] = ""
 					}
