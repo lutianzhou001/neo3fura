@@ -193,7 +193,7 @@ func (me *T) GetNFTClass(args struct {
 
 			}
 
-			//获取climedi
+			//获取claimed
 			if len(r2) > 0 {
 				for _, item1 := range r2 {
 					if item["_id"] == item1["_id"] {
