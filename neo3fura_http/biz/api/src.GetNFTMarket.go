@@ -15,16 +15,17 @@ import (
 )
 
 func (me *T) GetNFTMarket(args struct {
-	ContractHash h160.T   //  asset
-	AssetHash    h160.T   // auctionType
-	MarketHash   h160.T   //
-	NFTState     strval.T //state:aution  sale  notlisted  unclaimed
-	Sort         strval.T //listedTime  price  deadline
-	Order        int64    //-1:降序  +1：升序
-	Limit        int64
-	Skip         int64
-	Filter       map[string]interface{}
-	Raw          *map[string]interface{}
+	ContractHash    h160.T //  asset
+	AssetHash       h160.T // auctionType
+	SecondaryMarket h160.T //
+	PrimaryMarket   h160.T
+	NFTState        strval.T //state:aution  sale  notlisted  unclaimed
+	Sort            strval.T //listedTime  price  deadline
+	Order           int64    //-1:降序  +1：升序
+	Limit           int64
+	Skip            int64
+	Filter          map[string]interface{}
+	Raw             *map[string]interface{}
 }, ret *json.RawMessage) error {
 	currentTime := time.Now().UnixNano() / 1e6
 	pipeline := []bson.M{}
@@ -47,11 +48,18 @@ func (me *T) GetNFTMarket(args struct {
 		}
 	}
 
-	if len(args.MarketHash) > 0 && args.MarketHash != "" {
-		if args.MarketHash.Valid() == false {
+	if len(args.SecondaryMarket) > 0 && args.SecondaryMarket != "" {
+		if args.SecondaryMarket.Valid() == false {
 			return stderr.ErrInvalidArgs
 		} else {
-			a := bson.M{"$match": bson.M{"market": args.MarketHash}}
+			a := bson.M{"$match": bson.M{"market": args.SecondaryMarket}}
+			pipeline = append(pipeline, a)
+		}
+	} else {
+		if args.PrimaryMarket.Valid() == false {
+			return stderr.ErrInvalidArgs
+		} else {
+			a := bson.M{"$match": bson.M{"market": bson.M{"$ne": args.PrimaryMarket.Val()}}}
 			pipeline = append(pipeline, a)
 		}
 	}
