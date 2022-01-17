@@ -147,7 +147,7 @@ func (me *T) GetNFTRecordByAddress(args struct {
 						return err12
 					}
 					auctionAsset := dat["auctionAsset"]
-					auctionAmount := dat["auctionAm"]
+					auctionAmount := dat["auctionAmount"]
 					rr["auctionAsset"] = auctionAsset
 					rr["auctionAmount"] = auctionAmount
 					rr["from"] = item["user"]
