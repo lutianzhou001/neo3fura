@@ -86,6 +86,8 @@ func (me *T) GetNFTOwnedByAddress(args struct {
 	if len(wl) > 0 {
 		white := bson.M{"$match": bson.M{"asset": bson.M{"$in": wl}}}
 		pipeline = append(pipeline, white)
+	} else {
+		return stderr.ErrWhiteList
 	}
 
 	if args.NFTState.Val() == NFTstate.Auction.Val() && args.NFTState.Val() == NFTstate.Sale.Val() && args.NFTState.Val() == NFTstate.Unclaimed.Val() {
