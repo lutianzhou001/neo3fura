@@ -13,7 +13,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	log2 "neo3fura_http/lib/log"
-	limit2 "neo3fura_http/var/limit"
 	"neo3fura_http/var/stderr"
 )
 
@@ -245,17 +244,17 @@ func (me *T) QueryAggregate(args struct {
 	Query      []string
 }, ret *json.RawMessage) ([]map[string]interface{}, error) {
 
-	for _, v := range args.Pipeline {
-		limit := v["$limit"]
-		if limit != nil {
-			if limit.(int64) == 0 {
-				v["$limit"] = limit2.DefaultLimit
-			}
-			if limit.(int64) > limit2.MaxLimit {
-				v["$limit"] = limit2.MaxLimit
-			}
-		}
-	}
+	//for _, v := range args.Pipeline {
+	//	limit := v["$limit"]
+	//	if limit != nil {
+	//		if limit.(int64) == 0 {
+	//			v["$limit"] = limit2.DefaultLimit
+	//		}
+	//		if limit.(int64) > limit2.MaxLimit {
+	//			v["$limit"] = limit2.MaxLimit
+	//		}
+	//	}
+	//}
 
 	var results []map[string]interface{}
 	convert := make([]map[string]interface{}, 0)
