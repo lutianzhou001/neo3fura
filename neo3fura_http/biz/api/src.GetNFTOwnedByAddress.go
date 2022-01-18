@@ -64,7 +64,7 @@ func (me *T) GetNFTOwnedByAddress(args struct {
 	}
 
 	if len(args.MarketHash) > 0 && args.MarketHash != "" {
-		if args.AssetHash.Valid() == false {
+		if args.MarketHash.Valid() == false {
 			return stderr.ErrInvalidArgs
 		} else {
 			//白名单
