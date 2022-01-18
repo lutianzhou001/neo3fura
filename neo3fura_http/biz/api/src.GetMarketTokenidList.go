@@ -8,6 +8,7 @@ import (
 	"neo3fura_http/lib/type/h160"
 	"neo3fura_http/lib/type/strval"
 	"neo3fura_http/var/stderr"
+	"time"
 )
 
 func (me *T) GetMarketTokenidList(args struct {
@@ -17,7 +18,7 @@ func (me *T) GetMarketTokenidList(args struct {
 	Filter     map[string]interface{}
 	Raw        *map[string]interface{}
 }, ret *json.RawMessage) error {
-	//currentTime := time.Now().UnixNano() / 1e6
+	currentTime := time.Now().UnixNano() / 1e6
 	if args.AssetHash.Valid() == false {
 		return stderr.ErrInvalidArgs
 	}
@@ -49,6 +50,7 @@ func (me *T) GetMarketTokenidList(args struct {
 	}
 
 	pipeline := []bson.M{
+		bson.M{"$match": bson.M{"deadline": bson.M{"$gt": currentTime}}},
 		bson.M{"$match": bson.M{"amount": bson.M{"$gt": 0}}},
 		bson.M{"$match": bson.M{"auctionType": bson.M{"$eq": 1}}},
 		bson.M{"$match": bson.M{"market": bson.M{"$eq": args.MarketHash.Val()}}},

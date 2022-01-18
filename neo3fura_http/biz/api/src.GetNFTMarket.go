@@ -49,12 +49,40 @@ func (me *T) GetNFTMarket(args struct {
 		}
 	}
 
-	if len(args.MarketHash) > 0 && args.MarketHash != "" && args.NFTState.Val() == NFTstate.Auction.Val() && args.NFTState.Val() == NFTstate.Sale.Val() {
-		if args.MarketHash.Valid() == false {
-			return stderr.ErrInvalidArgs
+	if len(args.MarketHash) > 0 && args.MarketHash != "" {
+		if args.NFTState.Val() == NFTstate.Auction.Val() || args.NFTState.Val() == NFTstate.Sale.Val() {
+			if args.MarketHash.Valid() == false {
+				return stderr.ErrInvalidArgs
+			} else {
+				a := bson.M{"$match": bson.M{"market": args.MarketHash}}
+				pipeline = append(pipeline, a)
+			}
+		}
+		//白名单
+		raw1 := make(map[string]interface{})
+		err1 := me.GetMarketWhiteList(struct {
+			MarketHash h160.T
+			Filter     map[string]interface{}
+			Raw        *map[string]interface{}
+		}{MarketHash: args.MarketHash, Raw: &raw1}, ret) //nonce 分组，并按时间排序
+		if err1 != nil {
+			return err1
+		}
+
+		whiteList := raw1["whiteList"]
+		if whiteList == nil || whiteList == "" {
+			return stderr.ErrWhiteList
+		}
+		s := whiteList.([]string)
+		var wl []interface{}
+		for _, w := range s {
+			wl = append(wl, w)
+		}
+		if len(wl) > 0 {
+			white := bson.M{"$match": bson.M{"asset": bson.M{"$in": wl}}}
+			pipeline = append(pipeline, white)
 		} else {
-			a := bson.M{"$match": bson.M{"market": args.MarketHash}}
-			pipeline = append(pipeline, a)
+			return stderr.ErrWhiteList
 		}
 	}
 
