@@ -117,12 +117,9 @@ func (me *T) GetNFTMarket(args struct {
 						bson.M{"$eq": []interface{}{"$asset", "$$asset"}},
 						bson.M{"$eq": []interface{}{"$market", "$$market"}},
 					}}}},
-					bson.M{"$group": bson.M{"_id": bson.M{"tokenid": "$$tokenid", "asset": "$$asset", "market": "$$market"},
-						"nonce":     bson.M{"$last": "$nonce"},
-						"asset":     bson.M{"$last": "$asset"},
-						"tokenid":   bson.M{"$last": "$tokenid"},
-						"timestamp": bson.M{"$last": "$timestamp"},
-					}},
+
+					bson.M{"$sort": bson.M{"nonce": -1}},
+					bson.M{"$limit": 1},
 					bson.M{"$project": bson.M{"asset": 1, "nonce": 1, "tokenid": 1, "timestamp": 1}},
 				},
 				"as": "marketnotification"},
@@ -130,7 +127,7 @@ func (me *T) GetNFTMarket(args struct {
 
 			bson.M{"$project": bson.M{"_id": 1, "marketnotification": 1, "asset": 1, "tokenid": 1, "amount": 1, "owner": 1, "market": 1, "difference": bson.M{"$eq": []string{"$owner", "$market"}}, "auctionType": 1, "auctor": 1, "auctionAsset": 1, "auctionAmount": 1, "deadline": 1, "bidder": 1, "bidAmount": 1, "timestamp": 1, "state": "auction"}},
 			bson.M{"$match": bson.M{"difference": true}},
-
+			bson.M{"$sort": bson.M{"marketnotification": -1}},
 			bson.M{"$skip": args.Skip},
 			bson.M{"$limit": args.Limit},
 		}
@@ -152,12 +149,9 @@ func (me *T) GetNFTMarket(args struct {
 						bson.M{"$eq": []interface{}{"$asset", "$$asset"}},
 						bson.M{"$eq": []interface{}{"$market", "$$market"}},
 					}}}},
-					bson.M{"$group": bson.M{"_id": bson.M{"tokenid": "$$tokenid", "asset": "$$asset", "market": "$$market"},
-						"nonce":     bson.M{"$last": "$nonce"},
-						"asset":     bson.M{"$last": "$asset"},
-						"tokenid":   bson.M{"$last": "$tokenid"},
-						"timestamp": bson.M{"$last": "$timestamp"},
-					}},
+
+					bson.M{"$sort": bson.M{"nonce": -1}},
+					bson.M{"$limit": 1},
 					bson.M{"$project": bson.M{"asset": 1, "nonce": 1, "tokenid": 1, "timestamp": 1}},
 				},
 				"as": "marketnotification"},
@@ -165,6 +159,7 @@ func (me *T) GetNFTMarket(args struct {
 
 			bson.M{"$project": bson.M{"_id": 1, "marketnotification": 1, "asset": 1, "tokenid": 1, "amount": 1, "owner": 1, "market": 1, "difference": bson.M{"$eq": []string{"$owner", "$market"}}, "auctionType": 1, "auctor": 1, "auctionAsset": 1, "auctionAmount": 1, "deadline": 1, "bidder": 1, "bidAmount": 1, "timestamp": 1, "state": "sale"}},
 			bson.M{"$match": bson.M{"difference": true}},
+			bson.M{"$sort": bson.M{"marketnotification": -1}},
 			bson.M{"$skip": args.Skip},
 			bson.M{"$limit": args.Limit},
 		}
@@ -201,20 +196,14 @@ func (me *T) GetNFTMarket(args struct {
 						bson.M{"$eq": []interface{}{"$market", "$$market"}},
 					}}}},
 
-					bson.M{"$group": bson.M{"_id": bson.M{"tokenid": "$$tokenid", "asset": "$$asset", "market": "$$market"},
-						"nonce":     bson.M{"$last": "$nonce"},
-						"asset":     bson.M{"$last": "$asset"},
-						"tokenid":   bson.M{"$last": "$tokenid"},
-						"timestamp": bson.M{"$last": "$timestamp"},
-					}},
+					bson.M{"$sort": bson.M{"nonce": -1}},
+					bson.M{"$limit": 1},
 					bson.M{"$project": bson.M{"asset": 1, "nonce": 1, "tokenid": 1, "timestamp": 1}},
 				},
 				"as": "marketnotification"},
 			},
-
 			bson.M{"$project": bson.M{"_id": 1, "asset": 1, "marketnotification": 1, "tokenid": 1, "amount": 1, "owner": 1, "market": 1, "auctionType": 1, "auctor": 1, "auctionAsset": 1, "auctionAmount": 1, "deadline": 1, "bidder": 1, "bidAmount": 1, "timestamp": 1, "state": "notlisted"}},
-			bson.M{"$match": bson.M{"amount": bson.M{"$gt": 0}}},
-			//bson.M{"$sort": bson.M{"$$marketnotification.timestamp": 1}},
+			bson.M{"$sort": bson.M{"marketnotification": -1}},
 			bson.M{"$skip": args.Skip},
 			bson.M{"$limit": args.Limit},
 		}
@@ -309,7 +298,7 @@ func (me *T) GetNFTMarket(args struct {
 		}
 		//获得上架时间
 
-		if item["marketnotification"] != nil {
+		if item["marketnotification"] != nil && item["marketnotification"] != "" {
 			switch item["marketnotification"].(type) {
 			case string:
 				item["listedTimestamp"] = 0
@@ -318,6 +307,8 @@ func (me *T) GetNFTMarket(args struct {
 				if len(marketnotification) > 0 {
 					mn := []interface{}(marketnotification)[0].(map[string]interface{})
 					item["listedTimestamp"] = mn["timestamp"]
+				} else {
+					item["listedTimestamp"] = 0
 				}
 			}
 		} else {

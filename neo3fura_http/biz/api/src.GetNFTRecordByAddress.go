@@ -5,6 +5,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"gopkg.in/yaml.v2"
 	"math"
+	"math/big"
 	log2 "neo3fura_http/lib/log"
 	"neo3fura_http/lib/mapsort"
 	"neo3fura_http/lib/type/NFTevent"
@@ -14,7 +15,6 @@ import (
 	"neo3fura_http/var/stderr"
 	"os"
 	"path/filepath"
-	"reflect"
 	"strconv"
 	"strings"
 )
@@ -294,11 +294,12 @@ func (me *T) GetNFTRecordByAddress(args struct {
 					rr["to"] = ""
 
 					for _, it := range raw3 {
-						ba := reflect.ValueOf(it["bidAmount"]) //获取竞价数组
-						bd := reflect.ValueOf(it["bidder"])    //获取竞价数组
+						ba := it["bidAmount"].([]*big.Int) //获取竞价数组
+						bd := it["bidder"].([]string)      //获取竞价数组
 
 						if nowNFTState == NFTstate.Auction.Val() && raw3[0]["nonce"] == it["nonce"] { //最新上架  拍卖中 2种状态：已退回  正常s
-							if bidAmount == ba.Index(0).String() && user == bd.Index(0).String() { //最高竞价人
+
+							if bidAmount == ba[0].String() && user == bd[0] { //最高竞价人
 								rr["state"] = NFTevent.Auction_Bid.Val() //state :正常
 
 							} else {
@@ -306,7 +307,7 @@ func (me *T) GetNFTRecordByAddress(args struct {
 
 							}
 						} else { //历史上架 ：2种状态： 已成交  已退回
-							if bidAmount == ba.Index(0).String() && user == bd.Index(0).String() {
+							if bidAmount == ba[0].String() && user == bd[0] {
 								rr["state"] = NFTevent.Auction_Bid_Deal.Val() //state :已成交
 							} else {
 								rr["state"] = NFTevent.Auction_Return.Val() //state :已退回
