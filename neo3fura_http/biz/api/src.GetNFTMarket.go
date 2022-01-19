@@ -325,17 +325,14 @@ func (me *T) GetNFTMarket(args struct {
 		if err1 != nil {
 			item["image"] = ""
 			item["name"] = ""
-			item["number"] = ""
-			item["video"] = ""
-			item["supply"] = ""
-			item["series"] = ""
+			item["number"] = int64(-1)
+			item["properties"] = ""
+
 		}
 		item["image"] = raw3["image"]
 		item["name"] = raw3["name"]
 		item["number"] = raw3["number"]
-		item["video"] = raw3["video"]
-		item["supply"] = raw3["supply"]
-		item["series"] = raw3["series"]
+		item["properties"] = raw3["properties"]
 
 	}
 	//  按上架时间排序

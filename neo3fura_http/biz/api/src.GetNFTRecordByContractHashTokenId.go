@@ -99,18 +99,15 @@ func (me *T) GetNFTRecordByContractHashTokenId(args struct {
 		if err2 != nil {
 			rr["image"] = ""
 			rr["name"] = ""
-			rr["number"] = ""
-			rr["video"] = ""
-			rr["supply"] = ""
-			rr["series"] = ""
+			rr["number"] = int64(-1)
+			rr["properties"] = ""
+
 		}
 
 		rr["image"] = raw3["image"]
 		rr["name"] = raw3["name"]
 		rr["number"] = raw3["number"]
-		rr["video"] = raw3["video"]
-		rr["supply"] = raw3["supply"]
-		rr["series"] = raw3["series"]
+		rr["properties"] = raw3["properties"]
 
 		result = append(result, rr)
 

@@ -109,18 +109,15 @@ func (me *T) GetNFTRecordByAddress(args struct {
 		if err2 != nil {
 			rr["image"] = ""
 			rr["name"] = ""
-			rr["number"] = ""
-			rr["video"] = ""
-			rr["supply"] = ""
-			rr["series"] = ""
+			rr["number"] = int64(-1)
+			rr["properties"] = ""
+
 		}
 
 		rr["image"] = raw2["image"]
 		rr["name"] = raw2["name"]
 		rr["number"] = raw2["number"]
-		rr["video"] = raw2["video"]
-		rr["supply"] = raw2["supply"]
-		rr["series"] = raw2["series"]
+		rr["properties"] = raw2["properties"]
 
 		//获取此时Nft的状态
 		var raw1 []map[string]interface{}
@@ -430,18 +427,14 @@ func (me *T) GetNFTRecordByAddress(args struct {
 			if err3 != nil {
 				rr["image"] = ""
 				rr["name"] = ""
-				rr["number"] = ""
-				rr["video"] = ""
-				rr["supply"] = ""
-				rr["series"] = ""
+				rr["number"] = int64(-1)
+				rr["properties"] = ""
 			}
 
 			rr["image"] = raw3["image"]
 			rr["name"] = raw3["name"]
 			rr["number"] = raw3["number"]
-			rr["video"] = raw3["video"]
-			rr["supply"] = raw3["supply"]
-			rr["series"] = raw3["series"]
+			rr["properties"] = raw3["properties"]
 
 			if from == args.Address.Val() && to != args.MarketHash.Val() {
 				rr["user"] = from
@@ -509,10 +502,12 @@ func getNFTProperties(tokenId strval.T, contractHash h160.T, me *T, ret *json.Ra
 
 	extendData := r1["properties"].(string)
 	if extendData != "" {
+		properties := make(map[string]interface{})
 		var data map[string]interface{}
 		if err1 := json.Unmarshal([]byte(extendData), &data); err1 == nil {
 			image, ok := data["image"]
 			if ok {
+				properties["image"] = image
 				r1["image"] = image
 			} else {
 				r1["image"] = ""
@@ -521,15 +516,16 @@ func getNFTProperties(tokenId strval.T, contractHash h160.T, me *T, ret *json.Ra
 			if ok1 {
 				r1["name"] = name
 				strArray := strings.Split(name.(string), "#")
-				if len(strArray) > 2 {
+				if len(strArray) >= 2 {
 					number := strArray[1]
 					n, err2 := strconv.ParseInt(number, 10, 64)
 					if err2 != nil {
-						r1["number"] = -1
+						r1["number"] = int64(-1)
 					}
 					r1["number"] = n
+					properties["number"] = n
 				} else {
-					r1["number"] = -1
+					r1["number"] = int64(-1)
 				}
 
 			} else {
@@ -537,40 +533,40 @@ func getNFTProperties(tokenId strval.T, contractHash h160.T, me *T, ret *json.Ra
 			}
 			series, ok2 := data["series"]
 			if ok2 {
-				r1["series"] = series
-			} else {
-				r1["series"] = ""
+				properties["image"] = series
 			}
 			supply, ok3 := data["supply"]
 			if ok3 {
-				r1["supply"] = supply
-			} else {
-				r1["supply"] = ""
+				properties["supply"] = supply
 			}
 			number, ok4 := data["number"]
 			if ok4 {
-				r1["number"] = number
-			} else {
-				r1["number"] = ""
+				n, err2 := strconv.ParseInt(number.(string), 10, 64)
+				if err2 != nil {
+					r1["number"] = int64(-1)
+				}
+				properties["number"] = n
+				r1["number"] = n
 			}
 			video, ok5 := data["video"]
 			if ok5 {
-				r1["video"] = video
-			} else {
-				r1["video"] = ""
+				properties["video"] = video
+			}
+			thumbnail, ok6 := data["thumbnail"]
+			if ok6 {
+				r1["image"] = thumbnail
 			}
 
 		} else {
 			return err
 		}
 
+		r1["properties"] = properties
 	} else {
 		r1["image"] = ""
 		r1["name"] = ""
-		r1["number"] = ""
-		r1["video"] = ""
-		r1["supply"] = ""
-		r1["series"] = ""
+		r1["number"] = int64(-1)
+		r1["properties"] = ""
 	}
 
 	filter1, err := me.Filter(r1, filter)

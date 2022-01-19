@@ -150,18 +150,13 @@ func (me *T) GetNFTByContractHashTokenId(args struct {
 		if err2 != nil {
 			item["image"] = ""
 			item["name"] = ""
-			item["number"] = ""
-			item["video"] = ""
-			item["supply"] = ""
-			item["series"] = ""
+			item["number"] = int64(-1)
+			item["properties"] = ""
 		}
 		item["image"] = raw3["image"]
 		item["name"] = raw3["name"]
 		item["number"] = raw3["number"]
-		item["video"] = raw3["video"]
-		item["supply"] = raw3["supply"]
-		item["series"] = raw3["series"]
-
+		item["properties"] = raw3["properties"]
 	}
 
 	r5, err := me.FilterArrayAndAppendCount(rr1, count, args.Filter)
