@@ -340,18 +340,18 @@ func (me *T) GetNFTOwnedByAddress(args struct {
 		if item["marketnotification"] != nil {
 			switch item["marketnotification"].(type) {
 			case string:
-				item["listedTimestamp"] = 0
+				item["listedTimestamp"] = int64(0)
 			case primitive.A:
 				marketnotification := item["marketnotification"].(primitive.A)
 				if len(marketnotification) > 0 {
 					mn := []interface{}(marketnotification)[0].(map[string]interface{})
 					item["listedTimestamp"] = mn["timestamp"]
 				} else {
-					item["listedTimestamp"] = 0
+					item["listedTimestamp"] = int64(0)
 				}
 			}
 		} else {
-			item["listedTimestamp"] = 0
+			item["listedTimestamp"] = int64(0)
 		}
 		delete(item, "marketnotification")
 
