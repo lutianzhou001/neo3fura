@@ -31,11 +31,38 @@ func (me *T) GetNFTRecordByAddress(args struct {
 	}
 
 	f := bson.M{"user": args.Address.Val()}
+	var wl []interface{}
 	if len(args.MarketHash) > 0 {
 		if args.MarketHash.Valid() == false {
 			return stderr.ErrInvalidArgs
 		} else {
 			f["market"] = args.MarketHash.Val()
+			//白名单
+			raw1 := make(map[string]interface{})
+			err1 := me.GetMarketWhiteList(struct {
+				MarketHash h160.T
+				Filter     map[string]interface{}
+				Raw        *map[string]interface{}
+			}{MarketHash: args.MarketHash, Raw: &raw1}, ret) //nonce 分组，并按时间排序
+			if err1 != nil {
+				return err1
+			}
+
+			whiteList := raw1["whiteList"]
+			if whiteList == nil || whiteList == "" {
+				return stderr.ErrWhiteList
+			}
+			s := whiteList.([]string)
+
+			for _, w := range s {
+				wl = append(wl, w)
+			}
+			if len(wl) > 0 {
+				f["asset"] = bson.M{"$in": wl}
+			} else {
+				return stderr.ErrWhiteList
+			}
+
 		}
 	}
 	result := make([]map[string]interface{}, 0)
@@ -118,7 +145,7 @@ func (me *T) GetNFTRecordByAddress(args struct {
 				rr1["timestamp"] = raw1[0]["timestamp"]
 				rr1["auctionAsset"] = raw1[0]["auctionAsset"]
 				rr1["auctionAmount"] = raw1[0]["auctionAmount"]
-				rr1["from"] = raw1[0]["timestamp"]
+				rr1["from"] = raw1[0]["auctor"]
 				rr1["to"] = ""
 				auctionType, _ := raw1[0]["auctionType"].(int32)
 				if auctionType == 1 {
@@ -342,6 +369,12 @@ func (me *T) GetNFTRecordByAddress(args struct {
 	filter["$or"] = []interface{}{
 		bson.M{"from": args.Address.TransferredVal()},
 		bson.M{"to": args.Address.TransferredVal()},
+	}
+	//
+	if args.MarketHash.Valid() == true {
+		if len(wl) > 0 {
+			filter["asset"] = bson.M{"$in": wl}
+		}
 	}
 
 	r3, _, err := me.Client.QueryAll(struct {

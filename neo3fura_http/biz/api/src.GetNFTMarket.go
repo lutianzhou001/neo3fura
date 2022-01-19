@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"math"
 	"math/big"
 	"neo3fura_http/lib/mapsort"
 	"neo3fura_http/lib/type/NFTstate"
@@ -15,18 +16,17 @@ import (
 )
 
 func (me *T) GetNFTMarket(args struct {
-	ContractHash h160.T //  asset
-	AssetHash    h160.T // auctionType
-	MarketHash   h160.T //
-	//SecondaryMarket h160.T //
-	//PrimaryMarket   h160.T
-	NFTState strval.T //state:aution  sale  notlisted  unclaimed
-	Sort     strval.T //listedTime  price  deadline
-	Order    int64    //-1:降序  +1：升序
-	Limit    int64
-	Skip     int64
-	Filter   map[string]interface{}
-	Raw      *map[string]interface{}
+	ContractHash    h160.T //  asset
+	AssetHash       h160.T // auctionType
+	SecondaryMarket h160.T //
+	PrimaryMarket   h160.T
+	NFTState        strval.T //state:aution  sale  notlisted  unclaimed
+	Sort            strval.T //listedTime  price  deadline
+	Order           int64    //-1:降序  +1：升序
+	Limit           int64
+	Skip            int64
+	Filter          map[string]interface{}
+	Raw             *map[string]interface{}
 }, ret *json.RawMessage) error {
 	currentTime := time.Now().UnixNano() / 1e6
 	pipeline := []bson.M{}
@@ -49,12 +49,17 @@ func (me *T) GetNFTMarket(args struct {
 		}
 	}
 
-	if len(args.MarketHash) > 0 && args.MarketHash != "" {
+	if len(args.PrimaryMarket) > 0 && args.PrimaryMarket != "" {
+		if args.PrimaryMarket.Valid() == false {
+			return stderr.ErrInvalidArgs
+		}
+	}
+	if len(args.SecondaryMarket) > 0 && args.SecondaryMarket != "" {
 		if args.NFTState.Val() == NFTstate.Auction.Val() || args.NFTState.Val() == NFTstate.Sale.Val() {
-			if args.MarketHash.Valid() == false {
+			if args.SecondaryMarket.Valid() == false {
 				return stderr.ErrInvalidArgs
 			} else {
-				a := bson.M{"$match": bson.M{"market": args.MarketHash}}
+				a := bson.M{"$match": bson.M{"market": args.SecondaryMarket}}
 				pipeline = append(pipeline, a)
 			}
 		}
@@ -64,7 +69,7 @@ func (me *T) GetNFTMarket(args struct {
 			MarketHash h160.T
 			Filter     map[string]interface{}
 			Raw        *map[string]interface{}
-		}{MarketHash: args.MarketHash, Raw: &raw1}, ret) //nonce 分组，并按时间排序
+		}{MarketHash: args.SecondaryMarket, Raw: &raw1}, ret) //nonce 分组，并按时间排序
 		if err1 != nil {
 			return err1
 		}
@@ -183,7 +188,7 @@ func (me *T) GetNFTMarket(args struct {
 
 	} else { //默认  account > 0
 		pipeline1 := []bson.M{
-
+			bson.M{"$match": bson.M{"market": bson.M{"$ne": args.PrimaryMarket.Val()}}},
 			bson.M{"$match": bson.M{"amount": bson.M{"$gt": 0}}},
 			bson.M{"$lookup": bson.M{
 				"from": "MarketNotification",
@@ -195,6 +200,7 @@ func (me *T) GetNFTMarket(args struct {
 						bson.M{"$eq": []interface{}{"$asset", "$$asset"}},
 						bson.M{"$eq": []interface{}{"$market", "$$market"}},
 					}}}},
+
 					bson.M{"$group": bson.M{"_id": bson.M{"tokenid": "$$tokenid", "asset": "$$asset", "market": "$$market"},
 						"nonce":     bson.M{"$last": "$nonce"},
 						"asset":     bson.M{"$last": "$asset"},
@@ -205,8 +211,10 @@ func (me *T) GetNFTMarket(args struct {
 				},
 				"as": "marketnotification"},
 			},
+
 			bson.M{"$project": bson.M{"_id": 1, "asset": 1, "marketnotification": 1, "tokenid": 1, "amount": 1, "owner": 1, "market": 1, "auctionType": 1, "auctor": 1, "auctionAsset": 1, "auctionAmount": 1, "deadline": 1, "bidder": 1, "bidAmount": 1, "timestamp": 1, "state": "notlisted"}},
 			bson.M{"$match": bson.M{"amount": bson.M{"$gt": 0}}},
+			bson.M{"$sort": bson.M{"$$marketnotification.timestamp": 1}},
 			bson.M{"$skip": args.Skip},
 			bson.M{"$limit": args.Limit},
 		}
@@ -265,8 +273,8 @@ func (me *T) GetNFTMarket(args struct {
 			} else {
 				item["state"] = ""
 			}
-
 		}
+
 		//价格转换
 		auctionAsset := item["auctionAsset"]
 		auctionAmount, _, err2 := item["auctionAmount"].(primitive.Decimal128).BigInt()
@@ -283,9 +291,6 @@ func (me *T) GetNFTMarket(args struct {
 			if err3 != nil {
 				return err3
 			}
-			if price == 0 {
-				price = 1
-			}
 
 			bfauctionAmount := new(big.Float).SetInt(auctionAmount)
 			flag := auctionAmount.Cmp(big.NewInt(0))
@@ -293,7 +298,8 @@ func (me *T) GetNFTMarket(args struct {
 			if flag == 1 {
 				bfprice := big.NewFloat(price)
 				ffprice := big.NewFloat(1).Mul(bfprice, bfauctionAmount)
-				usdAuctionAmount := new(big.Float).Quo(ffprice, big.NewFloat(float64(decimal)))
+				de := math.Pow(10, float64(decimal))
+				usdAuctionAmount := new(big.Float).Quo(ffprice, big.NewFloat(de))
 				item["usdAuctionAmount"] = usdAuctionAmount
 			} else {
 				item["usdAuctionAmount"] = big.NewFloat(0)

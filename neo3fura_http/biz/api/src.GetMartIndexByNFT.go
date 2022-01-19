@@ -7,6 +7,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"io/ioutil"
+	"math"
 	"math/big"
 	"neo3fura_http/lib/mapsort"
 	"neo3fura_http/lib/type/h160"
@@ -177,7 +178,8 @@ func (me *T) GetMarketIndexByAsset(args struct {
 		return err
 	}
 
-	var txAmount float64
+	var txAmount = big.NewFloat(0)
+
 	if len(r4) > 0 {
 		for _, item := range r4 {
 			extendData := item["extendData"].(string)
@@ -187,14 +189,12 @@ func (me *T) GetMarketIndexByAsset(args struct {
 					auctionAsset := data["auctionAsset"].(string)
 					dd, _ := OpenAssetHashFile()
 					decimal := dd[auctionAsset]
-					if decimal == 0 {
-						decimal = 1
-					}
-					bidAmount, err2 := strconv.ParseInt(data["bidAmount"].(string), 10, 64)
-					if err2 != nil {
-						return err2
-					}
 
+					ba := data["bidAmount"].(string)
+					bidAmount, err2 := new(big.Int).SetString(ba, 10)
+					if err2 == false {
+						bidAmount = big.NewInt(0)
+					}
 					price, err3 := GetPrice(auctionAsset) //
 					if err3 != nil {
 						return err3
@@ -204,16 +204,26 @@ func (me *T) GetMarketIndexByAsset(args struct {
 						price = 1
 					}
 
-					txprice := float64(bidAmount) * price / float64(decimal)
-					txAmount += txprice
+					bfbidAmount := new(big.Float).SetInt(bidAmount)
+					flag := bidAmount.Cmp(big.NewInt(0))
 
+					if flag == 1 {
+						bfprice := big.NewFloat(price)
+						ffprice := big.NewFloat(1).Mul(bfprice, bfbidAmount)
+						de := math.Pow(10, float64(decimal))
+						usdbidAmount := new(big.Float).Quo(ffprice, big.NewFloat(float64(de)))
+						txAmount = new(big.Float).Add(txAmount, usdbidAmount)
+
+					} else {
+						txAmount = new(big.Float).Add(txAmount, big.NewFloat(0))
+					}
 				} else {
 					return err1
 				}
 			}
 		}
 	} else {
-		txAmount = 0
+		txAmount = new(big.Float).Add(txAmount, big.NewFloat(0))
 	}
 
 	result["totaltxamount"] = txAmount
@@ -252,10 +262,7 @@ func (me *T) GetMarketIndexByAsset(args struct {
 
 		//价格转换
 		dd, _ := OpenAssetHashFile()
-		decimal := dd[auctionAsset] //获取精度
-		if decimal == 0 {
-			decimal = 1
-		}
+		decimal := dd[auctionAsset]           //获取精度
 		price, err3 := GetPrice(auctionAsset) //  获取价格
 		if err3 != nil {
 			return err3
@@ -270,7 +277,8 @@ func (me *T) GetMarketIndexByAsset(args struct {
 		if flag == 1 {
 			bfprice := big.NewFloat(price)
 			ffprice := big.NewFloat(1).Mul(bfprice, bfauctionAmount)
-			usdAuctionAmount := new(big.Float).Quo(ffprice, big.NewFloat(float64(decimal)))
+			de := math.Pow(10, float64(decimal))
+			usdAuctionAmount := new(big.Float).Quo(ffprice, big.NewFloat(float64(de)))
 			item["usdAmount"] = usdAuctionAmount
 		} else {
 			item["usdAmount"] = 0

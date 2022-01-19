@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"math"
 	"math/big"
 	"neo3fura_http/lib/mapsort"
 	"neo3fura_http/lib/type/NFTstate"
@@ -334,17 +335,14 @@ func (me *T) GetNFTOwnedByAddress(args struct {
 			if err3 != nil {
 				return err3
 			}
-			if price == 0 {
-				price = 1
-			}
 
 			bfauctionAmount := new(big.Float).SetInt(auctionAmount)
 			flag := auctionAmount.Cmp(big.NewInt(0))
-
 			if flag == 1 {
 				bfprice := big.NewFloat(price)
 				ffprice := big.NewFloat(1).Mul(bfprice, bfauctionAmount)
-				usdAuctionAmount := new(big.Float).Quo(ffprice, big.NewFloat(float64(decimal)))
+				de := math.Pow(10, float64(decimal))
+				usdAuctionAmount := new(big.Float).Quo(ffprice, big.NewFloat(de))
 				item["usdAuctionAmount"] = usdAuctionAmount
 			} else {
 				item["usdAuctionAmount"] = 0
