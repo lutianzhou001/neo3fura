@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"math"
 	"math/big"
 	"neo3fura_http/lib/mapsort"
 	"neo3fura_http/lib/type/NFTstate"
@@ -199,6 +200,7 @@ func (me *T) GetNFTMarket(args struct {
 						bson.M{"$eq": []interface{}{"$asset", "$$asset"}},
 						bson.M{"$eq": []interface{}{"$market", "$$market"}},
 					}}}},
+
 					bson.M{"$group": bson.M{"_id": bson.M{"tokenid": "$$tokenid", "asset": "$$asset", "market": "$$market"},
 						"nonce":     bson.M{"$last": "$nonce"},
 						"asset":     bson.M{"$last": "$asset"},
@@ -209,8 +211,10 @@ func (me *T) GetNFTMarket(args struct {
 				},
 				"as": "marketnotification"},
 			},
+
 			bson.M{"$project": bson.M{"_id": 1, "asset": 1, "marketnotification": 1, "tokenid": 1, "amount": 1, "owner": 1, "market": 1, "auctionType": 1, "auctor": 1, "auctionAsset": 1, "auctionAmount": 1, "deadline": 1, "bidder": 1, "bidAmount": 1, "timestamp": 1, "state": "notlisted"}},
 			bson.M{"$match": bson.M{"amount": bson.M{"$gt": 0}}},
+			bson.M{"$sort": bson.M{"$$marketnotification.timestamp": 1}},
 			bson.M{"$skip": args.Skip},
 			bson.M{"$limit": args.Limit},
 		}
@@ -287,9 +291,6 @@ func (me *T) GetNFTMarket(args struct {
 			if err3 != nil {
 				return err3
 			}
-			if price == 0 {
-				price = 1
-			}
 
 			bfauctionAmount := new(big.Float).SetInt(auctionAmount)
 			flag := auctionAmount.Cmp(big.NewInt(0))
@@ -297,7 +298,8 @@ func (me *T) GetNFTMarket(args struct {
 			if flag == 1 {
 				bfprice := big.NewFloat(price)
 				ffprice := big.NewFloat(1).Mul(bfprice, bfauctionAmount)
-				usdAuctionAmount := new(big.Float).Quo(ffprice, big.NewFloat(float64(decimal)))
+				de := math.Pow(10, float64(decimal))
+				usdAuctionAmount := new(big.Float).Quo(ffprice, big.NewFloat(de))
 				item["usdAuctionAmount"] = usdAuctionAmount
 			} else {
 				item["usdAuctionAmount"] = big.NewFloat(0)
