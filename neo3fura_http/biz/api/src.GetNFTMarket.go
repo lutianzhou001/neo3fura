@@ -301,18 +301,18 @@ func (me *T) GetNFTMarket(args struct {
 		if item["marketnotification"] != nil && item["marketnotification"] != "" {
 			switch item["marketnotification"].(type) {
 			case string:
-				item["listedTimestamp"] = 0
+				item["listedTimestamp"] = int64(0)
 			case primitive.A:
 				marketnotification := item["marketnotification"].(primitive.A)
 				if len(marketnotification) > 0 {
 					mn := []interface{}(marketnotification)[0].(map[string]interface{})
 					item["listedTimestamp"] = mn["timestamp"]
 				} else {
-					item["listedTimestamp"] = 0
+					item["listedTimestamp"] = int64(0)
 				}
 			}
 		} else {
-			item["listedTimestamp"] = 0
+			item["listedTimestamp"] = int64(0)
 		}
 
 		delete(item, "marketnotification")
@@ -341,9 +341,9 @@ func (me *T) GetNFTMarket(args struct {
 	//  按上架时间排序
 	if args.Sort == "timestamp" {
 		if args.Order == 1 {
-			mapsort.MapSort(r1, "listedTimestamp")
-		} else {
 			mapsort.MapSort2(r1, "listedTimestamp")
+		} else {
+			mapsort.MapSort(r1, "listedTimestamp")
 		}
 
 	}
