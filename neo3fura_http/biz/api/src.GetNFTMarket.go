@@ -214,7 +214,7 @@ func (me *T) GetNFTMarket(args struct {
 
 			bson.M{"$project": bson.M{"_id": 1, "asset": 1, "marketnotification": 1, "tokenid": 1, "amount": 1, "owner": 1, "market": 1, "auctionType": 1, "auctor": 1, "auctionAsset": 1, "auctionAmount": 1, "deadline": 1, "bidder": 1, "bidAmount": 1, "timestamp": 1, "state": "notlisted"}},
 			bson.M{"$match": bson.M{"amount": bson.M{"$gt": 0}}},
-			bson.M{"$sort": bson.M{"$$marketnotification.timestamp": 1}},
+			//bson.M{"$sort": bson.M{"$$marketnotification.timestamp": 1}},
 			bson.M{"$skip": args.Skip},
 			bson.M{"$limit": args.Limit},
 		}
