@@ -91,14 +91,9 @@ func (me *T) GetNFTMarket(args struct {
 		}
 	}
 
+	var cond bson.M
 	if args.Sort == "deadline" { //按截止时间排序
-		b := bson.M{}
-		if args.Order == -1 || args.Order == 1 {
-			b = bson.M{"$sort": bson.M{args.Sort.Val(): args.Order}}
-		} else {
-			b = bson.M{"$sort": bson.M{args.Sort.Val(): -1}}
-		}
-		pipeline = append(pipeline, b)
+		cond = bson.M{"$cond": bson.M{"if": bson.M{"$gt": []interface{}{"$deadline", currentTime}}, "then": bson.M{"$subtract": []interface{}{"$deadline", currentTime}}, "else": bson.M{"$subtract": []interface{}{currentTime, "$deadline"}}}}
 	}
 
 	if args.NFTState.Val() == NFTstate.Auction.Val() { //拍卖中  accont >0 && auctionType =2 &&  owner=market && runtime <deadline
@@ -202,8 +197,9 @@ func (me *T) GetNFTMarket(args struct {
 				},
 				"as": "marketnotification"},
 			},
-			bson.M{"$project": bson.M{"_id": 1, "asset": 1, "marketnotification": 1, "tokenid": 1, "amount": 1, "owner": 1, "market": 1, "auctionType": 1, "auctor": 1, "auctionAsset": 1, "auctionAmount": 1, "deadline": 1, "bidder": 1, "bidAmount": 1, "timestamp": 1, "state": "notlisted"}},
+			bson.M{"$project": bson.M{"date": cond, "_id": 1, "asset": 1, "marketnotification": 1, "tokenid": 1, "amount": 1, "owner": 1, "market": 1, "auctionType": 1, "auctor": 1, "auctionAsset": 1, "auctionAmount": 1, "deadline": 1, "bidder": 1, "bidAmount": 1, "timestamp": 1, "state": "notlisted"}},
 			bson.M{"$sort": bson.M{"marketnotification": -1}},
+			bson.M{"$sort": bson.M{"date": 1}},
 			bson.M{"$skip": args.Skip},
 			bson.M{"$limit": args.Limit},
 		}
@@ -224,7 +220,7 @@ func (me *T) GetNFTMarket(args struct {
 			Sort:       bson.M{},
 			Filter:     bson.M{},
 			Pipeline:   pipeline,
-			Query:      []string{"_id", "asset", "marketnotification", "tokenid", "amount", "owner", "market", "auctionType", "auctor", "auctionAsset", "auctionAmount", "deadline", "bidder", "bidAmount", "timestamp", "state"},
+			Query:      []string{"_id", "date", "asset", "marketnotification", "tokenid", "amount", "owner", "market", "auctionType", "auctor", "auctionAsset", "auctionAmount", "deadline", "bidder", "bidAmount", "timestamp", "state"},
 		}, ret)
 
 	if err != nil {
