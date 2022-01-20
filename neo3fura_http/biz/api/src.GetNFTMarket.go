@@ -120,7 +120,7 @@ func (me *T) GetNFTMarket(args struct {
 				"as": "marketnotification"},
 			},
 
-			bson.M{"$project": bson.M{"_id": 1, "date": 1, "marketnotification": 1, "asset": 1, "tokenid": 1, "amount": 1, "owner": 1, "market": 1, "difference": bson.M{"$eq": []string{"$owner", "$market"}}, "auctionType": 1, "auctor": 1, "auctionAsset": 1, "auctionAmount": 1, "deadline": 1, "bidder": 1, "bidAmount": 1, "timestamp": 1, "state": "auction"}},
+			bson.M{"$project": bson.M{"_id": 1, "date": cond, "marketnotification": 1, "asset": 1, "tokenid": 1, "amount": 1, "owner": 1, "market": 1, "difference": bson.M{"$eq": []string{"$owner", "$market"}}, "auctionType": 1, "auctor": 1, "auctionAsset": 1, "auctionAmount": 1, "deadline": 1, "bidder": 1, "bidAmount": 1, "timestamp": 1, "state": "auction"}},
 			bson.M{"$match": bson.M{"difference": true}},
 			bson.M{"$sort": bson.M{"marketnotification": -1}},
 			bson.M{"$sort": bson.M{"date": 1}},
@@ -153,7 +153,7 @@ func (me *T) GetNFTMarket(args struct {
 				"as": "marketnotification"},
 			},
 
-			bson.M{"$project": bson.M{"date": 1, "_id": 1, "marketnotification": 1, "asset": 1, "tokenid": 1, "amount": 1, "owner": 1, "market": 1, "difference": bson.M{"$eq": []string{"$owner", "$market"}}, "auctionType": 1, "auctor": 1, "auctionAsset": 1, "auctionAmount": 1, "deadline": 1, "bidder": 1, "bidAmount": 1, "timestamp": 1, "state": "sale"}},
+			bson.M{"$project": bson.M{"date": cond, "_id": 1, "marketnotification": 1, "asset": 1, "tokenid": 1, "amount": 1, "owner": 1, "market": 1, "difference": bson.M{"$eq": []string{"$owner", "$market"}}, "auctionType": 1, "auctor": 1, "auctionAsset": 1, "auctionAmount": 1, "deadline": 1, "bidder": 1, "bidAmount": 1, "timestamp": 1, "state": "sale"}},
 			bson.M{"$match": bson.M{"difference": true}},
 			bson.M{"$sort": bson.M{"marketnotification": -1}},
 			bson.M{"$sort": bson.M{"date": 1}},
