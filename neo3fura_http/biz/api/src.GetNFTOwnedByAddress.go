@@ -127,8 +127,7 @@ func (me *T) GetNFTOwnedByAddress(args struct {
 					}}}},
 					bson.M{"$sort": bson.M{"nonce": -1}},
 					bson.M{"$limit": 1},
-					bson.M{"$project": bson.M{"asset": 1, "nonce": 1, "tokenid": 1, "timestamp": 1}},
-				},
+					bson.M{"$project": bson.M{"asset": 1, "nonce": 1, "tokenid": 1, "timestamp": 1}}},
 				"as": "marketnotification"},
 			},
 			bson.M{"$project": bson.M{"_id": 1, "asset": 1, "marketnotification": 1, "tokenid": 1, "amount": 1, "owner": 1, "market": 1, "difference": bson.M{"$eq": []string{"$owner", "$market"}}, "auctionType": 1, "auctor": 1, "auctionAsset": 1, "auctionAmount": 1, "deadline": 1, "bidder": 1, "bidAmount": 1, "timestamp": 1, "state": "auction"}},
@@ -363,18 +362,16 @@ func (me *T) GetNFTOwnedByAddress(args struct {
 		if err1 != nil {
 			item["image"] = ""
 			item["name"] = ""
-			item["number"] = ""
-			item["video"] = ""
-			item["supply"] = ""
-			item["series"] = ""
+			item["number"] = int64(-1)
+			item["properties"] = ""
+
 		}
 
 		item["image"] = raw3["image"]
 		item["name"] = raw3["name"]
 		item["number"] = raw3["number"]
-		item["video"] = raw3["video"]
-		item["supply"] = raw3["supply"]
-		item["series"] = raw3["series"]
+		item["properties"] = raw3["properties"]
+
 	}
 
 	//  按上架时间排序
@@ -391,10 +388,7 @@ func (me *T) GetNFTOwnedByAddress(args struct {
 	if args.Sort == "price" {
 		if args.Order == 1 {
 			mapsort.MapSort(r1, "usdAuctionAmount")
-		} else {
-			mapsort.MapSort2(r1, "usdAuctionAmount")
 		}
-
 	}
 
 	// 按上架时间排序

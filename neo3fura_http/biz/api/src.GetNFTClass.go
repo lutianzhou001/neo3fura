@@ -8,8 +8,6 @@ import (
 	"neo3fura_http/lib/type/h160"
 	"neo3fura_http/lib/type/strval"
 	"neo3fura_http/var/stderr"
-	"strconv"
-	"strings"
 )
 
 func (me *T) GetNFTClass(args struct {
@@ -141,57 +139,13 @@ func (me *T) GetNFTClass(args struct {
 			if err1 != nil {
 				item["image"] = ""
 				item["name"] = ""
-				item["series"] = ""
-				item["supply"] = ""
-				item["number"] = ""
+				item["number"] = int64(-1)
+				item["properties"] = ""
 			}
-			properties := raw3["properties"].(string)
-			if properties != "" {
-				var data map[string]interface{}
-				if err11 := json.Unmarshal([]byte(properties), &data); err11 == nil {
-					image, ok := data["image"]
-					if ok {
-						item["image"] = image
-					} else {
-						item["image"] = ""
-					}
-					name, ok1 := data["name"]
-					if ok1 {
-						item["name"] = name
-						num := strings.Split(name.(string), "#")[1]
-						number, err12 := strconv.ParseInt(num, 10, 64)
-						if err12 != nil {
-							return err12
-						}
-						item["number"] = number
-					} else {
-						item["name"] = ""
-					}
-					series, ok2 := data["series"]
-					if ok2 {
-						item["series"] = series
-					} else {
-						item["series"] = ""
-					}
-					supply, ok3 := data["supply"]
-					if ok3 {
-						item["supply"] = supply
-					} else {
-						item["supply"] = ""
-					}
-
-				} else {
-					return err
-				}
-
-			} else {
-				item["image"] = ""
-				item["name"] = ""
-				item["series"] = ""
-				item["supply"] = ""
-				item["number"] = ""
-
-			}
+			item["image"] = raw3["image"]
+			item["name"] = raw3["name"]
+			item["number"] = raw3["number"]
+			item["properties"] = raw3["properties"]
 
 			//获取claimed
 			if len(r2) > 0 {
