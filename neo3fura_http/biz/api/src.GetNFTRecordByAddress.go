@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"go.mongodb.org/mongo-driver/bson"
 	"gopkg.in/yaml.v2"
@@ -154,9 +155,7 @@ func (me *T) GetNFTRecordByAddress(args struct {
 				rr1["image"] = raw1[0]["image"]
 				rr1["name"] = raw1[0]["name"]
 				rr1["number"] = raw1[0]["number"]
-				rr1["video"] = raw1[0]["video"]
-				rr1["supply"] = raw1[0]["supply"]
-				rr1["series"] = raw1[0]["series"]
+				rr1["properties"] = raw1[0]["properties"]
 
 				result = append(result, rr1)
 			}
@@ -218,9 +217,7 @@ func (me *T) GetNFTRecordByAddress(args struct {
 							rr2["image"] = rr["image"]
 							rr2["name"] = rr["name"]
 							rr2["number"] = rr["number"]
-							rr2["video"] = rr["video"]
-							rr2["supply"] = rr["supply"]
-							rr2["series"] = rr["series"]
+							rr2["properties"] = rr["properties"]
 							rr2["from"] = it["market"]
 							rr2["to"] = it["user"]
 
@@ -533,7 +530,7 @@ func getNFTProperties(tokenId strval.T, contractHash h160.T, me *T, ret *json.Ra
 			}
 			series, ok2 := data["series"]
 			if ok2 {
-				properties["image"] = series
+				properties["series"] = series
 			}
 			supply, ok3 := data["supply"]
 			if ok3 {
@@ -554,7 +551,12 @@ func getNFTProperties(tokenId strval.T, contractHash h160.T, me *T, ret *json.Ra
 			}
 			thumbnail, ok6 := data["thumbnail"]
 			if ok6 {
-				r1["image"] = thumbnail
+				//r1["image"] = thumbnail
+				tb, err2 := base64.URLEncoding.DecodeString(thumbnail.(string))
+				if err2 != nil {
+					return err2
+				}
+				r1["image"] = string(tb[:])
 			}
 
 		} else {
