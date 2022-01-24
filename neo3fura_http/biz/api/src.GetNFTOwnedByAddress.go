@@ -126,10 +126,6 @@ func (me *T) GetNFTOwnedByAddress(args struct {
 			},
 			bson.M{"$project": bson.M{"date": cond, "_id": 1, "asset": 1, "marketnotification": 1, "tokenid": 1, "amount": 1, "owner": 1, "market": 1, "difference": bson.M{"$eq": []string{"$owner", "$market"}}, "auctionType": 1, "auctor": 1, "auctionAsset": 1, "auctionAmount": 1, "deadline": 1, "bidder": 1, "bidAmount": 1, "timestamp": 1, "state": "auction"}},
 			bson.M{"$match": bson.M{"difference": true}},
-			bson.M{"$sort": bson.M{"marketnotification": -1}},
-			bson.M{"$sort": bson.M{"date": 1}},
-			bson.M{"$skip": args.Skip},
-			bson.M{"$limit": args.Limit},
 		}
 		pipeline = append(pipeline, pipeline1...)
 
@@ -158,10 +154,6 @@ func (me *T) GetNFTOwnedByAddress(args struct {
 			},
 			bson.M{"$project": bson.M{"date": cond, "_id": 1, "asset": 1, "marketnotification": 1, "tokenid": 1, "amount": 1, "owner": 1, "market": 1, "difference": bson.M{"$eq": []string{"$owner", "$market"}}, "auctionType": 1, "auctor": 1, "auctionAsset": 1, "auctionAmount": 1, "deadline": 1, "bidder": 1, "bidAmount": 1, "timestamp": 1, "state": "sale"}},
 			bson.M{"$match": bson.M{"difference": true}},
-			bson.M{"$sort": bson.M{"marketnotification": -1}},
-			bson.M{"$sort": bson.M{"date": 1}},
-			bson.M{"$skip": args.Skip},
-			bson.M{"$limit": args.Limit},
 		}
 		pipeline = append(pipeline, pipeline1...)
 
@@ -172,9 +164,6 @@ func (me *T) GetNFTOwnedByAddress(args struct {
 
 			bson.M{"$project": bson.M{"date": cond, "_id": 1, "asset": 1, "marketnotification": 1, "tokenid": 1, "amount": 1, "owner": 1, "market": 1, "difference": bson.M{"$eq": []string{"$owner", "$market"}}, "auctionType": 1, "auctor": 1, "auctionAsset": 1, "auctionAmount": 1, "deadline": 1, "bidder": 1, "bidAmount": 1, "timestamp": 1, "state": "notlisted"}},
 			bson.M{"$match": bson.M{"difference": false}},
-			bson.M{"$sort": bson.M{"date": 1}},
-			bson.M{"$skip": args.Skip},
-			bson.M{"$limit": args.Limit},
 		}
 		pipeline = append(pipeline, pipeline1...)
 
@@ -212,18 +201,15 @@ func (me *T) GetNFTOwnedByAddress(args struct {
 			},
 			bson.M{"$project": bson.M{"_id": 1, "date": cond, "asset": 1, "marketnotification": 1, "tokenid": 1, "amount": 1, "owner": 1, "market": 1, "difference": bson.M{"$eq": []string{"$owner", "$market"}}, "auctionType": 1, "auctor": 1, "auctionAsset": 1, "auctionAmount": 1, "deadline": 1, "bidder": 1, "bidAmount": 1, "timestamp": 1, "state": "unclaimed"}},
 			bson.M{"$match": bson.M{"difference": true}},
-			bson.M{"$sort": bson.M{"marketnotification": -1}},
-			bson.M{"$sort": bson.M{"date": 1}},
-			bson.M{"$skip": args.Skip},
-			bson.M{"$limit": args.Limit},
 		}
 		pipeline = append(pipeline, pipeline1...)
 
 	} else { //默认  account > 0
 		pipeline1 := []bson.M{
 			bson.M{"$match": bson.M{"$or": []interface{}{
-				bson.M{"auctor": args.Address.Val()},
-				bson.M{"owner": args.Address.Val()}}}},
+				bson.M{"auctor": args.Address.Val()},   //上架过期
+				bson.M{"bidder": args.Address.Val()},   //竞拍成功
+				bson.M{"owner": args.Address.Val()}}}}, // 未上架
 			bson.M{"$match": bson.M{"amount": bson.M{"$gt": 0}}},
 
 			bson.M{"$lookup": bson.M{
@@ -243,15 +229,25 @@ func (me *T) GetNFTOwnedByAddress(args struct {
 				},
 				"as": "marketnotification"},
 			},
-
 			bson.M{"$project": bson.M{"_id": 1, "date": cond, "asset": 1, "marketnotification": 1, "tokenid": 1, "amount": 1, "owner": 1, "market": 1, "auctionType": 1, "auctor": 1, "auctionAsset": 1, "auctionAmount": 1, "deadline": 1, "bidder": 1, "bidAmount": 1, "timestamp": 1, "state": ""}},
-			bson.M{"$sort": bson.M{"marketnotification": -1}},
-			bson.M{"$sort": bson.M{"date": 1}},
-			bson.M{"$skip": args.Skip},
-			bson.M{"$limit": args.Limit},
 		}
 		pipeline = append(pipeline, pipeline1...)
 	}
+	//按上架时间排序
+	if args.Sort == "timestamp" {
+		sort := bson.M{"$sort": bson.M{"date": 1}}
+		pipeline = append(pipeline, sort)
+	}
+	//按截止时间排序
+	if args.Sort == "deadline" {
+		sort := bson.M{"$sort": bson.M{"marketnotification": -1}}
+		pipeline = append(pipeline, sort)
+	}
+	//按价格排序
+	skip := bson.M{"$skip": args.Skip}
+	limit := bson.M{"$limit": args.Limit}
+	pipeline = append(pipeline, skip)
+	pipeline = append(pipeline, limit)
 
 	var r1, err = me.Client.QueryAggregate(
 		struct {
@@ -278,9 +274,9 @@ func (me *T) GetNFTOwnedByAddress(args struct {
 	for _, item := range r1 {
 		if args.NFTState.Val() != NFTstate.Auction.Val() && args.NFTState.Val() != NFTstate.Sale.Val() && args.NFTState.Val() != NFTstate.Expired.Val() && args.NFTState.Val() != NFTstate.Unclaimed.Val() {
 			a := item["amount"].(primitive.Decimal128).String()
-			amount, err := strconv.Atoi(a)
-			if err != nil {
-				return err
+			amount, err1 := strconv.Atoi(a)
+			if err1 != nil {
+				return err1
 			}
 
 			bidAmount := item["bidAmount"].(primitive.Decimal128).String()
