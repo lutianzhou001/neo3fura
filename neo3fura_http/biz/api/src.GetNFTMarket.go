@@ -85,6 +85,7 @@ func (me *T) GetNFTMarket(args struct {
 		}
 		if len(wl) > 0 {
 			white := bson.M{"$match": bson.M{"asset": bson.M{"$in": wl}}}
+			//white := bson.M{"$match": bson.M{"asset": bson.M{"$in": []interface{}{"0x6c91e9997b8e74dcfa5ebb56fe5672dedd724b8f","0xd9e2093de3dc2ef7cf5704ceec46ab7fadd48e7f"}}}}
 			pipeline = append(pipeline, white)
 		} else {
 			return stderr.ErrWhiteList
@@ -92,8 +93,8 @@ func (me *T) GetNFTMarket(args struct {
 	}
 
 	var cond bson.M
-	if args.Sort == "deadline" { //按截止时间排序
-		cond = bson.M{"$cond": bson.M{"if": bson.M{"$gt": []interface{}{"$deadline", currentTime}}, "then": bson.M{"$subtract": []interface{}{"$deadline", currentTime}}, "else": bson.M{"$subtract": []interface{}{currentTime, "$deadline"}}}}
+	if args.Sort == "deadline" || args.Sort == "timestamp" || args.Sort == "price" { //按截止时间排序
+		cond = bson.M{"$cond": bson.M{"if": bson.M{"$gt": []interface{}{"$deadline", currentTime}}, "then": bson.M{"$subtract": []interface{}{"$deadline", currentTime}}, "else": currentTime}}
 	}
 
 	if args.NFTState.Val() == NFTstate.Auction.Val() { //拍卖中  accont >0 && auctionType =2 &&  owner=market && runtime <deadline
@@ -112,18 +113,18 @@ func (me *T) GetNFTMarket(args struct {
 						bson.M{"$eq": []interface{}{"$asset", "$$asset"}},
 						bson.M{"$eq": []interface{}{"$market", "$$market"}},
 					}}}},
-
+					bson.M{"$project": bson.M{"asset": 1, "nonce": 1, "tokenid": 1, "timestamp": 1}},
 					bson.M{"$sort": bson.M{"nonce": -1}},
 					bson.M{"$limit": 1},
-					bson.M{"$project": bson.M{"asset": 1, "nonce": 1, "tokenid": 1, "timestamp": 1}},
 				},
 				"as": "marketnotification"},
 			},
 
 			bson.M{"$project": bson.M{"_id": 1, "date": cond, "marketnotification": 1, "asset": 1, "tokenid": 1, "amount": 1, "owner": 1, "market": 1, "difference": bson.M{"$eq": []string{"$owner", "$market"}}, "auctionType": 1, "auctor": 1, "auctionAsset": 1, "auctionAmount": 1, "deadline": 1, "bidder": 1, "bidAmount": 1, "timestamp": 1, "state": "auction"}},
 			bson.M{"$match": bson.M{"difference": true}},
-			bson.M{"$sort": bson.M{"marketnotification": -1}},
+			bson.M{"$sort": bson.M{}},
 			bson.M{"$sort": bson.M{"date": 1}},
+			bson.M{"$sort": bson.M{"marketnotification": -1}},
 			bson.M{"$skip": args.Skip},
 			bson.M{"$limit": args.Limit},
 		}
@@ -145,10 +146,9 @@ func (me *T) GetNFTMarket(args struct {
 						bson.M{"$eq": []interface{}{"$asset", "$$asset"}},
 						bson.M{"$eq": []interface{}{"$market", "$$market"}},
 					}}}},
-
+					bson.M{"$project": bson.M{"asset": 1, "nonce": 1, "tokenid": 1, "timestamp": 1}},
 					bson.M{"$sort": bson.M{"nonce": -1}},
 					bson.M{"$limit": 1},
-					bson.M{"$project": bson.M{"asset": 1, "nonce": 1, "tokenid": 1, "timestamp": 1}},
 				},
 				"as": "marketnotification"},
 			},
@@ -192,10 +192,9 @@ func (me *T) GetNFTMarket(args struct {
 						bson.M{"$eq": []interface{}{"$asset", "$$asset"}},
 						bson.M{"$eq": []interface{}{"$market", "$$market"}},
 					}}}},
-
+					bson.M{"$project": bson.M{"asset": 1, "nonce": 1, "tokenid": 1, "timestamp": 1}},
 					bson.M{"$sort": bson.M{"nonce": -1}},
 					bson.M{"$limit": 1},
-					bson.M{"$project": bson.M{"asset": 1, "nonce": 1, "tokenid": 1, "timestamp": 1}},
 				},
 				"as": "marketnotification"},
 			},
@@ -268,7 +267,7 @@ func (me *T) GetNFTMarket(args struct {
 		if err2 != nil {
 			return err2
 		}
-		if auctionAsset != nil {
+		if auctionAsset != nil && item["deadline"].(int64) < currentTime {
 			dd, _ := OpenAssetHashFile()
 			decimal := dd[auctionAsset.(string)] //获取精度
 			if decimal == 0 {
@@ -296,7 +295,7 @@ func (me *T) GetNFTMarket(args struct {
 		}
 		//获得上架时间
 
-		if item["marketnotification"] != nil && item["marketnotification"] != "" {
+		if item["marketnotification"] != nil && item["marketnotification"] != "" && item["deadline"].(int64) > currentTime {
 			switch item["marketnotification"].(type) {
 			case string:
 				item["listedTimestamp"] = int64(0)
@@ -353,23 +352,23 @@ func (me *T) GetNFTMarket(args struct {
 
 	}
 
-	// 按上架时间排序
-	if args.Sort == "timestamp" {
-		count := 0
-		var arr []int
-		for _, i := range r1 {
-			count++
-			if i["state"] == "unclaimed" {
-				arr = append(arr, count)
-			}
-		}
-		//删除未领取的nft
-		for i := len(arr) - 1; i >= 0; i-- {
-			num := arr[i]
-			r1 = append(r1[:num-1], r1[num:]...)
-
-		}
-	}
+	//// 按上架时间排序
+	//if args.Sort == "timestamp" {
+	//	count := 0
+	//	var arr []int
+	//	for _, i := range r1 {
+	//		count++
+	//		if i["state"] == "unclaimed" {
+	//			arr = append(arr, count)
+	//		}
+	//	}
+	//	//删除未领取的nft
+	//	for i := len(arr) - 1; i >= 0; i-- {
+	//		num := arr[i]
+	//		r1 = append(r1[:num-1], r1[num:]...)
+	//
+	//	}
+	//}
 
 	//获取查询总量
 	pipeline = append(pipeline[:len(pipeline)-2], pipeline[len(pipeline):]...)
