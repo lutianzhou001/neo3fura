@@ -134,31 +134,31 @@ func (me *T) GetNFTRecordByAddress(args struct {
 		if len(raw1) > 0 {
 			nowNFTState := raw1[0]["state"]
 			// 上架过期 （卖家事件）
-			if nowNFTState == NFTstate.Expired.Val() {
-				rr1 := make(map[string]interface{})
-				rr1["event"] = ""
-				rr1["user"] = ""
-				rr1["asset"] = raw1[0]["asset"]
-				rr1["tokenid"] = raw1[0]["tokenid"]
-				rr1["timestamp"] = raw1[0]["timestamp"]
-				rr1["auctionAsset"] = raw1[0]["auctionAsset"]
-				rr1["auctionAmount"] = raw1[0]["auctionAmount"]
-				rr1["from"] = raw1[0]["auctor"]
-				rr1["to"] = ""
-				auctionType, _ := raw1[0]["auctionType"].(int32)
-				if auctionType == 1 {
-					rr1["state"] = NFTevent.Sell_Expired.Val() //上架过期
-				} else if auctionType == 1 {
-					rr1["state"] = NFTevent.Auction_Expired.Val() //拍卖过期
-				}
-
-				rr1["image"] = raw1[0]["image"]
-				rr1["name"] = raw1[0]["name"]
-				rr1["number"] = raw1[0]["number"]
-				rr1["properties"] = raw1[0]["properties"]
-
-				result = append(result, rr1)
-			}
+			//if nowNFTState == NFTstate.Expired.Val() {
+			//	rr1 := make(map[string]interface{})
+			//	rr1["event"] = ""
+			//	rr1["user"] = ""
+			//	rr1["asset"] = raw1[0]["asset"]
+			//	rr1["tokenid"] = raw1[0]["tokenid"]
+			//	rr1["timestamp"] = raw1[0]["timestamp"]
+			//	rr1["auctionAsset"] = raw1[0]["auctionAsset"]
+			//	rr1["auctionAmount"] = raw1[0]["auctionAmount"]
+			//	rr1["from"] = raw1[0]["auctor"]
+			//	rr1["to"] = ""
+			//	auctionType, _ := raw1[0]["auctionType"].(int32)
+			//	if auctionType == 1 {
+			//		rr1["state"] = NFTevent.Sell_Expired.Val() //上架过期
+			//	} else if auctionType == 2 {
+			//		rr1["state"] = NFTevent.Auction_Expired.Val() //拍卖过期
+			//	}
+			//
+			//	rr1["image"] = raw1[0]["image"]
+			//	rr1["name"] = raw1[0]["name"]
+			//	rr1["number"] = raw1[0]["number"]
+			//	rr1["properties"] = raw1[0]["properties"]
+			//
+			//	result = append(result, rr1)
+			//}
 
 			if item["eventname"].(string) == "Auction" { //2种状态   正常   已过期  (卖家事件)
 
@@ -175,11 +175,20 @@ func (me *T) GetNFTRecordByAddress(args struct {
 					rr["auctionAmount"] = auctionAmount
 					rr["from"] = item["user"]
 					rr["to"] = ""
-					if auctionType == 1 {
-						rr["state"] = NFTevent.Sell_Listed.Val() //上架  正常状态
-					} else if auctionType == 2 {
-						rr["state"] = NFTevent.Auction_Listed.Val() // 拍卖  正常状态
+					if nowNFTState == NFTstate.Expired.Val() {
+						if auctionType == 1 {
+							rr["state"] = NFTevent.Sell_Expired.Val() //上架过期
+						} else if auctionType == 2 {
+							rr["state"] = NFTevent.Auction_Expired.Val() //拍卖过期
+						}
+					} else {
+						if auctionType == 1 {
+							rr["state"] = NFTevent.Sell_Listed.Val() //上架  正常状态
+						} else if auctionType == 2 {
+							rr["state"] = NFTevent.Auction_Listed.Val() // 拍卖  正常状态
+						}
 					}
+
 					////卖家售出事件
 					nonce1 := item["nonce"]
 					tokenid1 := item["tokenid"]
