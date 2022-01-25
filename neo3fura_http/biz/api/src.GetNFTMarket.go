@@ -45,7 +45,7 @@ func (me *T) GetNFTMarket(args struct {
 		if args.AssetHash.Valid() == false {
 			return stderr.ErrInvalidArgs
 		} else {
-			a := bson.M{"$match": bson.M{"auctionAsset": args.AssetHash}}
+			a := bson.M{"$match": bson.M{"auctionAsset": args.AssetHash, "deadline": bson.M{"$gt": currentTime}}}
 			pipeline = append(pipeline, a)
 		}
 	}
