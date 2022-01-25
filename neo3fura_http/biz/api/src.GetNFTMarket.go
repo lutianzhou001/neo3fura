@@ -246,12 +246,12 @@ func (me *T) GetNFTMarket(args struct {
 
 	//按上架时间排序
 	if args.Sort == "timestamp" {
-		sort := bson.M{"$sort": bson.M{"date": 1}}
+		sort := bson.M{"$sort": bson.M{"marketnotification": -1}}
 		pipeline = append(pipeline, sort)
 	}
 	//按截止时间排序
 	if args.Sort == "deadline" {
-		sort := bson.M{"$sort": bson.M{"marketnotification": -1}}
+		sort := bson.M{"$sort": bson.M{"date": 1}}
 		pipeline = append(pipeline, sort)
 	}
 	//按价格排序
