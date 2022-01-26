@@ -6,7 +6,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"math/big"
-	"neo3fura_http/lib/mapsort"
 	"neo3fura_http/lib/type/NFTstate"
 	"neo3fura_http/lib/type/h160"
 	"neo3fura_http/lib/type/strval"
@@ -99,7 +98,6 @@ func (me *T) GetNFTMarket(args struct {
 	}
 	var auctionAmountCond bson.M
 	if args.Sort == "price" { // 将过期和未领取的放在后面
-
 		if args.AssetHash.Valid() == false {
 			return stderr.ErrInvalidArgs
 		} else {
@@ -109,12 +107,26 @@ func (me *T) GetNFTMarket(args struct {
 				auctionAmountCond = bson.M{"$cond": bson.M{"if": bson.M{"$gt": []interface{}{"$deadline", currentTime}}, "then": "$auctionAmount", "else": 1e16}}
 			}
 		}
+	}
+
+	//按上架时间排序
+	var listedtimeCond bson.M
+	if args.Sort == "timestamp" { //将未上架和未领取、过期放在后面
+		//listedtimeCond = bson.M{"$cond": bson.M{"if": bson.M{"$eq":bson.M{"$and":[]interface{}{ bson.M{"$eq": []interface{}{"$owner","$market"}}, bson.M{"$gt":[]interface{}{"$deadline",currentTime}}}}}, "then": "$timestamp", "else": 0}}
+		//listedtimeCond = bson.M{"$cond": bson.M{"if": bson.M{"$and":[]interface{}{ bson.M{"$eq": []interface{}{"$owner","$market"}}, bson.M{"$gt":[]interface{}{"$deadline",currentTime}}}},
+		//								       "then": "$timestamp",
+		//									   "else":bson.M{"$cond":bson.M{"if":bson.M{"$and":[]interface{}{ bson.M{"$eq": []interface{}{"$owner","$market"}}, bson.M{"$gte":[]interface{}{"$deadline",currentTime}}}},
+		//										   							"then":1,
+		//									   								"else":0}}}}
+
+		listedtimeCond = bson.M{"$cond": bson.M{"if": bson.M{"$and": []interface{}{bson.M{"$eq": []interface{}{"$owner", "$market"}}, bson.M{"$gt": []interface{}{"$deadline", currentTime}}}},
+			"then": "$timestamp",
+			"else": 0}}
 
 	}
 
 	if args.NFTState.Val() == NFTstate.Auction.Val() { //拍卖中  accont >0 && auctionType =2 &&  owner=market && runtime <deadline
 		pipeline1 := []bson.M{
-
 			bson.M{"$match": bson.M{"amount": bson.M{"$gt": 0}}},
 			bson.M{"$match": bson.M{"auctionType": bson.M{"$eq": 2}}},
 			bson.M{"$match": bson.M{"deadline": bson.M{"$gt": currentTime}}},
@@ -132,24 +144,7 @@ func (me *T) GetNFTMarket(args struct {
 				"as": "properties"},
 			},
 
-			bson.M{"$lookup": bson.M{
-				"from": "MarketNotification",
-				"let":  bson.M{"asset": "$asset", "tokenid": "$tokenid", "market": "$market"},
-				"pipeline": []bson.M{
-					bson.M{"$match": bson.M{"eventname": "Auction"}},
-					bson.M{"$match": bson.M{"$expr": bson.M{"$and": []interface{}{
-						bson.M{"$eq": []interface{}{"$tokenid", "$$tokenid"}},
-						bson.M{"$eq": []interface{}{"$asset", "$$asset"}},
-						bson.M{"$eq": []interface{}{"$market", "$$market"}},
-					}}}},
-					bson.M{"$project": bson.M{"asset": 1, "nonce": 1, "tokenid": 1, "timestamp": 1}},
-					bson.M{"$sort": bson.M{"nonce": -1}},
-					bson.M{"$limit": 1},
-				},
-				"as": "marketnotification"},
-			},
-
-			bson.M{"$project": bson.M{"_id": 1, "date": deadlineCond, "properties": 1, "marketnotification": 1, "asset": 1, "tokenid": 1, "amount": 1, "owner": 1, "market": 1, "difference": bson.M{"$eq": []string{"$owner", "$market"}}, "auctionType": 1, "auctor": 1, "auctionAsset": 1, "auctionAmount": 1, "deadline": 1, "bidder": 1, "bidAmount": 1, "timestamp": 1, "state": "auction"}},
+			bson.M{"$project": bson.M{"_id": 1, "deadlineCond": deadlineCond, "auctionAmountCond": auctionAmountCond, "listedtimeCond": listedtimeCond, "properties": 1, "asset": 1, "tokenid": 1, "amount": 1, "owner": 1, "market": 1, "difference": bson.M{"$eq": []string{"$owner", "$market"}}, "auctionType": 1, "auctor": 1, "auctionAsset": 1, "auctionAmount": 1, "deadline": 1, "bidder": 1, "bidAmount": 1, "timestamp": 1, "state": "auction"}},
 			bson.M{"$match": bson.M{"difference": true}},
 		}
 		pipeline = append(pipeline, pipeline1...)
@@ -172,32 +167,30 @@ func (me *T) GetNFTMarket(args struct {
 				},
 				"as": "properties"},
 			},
-			bson.M{"$lookup": bson.M{
-				"from": "MarketNotification",
-				"let":  bson.M{"asset": "$asset", "tokenid": "$tokenid", "market": "$market"},
-				"pipeline": []bson.M{
-					bson.M{"$match": bson.M{"eventname": "Auction"}},
-					bson.M{"$match": bson.M{"$expr": bson.M{"$and": []interface{}{
-						bson.M{"$eq": []interface{}{"$tokenid", "$$tokenid"}},
-						bson.M{"$eq": []interface{}{"$asset", "$$asset"}},
-						bson.M{"$eq": []interface{}{"$market", "$$market"}},
-					}}}},
-					bson.M{"$project": bson.M{"asset": 1, "nonce": 1, "tokenid": 1, "timestamp": 1}},
-					bson.M{"$sort": bson.M{"nonce": -1}},
-					bson.M{"$limit": 1},
-				},
-				"as": "marketnotification"},
-			},
 
-			bson.M{"$project": bson.M{"date": deadlineCond, "_id": 1, "properties": 1, "marketnotification": 1, "asset": 1, "tokenid": 1, "amount": 1, "owner": 1, "market": 1, "difference": bson.M{"$eq": []string{"$owner", "$market"}}, "auctionType": 1, "auctor": 1, "auctionAsset": 1, "auctionAmount": 1, "deadline": 1, "bidder": 1, "bidAmount": 1, "timestamp": 1, "state": "sale"}},
+			bson.M{"$project": bson.M{"deadlineCond": deadlineCond, "auctionAmountCond": auctionAmountCond, "listedtimeCond": listedtimeCond, "_id": 1, "properties": 1, "asset": 1, "tokenid": 1, "amount": 1, "owner": 1, "market": 1, "difference": bson.M{"$eq": []string{"$owner", "$market"}}, "auctionType": 1, "auctor": 1, "auctionAsset": 1, "auctionAmount": 1, "deadline": 1, "bidder": 1, "bidAmount": 1, "timestamp": 1, "state": "sale"}},
 			bson.M{"$match": bson.M{"difference": true}},
 		}
 		pipeline = append(pipeline, pipeline1...)
 
 	} else if args.NFTState.Val() == NFTstate.NotListed.Val() { //未上架  accont >0 && owner != market  ||  owner == market && deadline < currentTime
 		pipeline1 := []bson.M{
+			bson.M{"$match": bson.M{"market": bson.M{"$ne": args.PrimaryMarket.Val()}}},
 			bson.M{"$match": bson.M{"amount": bson.M{"$gt": 0}}},
-			bson.M{"$project": bson.M{"_id": 1, "date": deadlineCond, "marketnotification": "", "asset": 1, "tokenid": 1, "amount": 1, "owner": 1, "market": 1, "difference": bson.M{"$eq": []string{"$owner", "$market"}}, "auctionType": 1, "auctor": 1, "auctionAsset": 1, "auctionAmount": 1, "deadline": 1, "bidder": 1, "bidAmount": 1, "timestamp": 1, "state": "notlisted"}},
+			bson.M{"$lookup": bson.M{
+				"from": "Nep11Properties",
+				"let":  bson.M{"asset": "$asset", "tokenid": "$tokenid"},
+				"pipeline": []bson.M{
+					bson.M{"$match": bson.M{"$expr": bson.M{"$and": []interface{}{
+						bson.M{"$eq": []interface{}{"$tokenid", "$$tokenid"}},
+						bson.M{"$eq": []interface{}{"$asset", "$$asset"}},
+					}}}},
+					bson.M{"$project": bson.M{"asset": 1, "tokenid": 1, "properties": 1}},
+				},
+				"as": "properties"},
+			},
+
+			bson.M{"$project": bson.M{"_id": 1, "deadlineCond": deadlineCond, "auctionAmountCond": auctionAmountCond, "listedtimeCond": listedtimeCond, "asset": 1, "tokenid": 1, "amount": 1, "owner": 1, "market": 1, "difference": bson.M{"$eq": []string{"$owner", "$market"}}, "auctionType": 1, "auctor": 1, "auctionAsset": 1, "auctionAmount": 1, "deadline": 1, "bidder": 1, "bidAmount": 1, "timestamp": 1, "state": "notlisted"}},
 			bson.M{"$match": bson.M{"$or": []interface{}{
 				bson.M{"difference": false},
 				bson.M{"$and": []interface{}{
@@ -223,35 +216,19 @@ func (me *T) GetNFTMarket(args struct {
 				},
 				"as": "properties"},
 			},
-			bson.M{"$lookup": bson.M{
-				"from": "MarketNotification",
-				"let":  bson.M{"asset": "$asset", "tokenid": "$tokenid", "market": "$market"},
-				"pipeline": []bson.M{
-					bson.M{"$match": bson.M{"eventname": "Auction"}},
-					bson.M{"$match": bson.M{"$expr": bson.M{"$and": []interface{}{
-						bson.M{"$eq": []interface{}{"$tokenid", "$$tokenid"}},
-						bson.M{"$eq": []interface{}{"$asset", "$$asset"}},
-						bson.M{"$eq": []interface{}{"$market", "$$market"}},
-					}}}},
-					bson.M{"$project": bson.M{"asset": 1, "nonce": 1, "tokenid": 1, "timestamp": 1}},
-					bson.M{"$sort": bson.M{"nonce": -1}},
-					bson.M{"$limit": 1},
-				},
-				"as": "marketnotification"},
-			},
-			bson.M{"$project": bson.M{"date": deadlineCond, "auctionAmountCond": auctionAmountCond, "_id": 1, "properties": 1, "asset": 1, "marketnotification": 1, "tokenid": 1, "amount": 1, "owner": 1, "market": 1, "auctionType": 1, "auctor": 1, "auctionAsset": 1, "auctionAmount": 1, "deadline": 1, "bidder": 1, "bidAmount": 1, "timestamp": 1, "state": "notlisted"}},
+			bson.M{"$project": bson.M{"deadlineCond": deadlineCond, "auctionAmountCond": auctionAmountCond, "listedtimeCond": listedtimeCond, "_id": 1, "properties": 1, "asset": 1, "tokenid": 1, "amount": 1, "owner": 1, "market": 1, "auctionType": 1, "auctor": 1, "auctionAsset": 1, "auctionAmount": 1, "deadline": 1, "bidder": 1, "bidAmount": 1, "timestamp": 1, "state": ""}},
 		}
 		pipeline = append(pipeline, pipeline1...)
 	}
 
 	//按上架时间排序
 	if args.Sort == "timestamp" {
-		sort := bson.M{"$sort": bson.M{"marketnotification": -1}}
+		sort := bson.M{"$sort": bson.M{"listedtimeCond": -1}}
 		pipeline = append(pipeline, sort)
 	}
 	//按截止时间排序
 	if args.Sort == "deadline" {
-		sort := bson.M{"$sort": bson.M{"date": 1}}
+		sort := bson.M{"$sort": bson.M{"deadlineCond": 1}}
 		pipeline = append(pipeline, sort)
 	}
 	//按价格排序
@@ -282,7 +259,7 @@ func (me *T) GetNFTMarket(args struct {
 			Sort:       bson.M{},
 			Filter:     bson.M{},
 			Pipeline:   pipeline,
-			Query:      []string{"_id", "date", "auctionAmountCond", "properties", "asset", "marketnotification", "tokenid", "amount", "owner", "market", "auctionType", "auctor", "auctionAsset", "auctionAmount", "deadline", "bidder", "bidAmount", "timestamp", "state"},
+			Query:      []string{"_id", "deadlineCond", "auctionAmountCond", "listedtimeCond", "properties", "asset", "tokenid", "amount", "owner", "market", "auctionType", "auctor", "auctionAsset", "auctionAmount", "deadline", "bidder", "bidAmount", "timestamp", "state"},
 		}, ret)
 
 	if err != nil {
@@ -320,28 +297,8 @@ func (me *T) GetNFTMarket(args struct {
 			} else {
 				item["state"] = ""
 			}
+
 		}
-
-		//获得上架时间
-
-		if item["marketnotification"] != nil && item["marketnotification"] != "" && item["deadline"].(int64) > currentTime {
-			switch item["marketnotification"].(type) {
-			case string:
-				item["listedTimestamp"] = int64(0)
-			case primitive.A:
-				marketnotification := item["marketnotification"].(primitive.A)
-				if len(marketnotification) > 0 {
-					mn := []interface{}(marketnotification)[0].(map[string]interface{})
-					item["listedTimestamp"] = mn["timestamp"]
-				} else {
-					item["listedTimestamp"] = int64(0)
-				}
-			}
-		} else {
-			item["listedTimestamp"] = int64(0)
-		}
-
-		delete(item, "marketnotification")
 
 		//获取nft 属性
 		nftproperties := item["properties"]
@@ -430,14 +387,14 @@ func (me *T) GetNFTMarket(args struct {
 	}
 
 	//  按上架时间排序
-	if args.Sort == "timestamp" {
-		if args.Order == 1 {
-			mapsort.MapSort2(r1, "listedTimestamp")
-		} else {
-			mapsort.MapSort(r1, "listedTimestamp")
-		}
-
-	}
+	//if args.Sort == "timestamp" {
+	//	if args.Order == 1 {
+	//		mapsort.MapSort2(r1, "listedTimestamp")
+	//	} else {
+	//		mapsort.MapSort(r1, "listedTimestamp")
+	//	}
+	//
+	//}
 	//获取查询总量
 	pipeline = append(pipeline[:len(pipeline)-2], pipeline[len(pipeline):]...)
 	var group = bson.M{"$group": bson.M{"_id": "$_id"}}
