@@ -23,7 +23,7 @@ func (me *T) GetMarketWhiteList(args struct {
 			bson.M{"eventname": "RemoveAsset"},
 		}}},
 		bson.M{"$sort": bson.M{"timestamp": 1}},
-		bson.M{"$group": bson.M{"_id": "$asset", "info": bson.M{"$push": "$$ROOT"}, "asset": bson.M{"$last": "$asset"}, "eventname": bson.M{"$last": "$eventname"}, "extendData": bson.M{"$last": "$extendData"}}},
+		bson.M{"$group": bson.M{"_id": "$asset", "asset": bson.M{"$last": "$asset"}, "eventname": bson.M{"$last": "$eventname"}}},
 	}
 
 	var r1, err = me.Client.QueryAggregate(
