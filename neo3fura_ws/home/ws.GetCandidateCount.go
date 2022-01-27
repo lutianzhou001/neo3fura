@@ -56,7 +56,7 @@ func (me T) getCandidateCount() (map[string]interface{}, error) {
 		Collection: "Candidate",
 		Index:      "GetCandidateCount",
 		Sort:       bson.M{},
-		Filter:     bson.M{},
+		Filter:     bson.M{"state": true},
 	}, ret)
 	if err != nil {
 		return nil, err

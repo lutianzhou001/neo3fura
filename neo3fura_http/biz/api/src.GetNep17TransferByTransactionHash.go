@@ -65,15 +65,17 @@ func (me *T) GetNep17TransferByTransactionHash(args struct {
 			Index:      "GetNep17TransferByTransactionHash",
 			Sort:       bson.M{},
 			Filter:     bson.M{"hash": item["contract"]},
-			Query:      []string{"tokenname", "decimals"},
+			Query:      []string{"tokenname", "decimals", "symbol"},
 		}, ret)
 		if err == nil {
 			item["tokenname"] = r["tokenname"]
 			item["decimals"] = r["decimals"]
+			item["symbol"] = r["symbol"]
 
 		} else if err.Error() == "NOT FOUND" {
 			item["tokenname"] = ""
 			item["decimals"] = ""
+			item["symbol"] = ""
 		} else {
 			return err
 		}

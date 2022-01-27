@@ -108,6 +108,13 @@ func (me *T) QueryAll(args struct {
 	Limit      int64
 	Skip       int64
 }, ret *json.RawMessage) ([]map[string]interface{}, int64, error) {
+
+	//if args.Limit == 0 {
+	//	args.Limit = limit2.DefaultLimit
+	//} else if args.Limit > limit2.MaxLimit {
+	//	args.Limit = limit2.MaxLimit
+	//}
+
 	var results []map[string]interface{}
 	convert := make([]map[string]interface{}, 0)
 	collection := me.C_online.Database(me.Db_online).Collection(args.Collection)
@@ -236,11 +243,26 @@ func (me *T) QueryAggregate(args struct {
 	Pipeline   []bson.M
 	Query      []string
 }, ret *json.RawMessage) ([]map[string]interface{}, error) {
+
+	//for _, v := range args.Pipeline {
+	//	limit := v["$limit"]
+	//	if limit != nil {
+	//		if limit.(int64) == 0 {
+	//			v["$limit"] = limit2.DefaultLimit
+	//		}
+	//		if limit.(int64) > limit2.MaxLimit {
+	//			v["$limit"] = limit2.MaxLimit
+	//		}
+	//	}
+	//}
+
 	var results []map[string]interface{}
 	convert := make([]map[string]interface{}, 0)
 	collection := me.C_online.Database(me.Db_online).Collection(args.Collection)
 	op := options.AggregateOptions{}
+
 	cursor, err := collection.Aggregate(me.Ctx, args.Pipeline, &op)
+
 	defer func(cursor *mongo.Cursor, ctx context.Context) {
 		err := cursor.Close(ctx)
 		if err != nil {
@@ -256,6 +278,7 @@ func (me *T) QueryAggregate(args struct {
 	if err = cursor.All(me.Ctx, &results); err != nil {
 		return nil, stderr.ErrFind
 	}
+
 	for _, item := range results {
 		if len(args.Query) == 0 {
 			convert = append(convert, item)
@@ -267,6 +290,7 @@ func (me *T) QueryAggregate(args struct {
 			convert = append(convert, temp)
 		}
 	}
+
 	r, err := json.Marshal(convert)
 	if err != nil {
 		return nil, stderr.ErrFind
@@ -295,4 +319,53 @@ func (me *T) QueryDocument(args struct {
 	}
 	*ret = json.RawMessage(r)
 	return convert, nil
+}
+
+// 去重查询统计
+func (me *T) GetDistinctCount(args struct {
+	Collection string
+	Index      string
+	Sort       bson.M
+	Filter     bson.M
+	Pipeline   []bson.M
+	Query      []string
+}, ret *json.RawMessage) (map[string]interface{}, error) {
+	var results []map[string]interface{}
+	convert := make(map[string]interface{})
+	collection := me.C_online.Database(me.Db_online).Collection(args.Collection)
+	op := options.AggregateOptions{}
+	pipeline := bson.M{
+		"$group": bson.M{"_id": "$hash"},
+	}
+	args.Pipeline = append(args.Pipeline, pipeline)
+	args.Pipeline = append(args.Pipeline, bson.M{"$count": "count"})
+	cursor, err := collection.Aggregate(me.Ctx, args.Pipeline, &op)
+
+	defer func(cursor *mongo.Cursor, ctx context.Context) {
+		err := cursor.Close(ctx)
+		if err != nil {
+			log2.Fatalf("Closing cursor error %v", err)
+		}
+	}(cursor, me.Ctx)
+	if err == mongo.ErrNoDocuments {
+		return nil, stderr.ErrNotFound
+	}
+	if err != nil {
+		return nil, stderr.ErrFind
+	}
+
+	if err = cursor.All(me.Ctx, &results); err != nil {
+		return nil, stderr.ErrFind
+	}
+
+	convert["total"] = results[0]["count"]
+
+	r, err := json.Marshal(convert)
+	if err != nil {
+		return nil, stderr.ErrFind
+	}
+	*ret = json.RawMessage(r)
+
+	return convert, nil
+
 }

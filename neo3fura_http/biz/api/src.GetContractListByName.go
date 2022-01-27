@@ -82,6 +82,7 @@ func (me *T) GetContractListByName(args struct {
 					"foreignField": "hash",
 					"as":           "Transaction"}},
 				bson.M{"$match": bson.M{"name": bson.M{"$regex": args.Name, "$options": "$i"}}},
+				bson.M{"$match": bson.M{"updatecounter": 0}},
 				bson.M{"$count": "total counts"},
 			},
 			Query: []string{},

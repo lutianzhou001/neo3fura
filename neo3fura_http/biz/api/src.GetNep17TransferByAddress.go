@@ -14,64 +14,105 @@ func (me *T) GetNep17TransferByAddress(args struct {
 	Address             h160.T
 	Limit               int64
 	Skip                int64
+	Start               int64
+	End                 int64
 	Filter              map[string]interface{}
 	ExcludeBonusAndBurn bool
 }, ret *json.RawMessage) error {
 	if args.Address.Valid() == false {
 		return stderr.ErrInvalidArgs
 	}
-	var r1 []map[string]interface{}
-	var count int64
-	var err error
+	filter := bson.M{}
+
 	if args.ExcludeBonusAndBurn == true {
-		r1, count, err = me.Client.QueryAll(struct {
-			Collection string
-			Index      string
-			Sort       bson.M
-			Filter     bson.M
-			Query      []string
-			Limit      int64
-			Skip       int64
-		}{
-			Collection: "TransferNotification",
-			Index:      "GetNep17TransferByAddress",
-			Sort:       bson.M{"_id": -1},
-			Filter: bson.M{"$or": []interface{}{
+		if args.Start > 0 && args.End > 0 {
+			if args.Start >= args.End {
+				return stderr.ErrArgsInner
+			}
+			filter = bson.M{"$or": []interface{}{
 				bson.M{"from": args.Address.TransferredVal(), "to": bson.M{"$ne": nil}},
-				bson.M{"to": args.Address.TransferredVal(), "from": bson.M{"$ne": nil}},
-			}},
-			Query: []string{},
-			Limit: args.Limit,
-			Skip:  args.Skip,
-		}, ret)
-		if err != nil {
-			return err
+				bson.M{"to": args.Address.TransferredVal()},
+			},
+				"$and": []interface{}{
+					bson.M{"timestamp": bson.M{"$gte": args.Start}},
+					bson.M{"timestamp": bson.M{"$lte": args.End}},
+				},
+			}
+		} else if args.Start > 0 && args.End == 0 {
+			filter = bson.M{"$or": []interface{}{
+				bson.M{"from": args.Address.TransferredVal(), "to": bson.M{"$ne": nil}},
+				bson.M{"to": args.Address.TransferredVal()},
+			}, "timestamp": bson.M{"$gte": args.Start},
+			}
+		} else if args.Start == 0 && args.End > 0 {
+			filter = bson.M{"$or": []interface{}{
+				bson.M{"from": args.Address.TransferredVal(), "to": bson.M{"$ne": nil}},
+				bson.M{"to": args.Address.TransferredVal()},
+			}, "timestamp": bson.M{"$lte": args.Start},
+			}
+		} else {
+			filter = bson.M{"$or": []interface{}{
+				bson.M{"from": args.Address.TransferredVal(), "to": bson.M{"$ne": nil}},
+				bson.M{"to": args.Address.TransferredVal()},
+			},
+			}
 		}
 	} else {
-		r1, count, err = me.Client.QueryAll(struct {
-			Collection string
-			Index      string
-			Sort       bson.M
-			Filter     bson.M
-			Query      []string
-			Limit      int64
-			Skip       int64
-		}{
-			Collection: "TransferNotification",
-			Index:      "GetNep17TransferByAddress",
-			Sort:       bson.M{"_id": -1},
-			Filter: bson.M{"$or": []interface{}{
+		if args.Start > 0 && args.End > 0 {
+			if args.Start >= args.End {
+				return stderr.ErrArgsInner
+			}
+			filter = bson.M{"$or": []interface{}{
 				bson.M{"from": args.Address.TransferredVal()},
 				bson.M{"to": args.Address.TransferredVal()},
-			}},
-			Query: []string{},
-			Limit: args.Limit,
-			Skip:  args.Skip,
-		}, ret)
-		if err != nil {
-			return err
+			},
+				"$and": []interface{}{
+					bson.M{"timestamp": bson.M{"$gte": args.Start}},
+					bson.M{"timestamp": bson.M{"$lte": args.End}},
+				},
+			}
+		} else if args.Start > 0 && args.End == 0 {
+			filter = bson.M{"$or": []interface{}{
+				bson.M{"from": args.Address.TransferredVal()},
+				bson.M{"to": args.Address.TransferredVal()},
+			}, "timestamp": bson.M{"$gte": args.Start},
+			}
+		} else if args.Start == 0 && args.End > 0 {
+			filter = bson.M{"$or": []interface{}{
+				bson.M{"from": args.Address.TransferredVal()},
+				bson.M{"to": args.Address.TransferredVal()},
+			}, "timestamp": bson.M{"$lte": args.Start},
+			}
+		} else {
+			filter = bson.M{"$or": []interface{}{
+				bson.M{"from": args.Address.TransferredVal()},
+				bson.M{"to": args.Address.TransferredVal()},
+			},
+			}
 		}
 	}
+
+	r1, count, err := me.Client.QueryAll(struct {
+		Collection string
+		Index      string
+		Sort       bson.M
+		Filter     bson.M
+		Query      []string
+		Limit      int64
+		Skip       int64
+	}{
+		Collection: "TransferNotification",
+		Index:      "GetNep17TransferByAddress",
+		Sort:       bson.M{"_id": -1},
+		Filter:     filter,
+		Query:      []string{},
+		Limit:      args.Limit,
+		Skip:       args.Skip,
+	}, ret)
+	if err != nil {
+		return err
+	}
+
 	var raw1 map[string]interface{}
 	var raw3 map[string]interface{}
 	for _, item := range r1 {

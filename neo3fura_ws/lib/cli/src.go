@@ -7,6 +7,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	log2 "neo3fura_ws/lib/log"
 )
 
 // T ...
@@ -117,4 +118,49 @@ func (me *T) QueryAll(args struct {
 	}
 	*ret = json.RawMessage(r)
 	return convert, count, nil
+}
+
+func (me *T) GetDistinctCount(args struct {
+	Collection string
+	Index      string
+	Sort       bson.M
+	Filter     bson.M
+	Pipeline   []bson.M
+}, ret *json.RawMessage) (map[string]interface{}, error) {
+	var results []map[string]interface{}
+	convert := make(map[string]interface{})
+	collection := me.C_online.Database(me.Db_online).Collection(args.Collection)
+	op := options.AggregateOptions{}
+	pipeline := bson.M{
+		"$group": bson.M{"_id": "$hash"},
+	}
+	args.Pipeline = append(args.Pipeline, pipeline)
+	args.Pipeline = append(args.Pipeline, bson.M{"$count": "count"})
+	cursor, err := collection.Aggregate(context.TODO(), args.Pipeline, &op)
+
+	defer func(cursor *mongo.Cursor, ctx context.Context) {
+		err := cursor.Close(ctx)
+		if err != nil {
+			log2.Fatalf("Closing cursor error %v", err)
+		}
+	}(cursor, context.TODO())
+
+	if err != nil {
+		return nil, fmt.Errorf("get cursor error:%s", err)
+	}
+
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		return nil, fmt.Errorf("find documents error:%s", err)
+	}
+
+	convert["total"] = results[0]["count"]
+
+	r, err := json.Marshal(convert)
+	if err != nil {
+		return nil, fmt.Errorf("json marshal error:%s", err)
+	}
+	*ret = json.RawMessage(r)
+
+	return convert, nil
+
 }
