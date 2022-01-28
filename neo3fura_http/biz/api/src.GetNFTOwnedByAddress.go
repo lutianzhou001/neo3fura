@@ -256,6 +256,7 @@ func (me *T) GetNFTOwnedByAddress(args struct {
 		}
 		pipeline = append(pipeline, pipeline1...)
 	}
+
 	//按上架时间排序
 	if args.Sort == "timestamp" {
 		lookup := bson.M{"$lookup": bson.M{
@@ -275,11 +276,36 @@ func (me *T) GetNFTOwnedByAddress(args struct {
 			},
 			"as": "marketnotification"},
 		}
-		project := bson.M{"$project": bson.M{"deadlineCond": deadlineCond, "auctionAmountCond": auctionAmountCond, "marketnotification": 1, "_id": 1, "properties": 1, "asset": 1, "tokenid": 1, "amount": 1, "owner": 1, "market": 1, "auctionType": 1, "auctor": 1, "auctionAsset": 1, "auctionAmount": 1, "deadline": 1, "bidder": 1, "bidAmount": 1, "timestamp": 1, "state": ""}}
-		sort := bson.M{"$sort": bson.M{"marketnotification": -1}}
+
+		pipeline2 := []bson.M{}
+		if args.NFTState.Val() == NFTstate.Auction.Val() {
+			pipeline2 = []bson.M{
+				bson.M{"$project": bson.M{"deadlineCond": deadlineCond, "auctionAmountCond": auctionAmountCond, "marketnotification": 1, "_id": 1, "properties": 1, "asset": 1, "tokenid": 1, "amount": 1, "owner": 1, "market": 1, "difference": bson.M{"$eq": []string{"$owner", "$market"}}, "auctionType": 1, "auctor": 1, "auctionAsset": 1, "auctionAmount": 1, "deadline": 1, "bidder": 1, "bidAmount": 1, "timestamp": 1, "state": "auction"}},
+				bson.M{"$match": bson.M{"difference": true}},
+				bson.M{"$sort": bson.M{"deadline": -1}},
+			}
+
+		} else if args.NFTState.Val() == NFTstate.Sale.Val() {
+			pipeline2 = []bson.M{
+				bson.M{"$project": bson.M{"deadlineCond": deadlineCond, "auctionAmountCond": auctionAmountCond, "marketnotification": 1, "_id": 1, "properties": 1, "asset": 1, "tokenid": 1, "amount": 1, "owner": 1, "market": 1, "difference": bson.M{"$eq": []string{"$owner", "$market"}}, "auctionType": 1, "auctor": 1, "auctionAsset": 1, "auctionAmount": 1, "deadline": 1, "bidder": 1, "bidAmount": 1, "timestamp": 1, "state": "sale"}},
+				bson.M{"$match": bson.M{"difference": true}},
+				bson.M{"$sort": bson.M{"deadline": -1}},
+			}
+		} else if args.NFTState.Val() == NFTstate.Unclaimed.Val() {
+			pipeline2 = []bson.M{
+				bson.M{"$project": bson.M{"_id": 1, "deadlineCond": deadlineCond, "auctionAmountCond": auctionAmountCond, "marketnotification": 1, "properties": 1, "asset": 1, "tokenid": 1, "amount": 1, "owner": 1, "market": 1, "difference": bson.M{"$eq": []string{"$owner", "$market"}}, "auctionType": 1, "auctor": 1, "auctionAsset": 1, "auctionAmount": 1, "deadline": 1, "bidder": 1, "bidAmount": 1, "timestamp": 1, "state": "unclaimed"}},
+				bson.M{"$match": bson.M{"difference": true}},
+				bson.M{"$sort": bson.M{"deadline": -1}},
+			}
+		} else {
+			pipeline2 = []bson.M{
+				bson.M{"$project": bson.M{"deadlineCond": deadlineCond, "auctionAmountCond": auctionAmountCond, "marketnotification": 1, "_id": 1, "properties": 1, "asset": 1, "tokenid": 1, "amount": 1, "owner": 1, "market": 1, "auctionType": 1, "auctor": 1, "auctionAsset": 1, "auctionAmount": 1, "deadline": 1, "bidder": 1, "bidAmount": 1, "timestamp": 1, "state": ""}},
+				bson.M{"$sort": bson.M{"deadline": -1}},
+			}
+		}
 		pipeline = append(pipeline, lookup)
-		pipeline = append(pipeline, project)
-		pipeline = append(pipeline, sort)
+		pipeline = append(pipeline, pipeline2...)
+
 	}
 
 	//按截止时间排序
