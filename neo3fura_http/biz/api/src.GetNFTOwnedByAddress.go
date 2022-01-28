@@ -377,7 +377,7 @@ func (me *T) GetNFTOwnedByAddress(args struct {
 		}
 		//获得上架时间
 
-		if item["marketnotification"] != nil && item["marketnotification"] != "" && item["deadline"].(int64) > currentTime {
+		if item["marketnotification"] != nil && item["marketnotification"] != "" {
 			switch item["marketnotification"].(type) {
 			case string:
 				item["listedTimestamp"] = int64(0)
@@ -385,7 +385,11 @@ func (me *T) GetNFTOwnedByAddress(args struct {
 				marketnotification := item["marketnotification"].(primitive.A)
 				if len(marketnotification) > 0 {
 					mn := []interface{}(marketnotification)[0].(map[string]interface{})
-					item["listedTimestamp"] = mn["timestamp"]
+					if item["deadline"].(int64) > currentTime {
+						item["listedTimestamp"] = mn["timestamp"]
+					} else {
+						item["listedTimestamp"] = mn["timestamp"].(int64) - 1640966400000
+					}
 				} else {
 					item["listedTimestamp"] = int64(0)
 				}
