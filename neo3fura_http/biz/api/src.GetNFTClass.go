@@ -8,6 +8,8 @@ import (
 	"neo3fura_http/lib/type/h160"
 	"neo3fura_http/lib/type/strval"
 	"neo3fura_http/var/stderr"
+	"strconv"
+	"time"
 )
 
 func (me *T) GetNFTClass(args struct {
@@ -24,7 +26,7 @@ func (me *T) GetNFTClass(args struct {
 	if args.MarketHash.Valid() == false {
 		return stderr.ErrInvalidArgs
 	}
-
+	currentTime := time.Now().UnixNano() / 1e6
 	length := 0
 	cond := bson.M{}
 	if len(args.SubClass) > 0 {
@@ -108,6 +110,7 @@ func (me *T) GetNFTClass(args struct {
 	}
 
 	for _, item := range r1 {
+		deadline := int64(0)
 		if item["_id"].(int32) != -1 {
 			asset := item["asset"].(string)
 			tokenid := item["tokenid"].(string)
@@ -125,7 +128,12 @@ func (me *T) GetNFTClass(args struct {
 
 			var dat map[string]interface{}
 			if err1 := json.Unmarshal([]byte(extendData), &dat); err1 == nil {
-
+				item["deadline"] = dat["deadline"]
+				ddl := dat["deadline"].(string)
+				deadline, err = strconv.ParseInt(ddl, 10, 64)
+				if err != nil {
+					return err
+				}
 				auctionAsset := dat["auctionAsset"]
 				auctionAmount := dat["auctionAmount"]
 				item["price"] = auctionAmount
@@ -146,9 +154,10 @@ func (me *T) GetNFTClass(args struct {
 			item["name"] = raw3["name"]
 			item["number"] = raw3["number"]
 			item["properties"] = raw3["properties"]
-
+			p := raw3["properties"].(map[string]interface{})
+			supply := p["supply"]
 			//获取claimed
-			if len(r2) > 0 {
+			if len(r2) > 0 && deadline > currentTime {
 				for _, item1 := range r2 {
 					if item["_id"] == item1["_id"] {
 						item["claimed"] = item1["claimed"]
@@ -159,7 +168,7 @@ func (me *T) GetNFTClass(args struct {
 
 				}
 			} else {
-				item["claimed"] = 0
+				item["claimed"] = supply
 			}
 			delete(item, "_id")
 			delete(item, "extendData")
