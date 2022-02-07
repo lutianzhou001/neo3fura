@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -155,7 +156,12 @@ func (me *T) GetNFTClass(args struct {
 			item["number"] = raw3["number"]
 			item["properties"] = raw3["properties"]
 			p := raw3["properties"].(map[string]interface{})
-			supply := p["supply"]
+
+			supply, err2 := base64.URLEncoding.DecodeString(p["supply"].(string))
+
+			if err2 != nil {
+				return err2
+			}
 			//获取claimed
 			if len(r2) > 0 && deadline > currentTime {
 				for _, item1 := range r2 {
@@ -168,7 +174,11 @@ func (me *T) GetNFTClass(args struct {
 
 				}
 			} else {
-				item["claimed"] = supply
+				claimed, err3 := strconv.Atoi(string(supply))
+				if err3 != nil {
+					return err3
+				}
+				item["claimed"] = claimed
 			}
 			delete(item, "_id")
 			delete(item, "extendData")
