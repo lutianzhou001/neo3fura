@@ -163,15 +163,18 @@ func (me *T) GetNFTClass(args struct {
 				return err2
 			}
 			//获取claimed
-			if len(r2) > 0 && deadline > currentTime {
-				for _, item1 := range r2 {
-					if item["_id"] == item1["_id"] {
-						item["claimed"] = item1["claimed"]
-						break
-					} else {
-						item["claimed"] = 0
+			if deadline > currentTime {
+				if len(r2) > 0 {
+					for _, item1 := range r2 {
+						if item["_id"] == item1["_id"] {
+							item["claimed"] = item1["claimed"]
+							break
+						} else {
+							item["claimed"] = 0
+						}
 					}
-
+				} else {
+					item["claimed"] = 0
 				}
 			} else {
 				claimed, err3 := strconv.Atoi(string(supply))
@@ -180,6 +183,7 @@ func (me *T) GetNFTClass(args struct {
 				}
 				item["claimed"] = claimed
 			}
+
 			delete(item, "_id")
 			delete(item, "extendData")
 			delete(item, "tokenid")
