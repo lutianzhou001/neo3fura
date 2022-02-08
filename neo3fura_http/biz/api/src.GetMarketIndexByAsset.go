@@ -292,9 +292,9 @@ func (me *T) GetMarketIndexByAsset(args struct {
 		result["auctionAmount"] = r5[0]["auctionAmount"]
 		result["usdAmount"] = r5[0]["usdAmount"]
 	} else {
-		result["auctionAsset"] = "——"
-		result["auctionAmount"] = "——"
-		result["usdAmount"] = "——"
+		result["auctionAsset"] = nil
+		result["auctionAmount"] = 0
+		result["usdAmount"] = 0
 	}
 
 	r, err := json.Marshal(result)
@@ -332,6 +332,60 @@ func GetPrice(asset string) (float64, error) {
 		return 0, stderr.ErrPrice
 	}
 	return price, nil
+}
+func GetPrice2(asset string, amount primitive.Decimal128) (*big.Float, error) {
+
+	client := &http.Client{}
+	reqBody := []byte(`["` + asset + `"]`)
+	url := "https://onegate.space/api/quote?convert=usd"
+	//str :=[]string{asset}
+	req, _ :=
+		http.NewRequest("POST", url, bytes.NewBuffer(reqBody))
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := client.Do(req)
+	if err != nil {
+		return big.NewFloat(float64(0)), stderr.ErrPrice
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+
+	if err != nil {
+		return big.NewFloat(float64(0)), stderr.ErrPrice
+	}
+	response := string(body)
+	re := response[1 : len(response)-1]
+	price, err1 := strconv.ParseFloat(re, 64)
+
+	//获取decimal
+	decimal := int64(1)
+	if asset != "" {
+		dd, _ := OpenAssetHashFile()
+		decimal = dd[asset] //获取精度
+		if decimal == int64(0) {
+			decimal = int64(1)
+		}
+	}
+
+	var usdAuctionAmount *big.Float
+	//计算价格
+	bamount, _, err := amount.BigInt()
+	bfauctionAmount := new(big.Float).SetInt(bamount)
+	flag := bamount.Cmp(big.NewInt(0))
+
+	if flag == 1 {
+		bfprice := big.NewFloat(price)
+		ffprice := big.NewFloat(1).Mul(bfprice, bfauctionAmount)
+		de := math.Pow(10, float64(decimal))
+		usdAuctionAmount = new(big.Float).Quo(ffprice, big.NewFloat(de))
+
+	} else {
+		usdAuctionAmount = big.NewFloat(float64(0))
+	}
+
+	if err1 != nil {
+		return big.NewFloat(0), stderr.ErrPrice
+	}
+	return usdAuctionAmount, nil
 }
 
 func OpenAssetHashFile() (map[string]int64, error) {
