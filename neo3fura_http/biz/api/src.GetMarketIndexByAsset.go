@@ -228,7 +228,7 @@ func (me *T) GetMarketIndexByAsset(args struct {
 
 	result["totaltxamount"] = txAmount
 	//地板价
-
+	currentTime = time.Now().UnixNano() / 1e6
 	r5, err := me.Client.QueryAggregate(
 		struct {
 			Collection string
@@ -243,7 +243,7 @@ func (me *T) GetMarketIndexByAsset(args struct {
 			Sort:       bson.M{},
 			Filter:     bson.M{},
 			Pipeline: []bson.M{
-				bson.M{"$match": bson.M{"asset": args.AssetHash.Val(), "market": args.MarketHash.Val(), "auctionType": bson.M{"$eq": 1}}},
+				bson.M{"$match": bson.M{"asset": args.AssetHash.Val(), "market": args.MarketHash.Val(), "deadline": bson.M{"$gt": currentTime}, "amount": bson.M{"$gt": 0}, "auctionType": bson.M{"$eq": 1}}},
 			},
 
 			Query: []string{},
