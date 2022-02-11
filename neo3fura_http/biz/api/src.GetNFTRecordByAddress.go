@@ -37,7 +37,7 @@ func (me *T) GetNFTRecordByAddress(args struct {
 		if args.MarketHash.Valid() == false {
 			return stderr.ErrInvalidArgs
 		} else {
-			f["market"] = args.MarketHash.Val()
+			//f["market"] = args.MarketHash.Val()
 			//白名单
 			raw1 := make(map[string]interface{})
 			err1 := me.GetMarketWhiteList(struct {
