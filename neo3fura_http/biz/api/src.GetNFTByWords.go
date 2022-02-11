@@ -35,6 +35,10 @@ func (me *T) GetNFTByWords(args struct {
 		}
 	}
 
+	if args.SecondaryMarket.Valid() == false {
+		return stderr.ErrInvalidArgs
+	}
+
 	var white []interface{}
 	if len(args.SecondaryMarket) > 0 && args.SecondaryMarket != "" {
 		//白名单
