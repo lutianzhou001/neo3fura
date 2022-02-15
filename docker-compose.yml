@@ -54,50 +54,50 @@ services:
     expose:
       - "27017"
 
-  mongo-express:
-    image: mongo-express
-    restart: always
-    container_name: mongo_express_${RUNTIME}
-    ports:
-      - "8081:8081"
-    networks:
-      - network
-    environment:
-      ME_CONFIG_BASICAUTH_USERNAME: change_the_admin
-      ME_CONFIG_BASICAUTH_PASSWORD: change_the_password
-    depends_on:
-      - mongo
-
-  prometheus:
-    image: prom/prometheus:v2.6.1
-    container_name: prometheus_${RUNTIME}
-    ports:
-      - "9091:9090"
-    expose:
-      - "9091"
-    networks:
-      - network
-    volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
-      - ./data/prometheus:/data
-        #command:
-        #- '--config.file=/etc/prometheus/prometheus.yml'
-    depends_on:
-      - neofura_http
-      - neofura_ws
-
-  grafana:
-    image: grafana/grafana:5.1.0
-    container_name: grafana_${RUNTIME}
-    ports:
-      - 3000:3000
-    expose:
-      - "3000"
-    networks:
-      - network
-    user: '104'
-    depends_on:
-      - prometheus
+#  mongo-express:
+#    image: mongo-express
+#    restart: always
+#    container_name: mongo_express_${RUNTIME}
+#    ports:
+#      - "8081:8081"
+#    networks:
+#      - network
+#    environment:
+#      ME_CONFIG_BASICAUTH_USERNAME: change_the_admin
+#      ME_CONFIG_BASICAUTH_PASSWORD: change_the_password
+#    depends_on:
+#      - mongo
+#
+#  prometheus:
+#    image: prom/prometheus:v2.6.1
+#    container_name: prometheus_${RUNTIME}
+#    ports:
+#      - "9091:9090"
+#    expose:
+#      - "9091"
+#    networks:
+#      - network
+#    volumes:
+#      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+#      - ./data/prometheus:/data
+#        #command:
+#        #- '--config.file=/etc/prometheus/prometheus.yml'
+#    depends_on:
+#      - neofura_http
+#      - neofura_ws
+#
+#  grafana:
+#    image: grafana/grafana:5.1.0
+#    container_name: grafana_${RUNTIME}
+#    ports:
+#      - 3000:3000
+#    expose:
+#      - "3000"
+#    networks:
+#      - network
+#    user: '104'
+#    depends_on:
+#      - prometheus
 
 networks:
   network:

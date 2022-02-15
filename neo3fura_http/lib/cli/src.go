@@ -12,6 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"neo3fura_http/biz/api"
 	log2 "neo3fura_http/lib/log"
 	"neo3fura_http/var/stderr"
 )
@@ -326,6 +327,7 @@ func (me *T) QueryDocument(args struct {
 	return convert, nil
 }
 
+
 // 去重查询统计
 func (me *T) GetDistinctCount(args struct {
 	Collection string
@@ -373,4 +375,25 @@ func (me *T) GetDistinctCount(args struct {
 
 	return convert, nil
 
+}
+
+
+func (me *T) InsertDocument(args struct {
+	Collection string
+	Index      string
+	Insert     *api.Insert
+}, ret *json.RawMessage) (map[string]interface{}, error) {
+	collection := me.C_online.Database(me.Db_online).Collection(args.Collection)
+	_,err := collection.InsertOne(me.Ctx,&args.Insert)
+	if err != nil {
+		return nil, stderr.ErrInsertDocument
+	}
+	result := make(map[string]interface{})
+	result["msg"] = "Insert document done!"
+	r, err := json.Marshal(result)
+	if err != nil {
+		return nil, stderr.ErrInsertDocument
+	}
+	*ret = json.RawMessage(r)
+	return result, nil
 }
