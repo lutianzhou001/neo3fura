@@ -9,8 +9,8 @@ import (
 
 func (me *T) InsertVerifiedContract(args struct {
 	ContractHash h160.T
-	UpdateCounter int
-	Id			  int
+	UpdateCounter int32
+	Id			  int32
 }, ret *json.RawMessage) error {
 	if args.ContractHash.Valid() == false {
 		return stderr.ErrInvalidArgs

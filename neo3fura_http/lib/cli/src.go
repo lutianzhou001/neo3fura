@@ -31,8 +31,8 @@ type T struct {
 
 type Insert struct {
 	Hash   h160.T
-	Id 				int
-	UpdateCounter 	int
+	Id 				int32
+	UpdateCounter 	int32
 }
 
 func (me *T) QueryOne(args struct {
