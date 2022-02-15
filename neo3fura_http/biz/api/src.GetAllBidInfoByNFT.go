@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"math/big"
 	"neo3fura_http/lib/mapsort"
 	"neo3fura_http/lib/type/h160"
 	"neo3fura_http/lib/type/strval"
@@ -73,7 +74,7 @@ func (me *T) GetAllBidInfoByNFT(args struct {
 		bidInfo["tokenid"] = items["tokenid"]
 		bidInfo["nonce"] = items["nonce"]
 		bidInfo["asset"] = items["asset"]
-		bidAmounts := []int64{}
+		bidAmounts := []*big.Int{}
 		bidders := []string{}
 		//bis:=make([]map[string]interface{}, 0)
 		//for _, i := range bidinfos {
@@ -88,11 +89,14 @@ func (me *T) GetAllBidInfoByNFT(args struct {
 			extendData := info["extendData"].(string)
 			var dat map[string]interface{}
 			if err1 := json.Unmarshal([]byte(extendData), &dat); err1 == nil {
-				bidAmount, err2 := strconv.ParseInt(dat["bidAmount"].(string), 10, 64)
-				info["bidAmount"] = bidAmount
-				if err2 != nil {
-					return err2
+				//bidAmount, err2 := strconv.ParseInt(dat["bidAmount"].(string), 10, 64)
+				//bidAmount,_ ,err2 := dat["bidAmount"].(primitive.Decimal128).BigInt()
+				bidAmount, flag := new(big.Int).SetString(dat["bidAmount"].(string), 10)
+				if flag == false {
+					return stderr.ErrData
 				}
+				info["bidAmount"] = bidAmount
+
 				//bidAmounts = append(bidAmounts, bidAmount)
 			} else {
 				return err1
@@ -100,11 +104,11 @@ func (me *T) GetAllBidInfoByNFT(args struct {
 			bidinfos2 = append(bidinfos2, info)
 		}
 
-		bidinfos2 = mapsort.MapSort(bidinfos2, "bidAmount")
+		bidinfos2 = mapsort.MapSort4(bidinfos2, "bidAmount")
 
 		for _, i := range bidinfos2 {
 			bidder := i["user"].(string)
-			bidAmount := i["bidAmount"].(int64)
+			bidAmount := i["bidAmount"].(*big.Int)
 			bidAmounts = append(bidAmounts, bidAmount)
 			bidders = append(bidders, bidder)
 

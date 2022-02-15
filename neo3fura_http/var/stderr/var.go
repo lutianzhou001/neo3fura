@@ -32,4 +32,8 @@ var ErrAMarketConfig = jsonrpc2.NewError(-32001, "market config error")
 
 var ErrPrice = jsonrpc2.NewError(-32001, "asset convent price error")
 
+var ErrData = jsonrpc2.NewError(-32001, "data conversion error")
+
+var ErrWhiteList = jsonrpc2.NewError(-32001, "whiteList is null")
+
 var ErrInsertDocument = jsonrpc2.NewError(-32001, "insert document error")

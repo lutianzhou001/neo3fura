@@ -108,5 +108,9 @@ var Apis = []string{
 	"GetNFTClass",
 	"GetNFTByWords",
 	"GetMarketIndexByAsset",
+	"GetNeoFsImage",
+	"GetMarketTokenidList",
+	"GetMarketWhiteList",
+	"GetWhiteListByMarketHash",
 	"InsertVerifiedContract",
 }

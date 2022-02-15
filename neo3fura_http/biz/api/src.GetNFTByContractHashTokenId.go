@@ -88,26 +88,25 @@ func (me *T) GetNFTByContractHashTokenId(args struct {
 			a1 = item["amount"].(primitive.Decimal128).String()
 		}
 
-		amount, err := strconv.Atoi(a1)
-		if err != nil {
+		amount, err1 := strconv.Atoi(a1)
+		if err1 != nil {
 			return err
 		}
 
-		b := item["bidAmount"]
-		var ba string
-		switch b.(type) {
-		case string:
-			ba = item["bidAmount"].(string)
-		case primitive.Decimal128:
-			ba = item["bidAmount"].(primitive.Decimal128).String()
-		}
-
-		//ba := r1["bidAmount"].(primitive.Decimal128).String()
-		//ba := r1["bidAmount"].(string)
-		bidAmount, err := strconv.ParseInt(ba, 10, 64)
-		if err != nil {
-			return err
-		}
+		bidAmount := item["bidAmount"].(primitive.Decimal128).String()
+		//b := item["bidAmount"]
+		//var ba string
+		//switch b.(type) {
+		//case string:
+		//	ba = item["bidAmount"].(string)
+		//case primitive.Decimal128:
+		//	ba = item["bidAmount"].(primitive.Decimal128).String()
+		//}
+		//bidAmount, err2 := new(big.Int).SetString(ba,10)
+		//bidAmountFlag :=bidAmount.Cmp(big.NewInt(0))
+		//if err2 == false {
+		//	return stderr.ErrData
+		//}
 
 		dl := item["deadline"]
 
@@ -138,45 +137,26 @@ func (me *T) GetNFTByContractHashTokenId(args struct {
 			item["state"] = NFTstate.Sale.Val()
 		} else if amount > 0 && item["owner"] != item["market"] {
 			item["state"] = NFTstate.NotListed.Val()
-		} else if amount > 0 && bidAmount > 0 && deadline < currentTime && item["owner"] == item["market"] {
+		} else if amount > 0 && bidAmount != "0" && deadline < currentTime && item["owner"] == item["market"] {
 			item["state"] = NFTstate.Unclaimed.Val()
-		} else if amount > 0 && deadline < currentTime && bidAmount == 0 && item["owner"] == item["market"] {
+		} else if amount > 0 && deadline < currentTime && bidAmount == "0" && item["owner"] == item["market"] {
 			item["state"] = NFTstate.Expired.Val()
 		} else {
 			item["state"] = ""
 		}
 
 		var raw3 map[string]interface{}
-		err1 := getNFTProperties(strval.T(tokenId), args.ContractHash, me, ret, args.Filter, &raw3)
-		if err1 != nil {
+		err2 := getNFTProperties(strval.T(tokenId), args.ContractHash, me, ret, args.Filter, &raw3)
+		if err2 != nil {
 			item["image"] = ""
 			item["name"] = ""
+			item["number"] = int64(-1)
+			item["properties"] = ""
 		}
-		extendData := raw3["properties"]
-		if extendData != nil {
-			var dat map[string]interface{}
-			if err := json.Unmarshal([]byte(extendData.(string)), &dat); err == nil {
-				value, ok := dat["image"]
-				if ok {
-					item["image"] = value
-				} else {
-					item["image"] = ""
-				}
-				name, ok1 := dat["name"]
-				if ok1 {
-					item["name"] = name
-				} else {
-					item["name"] = ""
-				}
-
-			} else {
-				return err
-			}
-		} else {
-			item["image"] = ""
-			item["name"] = ""
-		}
-
+		item["image"] = raw3["image"]
+		item["name"] = raw3["name"]
+		item["number"] = raw3["number"]
+		item["properties"] = raw3["properties"]
 	}
 
 	r5, err := me.FilterArrayAndAppendCount(rr1, count, args.Filter)

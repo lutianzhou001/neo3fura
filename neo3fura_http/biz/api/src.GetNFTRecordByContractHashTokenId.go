@@ -39,7 +39,7 @@ func (me *T) GetNFTRecordByContractHashTokenId(args struct {
 	}{
 		Collection: "MarketNotification",
 		Index:      "GetNFTRecordByContractHashTokenId",
-		Sort:       bson.M{},
+		Sort:       bson.M{"timestamp": -1},
 		Filter:     f,
 		Query:      []string{},
 	}, ret)
@@ -76,7 +76,7 @@ func (me *T) GetNFTRecordByContractHashTokenId(args struct {
 			if item["txid"] == i["txid"] { //为了获取nft的交易价格
 				extendData := i["extendData"].(string)
 				var dat map[string]interface{}
-				if err := json.Unmarshal([]byte(extendData), &dat); err == nil {
+				if err2 := json.Unmarshal([]byte(extendData), &dat); err2 == nil {
 					bidAmount, err1 := strconv.ParseInt(dat["bidAmount"].(string), 10, 64)
 					if err1 != nil {
 						return err1
@@ -86,56 +86,30 @@ func (me *T) GetNFTRecordByContractHashTokenId(args struct {
 					rr["auctionAmount"] = bidAmount
 
 				} else {
-					return err
+					return err2
 				}
 			}
 		}
 
 		asset := item["contract"].(string)
 		tokenid := item["tokenId"].(string)
-		r4, err := me.Client.QueryOne(struct {
-			Collection string
-			Index      string
-			Sort       bson.M
-			Filter     bson.M
-			Query      []string
-		}{
-			Collection: "Nep11Properties",
-			Index:      "GetNep11PropertiesByContractHashTokenId",
-			Sort:       bson.M{},
-			Filter:     bson.M{"asset": asset, "tokenid": tokenid},
-			Query:      []string{},
-		}, ret)
-		if err != nil {
-			return err
-		}
 
-		extendData := r4["properties"].(string)
-		if extendData != "" {
-			var dat map[string]interface{}
-			if err := json.Unmarshal([]byte(extendData), &dat); err == nil {
-				image, ok := dat["image"]
-				if ok {
-					rr["image"] = image
-				} else {
-					rr["image"] = ""
-				}
-				name, ok1 := dat["name"]
-				if ok1 {
-					rr["name"] = name
-				} else {
-					rr["name"] = ""
-				}
-
-			} else {
-				return err
-			}
-		} else {
+		var raw3 map[string]interface{}
+		err2 := getNFTProperties(strval.T(tokenid), h160.T(asset), me, ret, args.Filter, &raw3)
+		if err2 != nil {
 			rr["image"] = ""
 			rr["name"] = ""
+			rr["number"] = int64(-1)
+			rr["properties"] = ""
+
 		}
 
-		result = append(result, rr) //  通过市场流转
+		rr["image"] = raw3["image"]
+		rr["name"] = raw3["name"]
+		rr["number"] = raw3["number"]
+		rr["properties"] = raw3["properties"]
+
+		result = append(result, rr)
 
 	}
 
