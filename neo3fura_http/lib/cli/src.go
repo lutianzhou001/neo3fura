@@ -12,8 +12,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"neo3fura_http/biz/api"
 	log2 "neo3fura_http/lib/log"
+	"neo3fura_http/lib/type/h160"
 	"neo3fura_http/var/stderr"
 )
 
@@ -27,6 +27,12 @@ type T struct {
 	RpcCli    *rpc.RpcClient
 	RpcPorts  []string
 	NeoFs string
+}
+
+type Insert struct {
+	ContractHash   h160.T
+	UpdateCounter 	int
+	Id 				int
 }
 
 func (me *T) QueryOne(args struct {
@@ -377,7 +383,7 @@ func (me *T) GetDistinctCount(args struct {
 func (me *T) InsertDocument(args struct {
 	Collection string
 	Index      string
-	Insert     *api.Insert
+	Insert     *Insert
 }, ret *json.RawMessage) (map[string]interface{}, error) {
 	collection := me.C_online.Database(me.Db_online).Collection(args.Collection)
 	_,err := collection.InsertOne(me.Ctx,&args.Insert)
