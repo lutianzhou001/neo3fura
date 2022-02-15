@@ -30,9 +30,9 @@ type T struct {
 }
 
 type Insert struct {
-	ContractHash   h160.T
-	UpdateCounter 	int
+	Hash   h160.T
 	Id 				int
+	UpdateCounter 	int
 }
 
 func (me *T) QueryOne(args struct {

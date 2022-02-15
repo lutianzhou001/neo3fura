@@ -23,10 +23,10 @@ func (me *T) InsertVerifiedContract(args struct {
 		Collection: "VerifyContractModel",
 		Index:      "InsertVerifiedContract",
 		Insert:     &cli.Insert{
-			ContractHash: args.ContractHash,
-			UpdateCounter: args.UpdateCounter,
+			Hash: args.ContractHash,
 			Id:args.Id,
-		},
+			UpdateCounter: args.UpdateCounter,
+			},
 	}, ret)
 
 	if err != nil {
