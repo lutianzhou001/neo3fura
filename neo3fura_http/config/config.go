@@ -113,4 +113,5 @@ var Apis = []string{
 	"GetMarketWhiteList",
 	"GetWhiteListByMarketHash",
 	"InsertVerifiedContract",
+	"GetNFSImgStatus",
 }
