@@ -88,6 +88,16 @@ type Config struct {
 		Uri []string `yaml:"uri"`
 	} `yaml:"proxy"`
 	Replica string `yaml:"replica"`
+	NeoFs_Main struct {
+		Host string `yaml:"host"`
+		Port string `yaml:"port"`
+		ContainerId string `yaml:"containerid"`
+	} `yaml:"neofs_main"`
+	NeoFs_Test struct{
+		Host string `yaml:"host"`
+		Port string `yaml:"port"`
+		ContainerId string `yaml:"containerid"`
+	} `yaml:"neofs_test"`
 }
 
 func main() {
@@ -102,6 +112,7 @@ func main() {
 	co, dbOnline := initializeMongoOnlineClient(cfg, ctx)
 	cl := initializeMongoLocalClient(cfg, ctx)
 	rds := initializeRedisLocalClient(cfg, ctx)
+	fs := initializeNeoFsHost(cfg)
 
 	client := &cli.T{
 		Redis:     rds,
@@ -111,6 +122,7 @@ func main() {
 		Ctx:       ctx,
 		RpcCli:    neoRpc.NewClient(""), // placeholder
 		RpcPorts:  cfg.Proxy.Uri,
+		NeoFs: 	   fs,
 	}
 
 	rpc.Register(&api.T{
@@ -220,7 +232,19 @@ func initializeMongoOnlineClient(cfg Config, ctx context.Context) (*mongo.Client
 	}
 	return co, dbOnline
 }
-
+func initializeNeoFsHost(cfg Config) string {
+	rt := os.ExpandEnv("${RUNTIME}")
+	var neoFsHost string
+	switch rt {
+	case "test":
+		neoFsHost = cfg.NeoFs_Test.Host+":"+cfg.NeoFs_Test.Port+"/gate"+"/get/"+cfg.NeoFs_Test.ContainerId+"/"
+	case "staging":
+		neoFsHost = cfg.NeoFs_Main.Host+":"+cfg.NeoFs_Main.Port+"/gate"+"/get/"+cfg.NeoFs_Main.ContainerId+"/"
+	default:
+		log2.Fatalf("runtime environment mismatch")
+	}
+	return neoFsHost
+}
 func initializeMongoLocalClient(cfg Config, ctx context.Context) *mongo.Client {
 	var clientOptions *options.ClientOptions
 	clientOptions = options.Client().ApplyURI("mongodb://" + cfg.Database_Local.Host + ":" + cfg.Database_Local.Port + "/" + cfg.Database_Local.Database)
