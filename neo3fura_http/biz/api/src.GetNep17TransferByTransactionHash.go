@@ -2,7 +2,6 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/joeqian10/neo3-gogogo/crypto"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -39,8 +38,7 @@ func (me *T) GetNep17TransferByTransactionHash(args struct {
 	if err != nil {
 		return err
 	}
-	//var raw1 map[string]interface{}
-	fmt.Printf(".", args.TransactionHash)
+
 	for _, item := range r1 {
 
 		item["vmstate"] = item["Vmstate"].(string)
