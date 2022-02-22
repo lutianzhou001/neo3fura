@@ -12,6 +12,7 @@ import (
 	"neo3fura_http/lib/mapsort"
 	"neo3fura_http/lib/type/h160"
 	"neo3fura_http/lib/utils"
+	limit "neo3fura_http/var/const"
 	"neo3fura_http/var/stderr"
 	"net/http"
 	"path/filepath"
@@ -49,7 +50,7 @@ func (me *T) GetMarketIndexByAsset(args struct {
 			Sort:       bson.M{},
 			Filter:     bson.M{},
 			Pipeline: []bson.M{
-				bson.M{"$match": bson.M{"asset": args.AssetHash.Val(), "amount": bson.M{"$gt": 0}}},
+				bson.M{"$match": bson.M{"owner": bson.M{"$ne": limit.NullAddress}, "asset": args.AssetHash.Val(), "amount": bson.M{"$gt": 0}}},
 				bson.M{"$group": bson.M{"_id": "$tokenid"}},
 				bson.M{"$count": "count"},
 			},
@@ -81,7 +82,7 @@ func (me *T) GetMarketIndexByAsset(args struct {
 			Sort:       bson.M{},
 			Filter:     bson.M{},
 			Pipeline: []bson.M{
-				bson.M{"$match": bson.M{"asset": args.AssetHash.Val(), "market": args.MarketHash.Val(), "amount": bson.M{"$gt": 0}}}, //上架（正常状态、过期）:auctor，未领取：bidder
+				bson.M{"$match": bson.M{"owner": bson.M{"$ne": limit.NullAddress}, "asset": args.AssetHash.Val(), "market": args.MarketHash.Val(), "amount": bson.M{"$gt": 0}}}, //上架（正常状态、过期）:auctor，未领取：bidder
 				bson.M{"$project": bson.M{"_id": 1, "asset": 1, "tokenid": 1, "amount": 1, "owner": 1, "market": 1, "difference": bson.M{"$eq": []string{"$owner", "$market"}}, "auctionType": 1, "auctor": 1, "auctionAsset": 1, "auctionAmount": 1, "deadline": 1, "bidder": 1, "bidAmount": 1, "timestamp": 1}},
 				bson.M{"$match": bson.M{"difference": true}},
 			},
@@ -127,7 +128,7 @@ func (me *T) GetMarketIndexByAsset(args struct {
 			Sort:       bson.M{},
 			Filter:     bson.M{},
 			Pipeline: []bson.M{
-				bson.M{"$match": bson.M{"asset": args.AssetHash.Val(), "market": primitive.Null{}}}, //上架（正常状态、过期）:auctor，未领取：biddernu
+				bson.M{"$match": bson.M{"owner": bson.M{"$ne": limit.NullAddress}, "amount": bson.M{"$gt": 0}, "asset": args.AssetHash.Val(), "market": nil}}, //上架（正常状态、过期）:auctor，未领取：biddernu
 				bson.M{"$group": bson.M{"_id": "$owner",
 					"owner":    bson.M{"$last": "$owner"},
 					"auctor":   bson.M{"$last": "$auctor"},
