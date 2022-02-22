@@ -71,6 +71,7 @@ func (me *T) GetNep17TransferByTransactionHash(args struct {
 
 		delete(item, "state")
 		delete(item, "Vmstate")
+		delete(item, "eventname")
 
 		r, err := me.Client.QueryOne(struct {
 			Collection string
