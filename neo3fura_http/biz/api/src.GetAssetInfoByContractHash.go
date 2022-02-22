@@ -116,8 +116,7 @@ func (me *T) GetAssetInfoByContractHash(args struct {
 	if args.Raw != nil {
 		*args.Raw = r1
 	}
-
-	r1["totalsupply"] = count
+	r1["holders"] = count
 
 	if r1["type"].(string) == "NEP11" {
 		r3, err1 := me.Client.QueryAggregate(
@@ -143,9 +142,10 @@ func (me *T) GetAssetInfoByContractHash(args struct {
 		if err1 != nil {
 			return err1
 		}
+		r1["totalsupply"] = count
 		r1["holders"] = r3[0]["addressCounts"]
 	} else {
-		r1["holders"] = 0
+
 	}
 
 	r1, err = me.Filter(r1, args.Filter)
