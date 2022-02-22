@@ -2,11 +2,11 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
+	"github.com/joeqian10/neo3-gogogo/crypto"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"neo3fura_http/lib/type/h256"
 	"neo3fura_http/var/stderr"
-
-	"go.mongodb.org/mongo-driver/bson"
 )
 
 func (me *T) GetNep17TransferByTransactionHash(args struct {
@@ -27,10 +27,10 @@ func (me *T) GetNep17TransferByTransactionHash(args struct {
 		Limit      int64
 		Skip       int64
 	}{
-		Collection: "TransferNotification",
+		Collection: "Notification",
 		Index:      "GetNep17TransferByTransactionHash",
-		Sort:       bson.M{"_id": -1},
-		Filter:     bson.M{"txid": args.TransactionHash.Val()},
+		Sort:       bson.M{"index": 1},
+		Filter:     bson.M{"eventname": "Transfer", "txid": args.TransactionHash.Val()},
 		Query:      []string{},
 		Limit:      args.Limit,
 		Skip:       args.Skip,
@@ -38,22 +38,41 @@ func (me *T) GetNep17TransferByTransactionHash(args struct {
 	if err != nil {
 		return err
 	}
-	var raw1 map[string]interface{}
 
 	for _, item := range r1 {
-		err = me.GetVmStateByTransactionHash(struct {
-			TransactionHash h256.T
-			Filter          map[string]interface{}
-			Raw             *map[string]interface{}
-		}{
-			TransactionHash: h256.T(fmt.Sprint(item["txid"])),
-			Filter:          nil,
-			Raw:             &raw1,
-		}, ret)
-		if err != nil {
-			return err
+
+		item["vmstate"] = item["Vmstate"].(string)
+		state := item["state"].(map[string]interface{})
+		value := state["value"].(primitive.A)
+
+		base64from := value[0].(map[string]interface{})["value"]
+		base64to := value[1].(map[string]interface{})["value"]
+
+		if base64from != nil {
+			from, err1 := crypto.Base64Decode(base64from.(string))
+			if err1 != nil {
+				return err1
+			}
+			item["from"] = crypto.BytesToScriptHash(from)
+		} else {
+			item["from"] = nil
 		}
-		item["vmstate"] = raw1["vmstate"].(string)
+		if base64to != nil {
+			to, err1 := crypto.Base64Decode(base64to.(string))
+			if err1 != nil {
+				return err1
+			}
+			item["to"] = crypto.BytesToScriptHash(to)
+		} else {
+			item["to"] = nil
+		}
+
+		item["value"] = value[2].(map[string]interface{})["value"]
+
+		delete(item, "state")
+		delete(item, "Vmstate")
+		delete(item, "eventname")
+
 		r, err := me.Client.QueryOne(struct {
 			Collection string
 			Index      string
