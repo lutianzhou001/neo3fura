@@ -10,6 +10,7 @@ import (
 	"neo3fura_http/lib/type/NFTstate"
 	"neo3fura_http/lib/type/h160"
 	"neo3fura_http/lib/type/strval"
+	address "neo3fura_http/var/const"
 	"neo3fura_http/var/stderr"
 	"strconv"
 	"strings"
@@ -128,6 +129,7 @@ func (me *T) GetNFTMarket(args struct {
 
 	if args.NFTState.Val() == NFTstate.Auction.Val() { //拍卖中  accont >0 && auctionType =2 &&  owner=market && runtime <deadline
 		pipeline1 := []bson.M{
+			bson.M{"$match": bson.M{"owner": bson.M{"$ne": address.NullAddress}}},
 			bson.M{"$match": bson.M{"amount": bson.M{"$gt": 0}}},
 			bson.M{"$match": bson.M{"auctionType": bson.M{"$eq": 2}}},
 			bson.M{"$match": bson.M{"deadline": bson.M{"$gt": currentTime}}},
@@ -152,7 +154,7 @@ func (me *T) GetNFTMarket(args struct {
 
 	} else if args.NFTState.Val() == NFTstate.Sale.Val() { //出售中 accont >0 && auctionType =1 && owner=market && runtime <deadline
 		pipeline1 := []bson.M{
-
+			bson.M{"$match": bson.M{"owner": bson.M{"$ne": address.NullAddress}}},
 			bson.M{"$match": bson.M{"amount": bson.M{"$gt": 0}}},
 			bson.M{"$match": bson.M{"auctionType": bson.M{"$eq": 1}}},
 			bson.M{"$match": bson.M{"deadline": bson.M{"$gt": currentTime}}},
@@ -176,6 +178,7 @@ func (me *T) GetNFTMarket(args struct {
 
 	} else if args.NFTState.Val() == NFTstate.NotListed.Val() { //未上架  accont >0 && owner != market  ||  owner == market && deadline < currentTime
 		pipeline1 := []bson.M{
+			bson.M{"$match": bson.M{"owner": bson.M{"$ne": address.NullAddress}}},
 			bson.M{"$match": bson.M{"market": bson.M{"$ne": args.PrimaryMarket.Val()}}},
 			bson.M{"$match": bson.M{"amount": bson.M{"$gt": 0}}},
 			bson.M{"$lookup": bson.M{
@@ -203,6 +206,7 @@ func (me *T) GetNFTMarket(args struct {
 
 	} else { //默认  account > 0
 		pipeline1 := []bson.M{
+			bson.M{"$match": bson.M{"owner": bson.M{"$ne": address.NullAddress}}},
 			bson.M{"$match": bson.M{"market": bson.M{"$ne": args.PrimaryMarket.Val()}}},
 			bson.M{"$match": bson.M{"amount": bson.M{"$gt": 0}}},
 			bson.M{"$lookup": bson.M{
