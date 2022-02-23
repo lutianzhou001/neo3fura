@@ -54,19 +54,19 @@ func (me *T) GetNep17TransferByTransactionHash(args struct {
 			if err1 != nil {
 				return err1
 			}
-			s := crypto.BytesToScriptHash(from)
-			item["from"] = crypto.ScriptHashToAddress(s, helper.DefaultAddressVersion)
+
+			item["from"] = "0x" + helper.BytesToHex(helper.ReverseBytes(from))
 		} else {
 			item["from"] = nil
 		}
 		if base64to != nil {
 			to, err1 := crypto.Base64Decode(base64to.(string))
+
 			if err1 != nil {
 				return err1
 			}
-			s := crypto.BytesToScriptHash(to)
 
-			item["to"] = crypto.ScriptHashToAddress(s, helper.DefaultAddressVersion)
+			item["to"] = "0x" + helper.BytesToHex(helper.ReverseBytes(to))
 		} else {
 			item["to"] = nil
 		}
