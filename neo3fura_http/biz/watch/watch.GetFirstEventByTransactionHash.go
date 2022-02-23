@@ -3,6 +3,7 @@ package watch
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	log2 "neo3fura_http/lib/log"
@@ -59,7 +60,12 @@ func (me *T) GetFirstEventByTransactionHash() error {
 			log2.Fatalf("Query Execution error:%v", err)
 		}
 
-		r2["vmstate"] = r1["vmstate"].(string)
+		if r1 != nil {
+			r2["vmstate"] = r1["vmstate"].(string)
+		} else {
+			r2["vmstate"] = ""
+		}
+		fmt.Println(r2)
 		_, err = me.Client.SaveJob(struct {
 			Collection string
 			Data       bson.M
