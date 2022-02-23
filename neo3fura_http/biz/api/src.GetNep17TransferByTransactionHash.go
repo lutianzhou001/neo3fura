@@ -54,7 +54,8 @@ func (me *T) GetNep17TransferByTransactionHash(args struct {
 			if err1 != nil {
 				return err1
 			}
-			item["from"] = crypto.BytesToScriptHash(from)
+			s := crypto.BytesToScriptHash(from)
+			item["from"] = crypto.ScriptHashToAddress(s, helper.DefaultAddressVersion)
 		} else {
 			item["from"] = nil
 		}
