@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"github.com/joeqian10/neo3-gogogo/crypto"
+	"github.com/joeqian10/neo3-gogogo/helper"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"neo3fura_http/lib/type/h256"
@@ -62,7 +63,9 @@ func (me *T) GetNep17TransferByTransactionHash(args struct {
 			if err1 != nil {
 				return err1
 			}
-			item["to"] = crypto.BytesToScriptHash(to)
+			s := crypto.BytesToScriptHash(to)
+
+			item["to"] = crypto.ScriptHashToAddress(s, helper.DefaultAddressVersion)
 		} else {
 			item["to"] = nil
 		}
