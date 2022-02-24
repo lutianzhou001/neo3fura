@@ -12,6 +12,7 @@ import (
 	"neo3fura_http/lib/mapsort"
 	"neo3fura_http/lib/type/h160"
 	"neo3fura_http/lib/utils"
+	limit "neo3fura_http/var/const"
 	"neo3fura_http/var/stderr"
 	"net/http"
 	"path/filepath"
@@ -49,7 +50,7 @@ func (me *T) GetMarketIndexByAsset(args struct {
 			Sort:       bson.M{},
 			Filter:     bson.M{},
 			Pipeline: []bson.M{
-				bson.M{"$match": bson.M{"asset": args.AssetHash.Val(), "amount": bson.M{"$gt": 0}}},
+				bson.M{"$match": bson.M{"owner": bson.M{"$ne": limit.NullAddress}, "asset": args.AssetHash.Val(), "amount": bson.M{"$gt": 0}}},
 				bson.M{"$group": bson.M{"_id": "$tokenid"}},
 				bson.M{"$count": "count"},
 			},
@@ -81,7 +82,7 @@ func (me *T) GetMarketIndexByAsset(args struct {
 			Sort:       bson.M{},
 			Filter:     bson.M{},
 			Pipeline: []bson.M{
-				bson.M{"$match": bson.M{"asset": args.AssetHash.Val(), "market": args.MarketHash.Val(), "amount": bson.M{"$gt": 0}}}, //上架（正常状态、过期）:auctor，未领取：bidder
+				bson.M{"$match": bson.M{"owner": bson.M{"$ne": limit.NullAddress}, "asset": args.AssetHash.Val(), "market": args.MarketHash.Val(), "amount": bson.M{"$gt": 0}}}, //上架（正常状态、过期）:auctor，未领取：bidder
 				bson.M{"$project": bson.M{"_id": 1, "asset": 1, "tokenid": 1, "amount": 1, "owner": 1, "market": 1, "difference": bson.M{"$eq": []string{"$owner", "$market"}}, "auctionType": 1, "auctor": 1, "auctionAsset": 1, "auctionAmount": 1, "deadline": 1, "bidder": 1, "bidAmount": 1, "timestamp": 1}},
 				bson.M{"$match": bson.M{"difference": true}},
 			},
@@ -127,7 +128,7 @@ func (me *T) GetMarketIndexByAsset(args struct {
 			Sort:       bson.M{},
 			Filter:     bson.M{},
 			Pipeline: []bson.M{
-				bson.M{"$match": bson.M{"asset": args.AssetHash.Val(), "market": primitive.Null{}}}, //上架（正常状态、过期）:auctor，未领取：biddernu
+				bson.M{"$match": bson.M{"owner": bson.M{"$ne": limit.NullAddress}, "amount": bson.M{"$gt": 0}, "asset": args.AssetHash.Val(), "market": nil}}, //上架（正常状态、过期）:auctor，未领取：biddernu
 				bson.M{"$group": bson.M{"_id": "$owner",
 					"owner":    bson.M{"$last": "$owner"},
 					"auctor":   bson.M{"$last": "$auctor"},
@@ -228,7 +229,7 @@ func (me *T) GetMarketIndexByAsset(args struct {
 
 	result["totaltxamount"] = txAmount
 	//地板价
-
+	currentTime = time.Now().UnixNano() / 1e6
 	r5, err := me.Client.QueryAggregate(
 		struct {
 			Collection string
@@ -243,7 +244,7 @@ func (me *T) GetMarketIndexByAsset(args struct {
 			Sort:       bson.M{},
 			Filter:     bson.M{},
 			Pipeline: []bson.M{
-				bson.M{"$match": bson.M{"asset": args.AssetHash.Val(), "market": args.MarketHash.Val(), "auctionType": bson.M{"$eq": 1}}},
+				bson.M{"$match": bson.M{"asset": args.AssetHash.Val(), "market": args.MarketHash.Val(), "deadline": bson.M{"$gt": currentTime}, "amount": bson.M{"$gt": 0}, "auctionType": bson.M{"$eq": 1}}},
 			},
 
 			Query: []string{},
@@ -292,9 +293,9 @@ func (me *T) GetMarketIndexByAsset(args struct {
 		result["auctionAmount"] = r5[0]["auctionAmount"]
 		result["usdAmount"] = r5[0]["usdAmount"]
 	} else {
-		result["auctionAsset"] = "——"
-		result["auctionAmount"] = "——"
-		result["usdAmount"] = "——"
+		result["auctionAsset"] = nil
+		result["auctionAmount"] = 0
+		result["usdAmount"] = 0
 	}
 
 	r, err := json.Marshal(result)
@@ -332,6 +333,60 @@ func GetPrice(asset string) (float64, error) {
 		return 0, stderr.ErrPrice
 	}
 	return price, nil
+}
+func GetPrice2(asset string, amount primitive.Decimal128) (*big.Float, error) {
+
+	client := &http.Client{}
+	reqBody := []byte(`["` + asset + `"]`)
+	url := "https://onegate.space/api/quote?convert=usd"
+	//str :=[]string{asset}
+	req, _ :=
+		http.NewRequest("POST", url, bytes.NewBuffer(reqBody))
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := client.Do(req)
+	if err != nil {
+		return big.NewFloat(float64(0)), stderr.ErrPrice
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+
+	if err != nil {
+		return big.NewFloat(float64(0)), stderr.ErrPrice
+	}
+	response := string(body)
+	re := response[1 : len(response)-1]
+	price, err1 := strconv.ParseFloat(re, 64)
+
+	//获取decimal
+	decimal := int64(1)
+	if asset != "" {
+		dd, _ := OpenAssetHashFile()
+		decimal = dd[asset] //获取精度
+		if decimal == int64(0) {
+			decimal = int64(1)
+		}
+	}
+
+	var usdAuctionAmount *big.Float
+	//计算价格
+	bamount, _, err := amount.BigInt()
+	bfauctionAmount := new(big.Float).SetInt(bamount)
+	flag := bamount.Cmp(big.NewInt(0))
+
+	if flag == 1 {
+		bfprice := big.NewFloat(price)
+		ffprice := big.NewFloat(1).Mul(bfprice, bfauctionAmount)
+		de := math.Pow(10, float64(decimal))
+		usdAuctionAmount = new(big.Float).Quo(ffprice, big.NewFloat(de))
+
+	} else {
+		usdAuctionAmount = big.NewFloat(float64(0))
+	}
+
+	if err1 != nil {
+		return big.NewFloat(0), stderr.ErrPrice
+	}
+	return usdAuctionAmount, nil
 }
 
 func OpenAssetHashFile() (map[string]int64, error) {

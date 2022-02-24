@@ -13,6 +13,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	log2 "neo3fura_http/lib/log"
+	"neo3fura_http/lib/type/h160"
 	"neo3fura_http/var/stderr"
 )
 
@@ -25,6 +26,13 @@ type T struct {
 	Ctx       context.Context
 	RpcCli    *rpc.RpcClient
 	RpcPorts  []string
+	NeoFs string
+}
+
+type Insert struct {
+	Hash   h160.T
+	Id 				int32
+	UpdateCounter 	int32
 }
 
 func (me *T) QueryOne(args struct {
@@ -321,6 +329,7 @@ func (me *T) QueryDocument(args struct {
 	return convert, nil
 }
 
+
 // 去重查询统计
 func (me *T) GetDistinctCount(args struct {
 	Collection string
@@ -368,4 +377,25 @@ func (me *T) GetDistinctCount(args struct {
 
 	return convert, nil
 
+}
+
+
+func (me *T) InsertDocument(args struct {
+	Collection string
+	Index      string
+	Insert     *Insert
+}, ret *json.RawMessage) (map[string]interface{}, error) {
+	collection := me.C_online.Database(me.Db_online).Collection(args.Collection)
+	_,err := collection.InsertOne(me.Ctx,&args.Insert)
+	if err != nil {
+		return nil, stderr.ErrInsertDocument
+	}
+	result := make(map[string]interface{})
+	result["msg"] = "Insert document done!"
+	r, err := json.Marshal(result)
+	if err != nil {
+		return nil, stderr.ErrInsertDocument
+	}
+	*ret = json.RawMessage(r)
+	return result, nil
 }

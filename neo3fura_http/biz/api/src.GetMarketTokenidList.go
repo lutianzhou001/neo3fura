@@ -12,6 +12,7 @@ import (
 )
 
 func (me *T) GetMarketTokenidList(args struct {
+	Account    h160.T
 	AssetHash  h160.T
 	MarketHash h160.T
 	SubClass   [][]strval.T
@@ -19,6 +20,11 @@ func (me *T) GetMarketTokenidList(args struct {
 	Raw        *map[string]interface{}
 }, ret *json.RawMessage) error {
 	currentTime := time.Now().UnixNano() / 1e6
+
+	if args.Account.Valid() == false {
+		return stderr.ErrInvalidArgs
+	}
+
 	if args.AssetHash.Valid() == false {
 		return stderr.ErrInvalidArgs
 	}
@@ -53,8 +59,9 @@ func (me *T) GetMarketTokenidList(args struct {
 		bson.M{"$match": bson.M{"deadline": bson.M{"$gt": currentTime}}},
 		bson.M{"$match": bson.M{"amount": bson.M{"$gt": 0}}},
 		bson.M{"$match": bson.M{"auctionType": bson.M{"$eq": 1}}},
-		bson.M{"$match": bson.M{"market": bson.M{"$eq": args.MarketHash.Val()}}},
-		bson.M{"$match": bson.M{"asset": bson.M{"$eq": args.AssetHash.Val()}}},
+		bson.M{"$match": bson.M{"market": args.MarketHash.Val()}},
+		bson.M{"$match": bson.M{"asset": args.AssetHash.Val()}},
+		bson.M{"$match": bson.M{"auctor": args.Account.Val()}},
 
 		bson.M{"$project": bson.M{"class": cond, "_id": 1, "asset": 1, "tokenid": 1, "amount": 1, "owner": 1, "market": 1, "difference": bson.M{"$eq": []string{"$owner", "$market"}}, "auctionType": 1, "auctor": 1, "auctionAsset": 1, "auctionAmount": 1, "deadline": 1, "bidder": 1, "bidAmount": 1, "timestamp": 1}},
 		bson.M{"$match": bson.M{"difference": true}},
