@@ -60,6 +60,7 @@ func (me *T) GetNep17TransferByTransactionHash(args struct {
 		}
 		if base64to != nil {
 			to, err1 := crypto.Base64Decode(base64to.(string))
+
 			if err1 != nil {
 				return err1
 			}
