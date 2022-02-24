@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"neo3fura_http/lib/type/h256"
 	"neo3fura_http/var/stderr"
+	"strconv"
 
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -20,42 +21,47 @@ func (me *T) GetApplicationLogByBlockHash(args struct {
 	if args.BlockHash.IsZero() == true {
 		return stderr.ErrZero
 	}
-	r1, count, err := me.Client.QueryAll(struct {
-		Collection string
-		Index      string
-		Sort       bson.M
-		Filter     bson.M
-		Query      []string
-		Limit      int64
-		Skip       int64
-	}{
-		Collection: "Execution",
-		Index:      "GetApplicationLogByBlockHash",
-		Sort:       bson.M{},
-		Filter:     bson.M{"blockhash": args.BlockHash.Val()},
-		Query:      []string{},
-		Limit:      args.Limit,
-		Skip:       args.Skip,
-	}, ret)
-	if err != nil {
-		return err
-	}
-	for _, item := range r1 {
-		r2, _, err := me.Client.QueryAll(struct {
+
+	r1, err := me.Client.QueryAggregate(
+		struct {
 			Collection string
 			Index      string
 			Sort       bson.M
 			Filter     bson.M
+			Pipeline   []bson.M
 			Query      []string
-			Limit      int64
-			Skip       int64
-		}{Collection: "Notification", Index: "GetApplicationLogByBlockHash", Sort: bson.M{}, Filter: bson.M{"txid": item["txid"].(string), "blockhash": item["blockhash"].(string)}}, ret)
-		if err != nil {
-			return err
-		}
-		item["notifications"] = r2
+		}{
+			Collection: "Execution",
+			Index:      "someIndex",
+			Sort:       bson.M{},
+			Filter:     bson.M{},
+			Pipeline: []bson.M{
+				bson.M{"$match": bson.M{"blockhash": args.BlockHash.Val()}},
+				bson.M{"$lookup": bson.M{
+					"from": "Notification",
+					"let":  bson.M{"execution_txid": "$txid", "execution_blockhash": "$blockhash"},
+					"pipeline": []bson.M{
+						bson.M{"$match": bson.M{"$expr": bson.M{"$and": []interface{}{
+							bson.M{"$eq": []interface{}{"$txid", "$$execution_txid"}},
+							bson.M{"$eq": []interface{}{"$blockhash", "$$execution_blockhash"}},
+						}}}},
+						bson.M{"$project": bson.M{"txid": 1, "contract": 1}}},
+					"as": "notifications"},
+				},
+			},
+
+			Query: []string{},
+		}, ret)
+	if err != nil {
+		return err
 	}
-	r3, err := me.FilterArrayAndAppendCount(r1, count, args.Filter)
+
+	count, err := strconv.ParseInt(strconv.Itoa(len(r1)), 10, 64)
+	if err != nil {
+		return err
+	}
+
+	r3, err := me.FilterAggragateAndAppendCount(r1, count, args.Filter)
 	if err != nil {
 		return nil
 	}

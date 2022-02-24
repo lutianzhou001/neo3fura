@@ -26,13 +26,13 @@ type T struct {
 	Ctx       context.Context
 	RpcCli    *rpc.RpcClient
 	RpcPorts  []string
-	NeoFs string
+	NeoFs     string
 }
 
 type Insert struct {
-	Hash   h160.T
-	Id 				int32
-	UpdateCounter 	int32
+	Hash          h160.T
+	Id            int32
+	UpdateCounter int32
 }
 
 func (me *T) QueryOne(args struct {
@@ -81,7 +81,7 @@ func (me *T) QueryOne(args struct {
 		if err != nil {
 			return nil, stderr.ErrFind
 		}
-		err = me.Redis.Set(me.Ctx, hash, hex.EncodeToString(r), 0).Err()
+		//err = me.Redis.Set(me.Ctx, hash, hex.EncodeToString(r), 0).Err()
 		if err != nil {
 			return nil, stderr.ErrFind
 		}
@@ -329,7 +329,6 @@ func (me *T) QueryDocument(args struct {
 	return convert, nil
 }
 
-
 // 去重查询统计
 func (me *T) GetDistinctCount(args struct {
 	Collection string
@@ -379,14 +378,13 @@ func (me *T) GetDistinctCount(args struct {
 
 }
 
-
 func (me *T) InsertDocument(args struct {
 	Collection string
 	Index      string
 	Insert     *Insert
 }, ret *json.RawMessage) (map[string]interface{}, error) {
 	collection := me.C_online.Database(me.Db_online).Collection(args.Collection)
-	_,err := collection.InsertOne(me.Ctx,&args.Insert)
+	_, err := collection.InsertOne(me.Ctx, &args.Insert)
 	if err != nil {
 		return nil, stderr.ErrInsertDocument
 	}
