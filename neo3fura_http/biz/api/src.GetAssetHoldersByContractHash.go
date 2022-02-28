@@ -50,7 +50,8 @@ func (me *T) GetAssetHoldersByContractHash(args struct {
 			return err
 		}
 
-		it := big.NewInt(raw1["totalsupply"].(int64))
+		//it := big.NewInt(raw1["totalsupply"].(int64))
+		it := raw1["totalsupply"].(*big.Int)
 		if err != nil {
 			return err
 		}
@@ -117,7 +118,8 @@ func (me *T) GetAssetHoldersByContractHash(args struct {
 		if err != nil {
 			return err
 		}
-		it, _, err := raw1["totalsupply"].(primitive.Decimal128).BigInt()
+		//it, _, err := raw1["totalsupply"].(primitive.Decimal128).BigInt()
+		it := raw1["totalsupply"].(*big.Int)
 		itf := new(big.Float).SetInt(it)
 
 		for _, item := range r1 {

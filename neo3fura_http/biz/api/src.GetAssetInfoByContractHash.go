@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"math/big"
 	"neo3fura_http/lib/type/h160"
 	limit "neo3fura_http/var/const"
 	"neo3fura_http/var/stderr"
@@ -142,9 +143,15 @@ func (me *T) GetAssetInfoByContractHash(args struct {
 		if err1 != nil {
 			return err1
 		}
-		r1["totalsupply"] = count
+		r1["totalsupply"] = big.NewInt(count)
 		r1["holders"] = r3[0]["addressCounts"]
 	} else {
+		//totalsuply :=  r1["totalsupply"].(primitive.Decimal128).BigInt()
+		totalsuply, _, err := r1["totalsupply"].(primitive.Decimal128).BigInt()
+		if err != nil {
+			return err
+		}
+		r1["totalsupply"] = totalsuply
 
 	}
 
