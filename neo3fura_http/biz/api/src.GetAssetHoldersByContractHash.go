@@ -9,7 +9,6 @@ import (
 	"neo3fura_http/lib/mapsort"
 	"neo3fura_http/lib/type/h160"
 	"neo3fura_http/lib/utils"
-	limit "neo3fura_http/var/const"
 	"neo3fura_http/var/stderr"
 )
 
@@ -35,7 +34,7 @@ func (me *T) GetAssetHoldersByContractHash(args struct {
 		Collection: "Address-Asset",
 		Index:      "GetAssetHoldersByContractHash",
 		Sort:       bson.M{"balance": -1},
-		Filter:     bson.M{"asset": args.ContractHash.Val(), "balance": bson.M{"$gt": 0}, "address": bson.M{"$ne": limit.NullAddress}},
+		Filter:     bson.M{"asset": args.ContractHash.Val(), "balance": bson.M{"$gt": 0}},
 		Query:      []string{},
 	}, ret)
 
@@ -51,7 +50,7 @@ func (me *T) GetAssetHoldersByContractHash(args struct {
 			return err
 		}
 
-		it, _, err := raw1["totalsupply"].(primitive.Decimal128).BigInt()
+		it := big.NewInt(raw1["totalsupply"].(int64))
 		if err != nil {
 			return err
 		}
