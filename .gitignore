@@ -17,7 +17,7 @@
 .DS_Store
 .idea/
 config.yml
-
+neo3fura_ws/app/ws/src.go
 # dependencies
 logs/
 logs_ws/
