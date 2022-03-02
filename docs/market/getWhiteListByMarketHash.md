@@ -10,7 +10,7 @@ get the white list and details by market hash
 
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
-| MarketHash     | string|  | |
+| MarketHash     | string| the marketplace hash | required |
 
 
 

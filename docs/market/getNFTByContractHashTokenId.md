@@ -10,9 +10,9 @@ get nft token info by contractHash and tokenId
 
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
-| ContractHash     | string|  the contractHash| |
-| MarketHash     | string|  | |
-| TokenIds    | Array| Array of nft token id| |
+| ContractHash     | string|  the contractHash| required |
+| MarketHash     | string| the  marketplace hash | optional |
+| TokenIds    | Array| Array of nft token id| optional |
 
 
 

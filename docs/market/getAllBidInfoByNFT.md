@@ -10,9 +10,9 @@ get nft historical bid info
 
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
-| AssetHash     | string|  the asset hash | |
-| MarketHash     | string|  | |
-| TokenId     | string| nft token id | |
+| AssetHash     | string|  the asset hash | required |
+| MarketHash     | string| the marketplace hash | optional |
+| TokenId     | string| nft token id | optional |
 
 
 

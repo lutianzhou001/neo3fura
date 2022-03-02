@@ -1,5 +1,5 @@
 # GetNFTByWords
-Fuzzy search by keyword
+Fuzzy search by name of NFT 
 <hr>
 
 ### Request
@@ -10,8 +10,9 @@ Fuzzy search by keyword
 
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
-| SecondaryMarket    | string|  | |
-| Words | string |    search item  | |
+| PrimaryMarket | string | the Primary marketplace hash | optional |
+| SecondaryMarket    | string| the Secondary marketplace hash | optional |
+| Words | string |    search item  | required |
 | Limit    | int|  the number of items to return| optional|
 | Skip    | int|  the number of items to return| optional |
 

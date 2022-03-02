@@ -10,47 +10,38 @@ get PrimaryMarket classification
 
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
-| AssetHash     | string|  the asset scriptHash| |
-| MarketHash     | string|  | required|
-| SubClass     | Array|  | |
+| AssetHash     | string|  the asset scriptHash| required |
+| MarketHash     | string| the marketplace hash | required|
 
 
 
 
 #### Example
 ```
-curl --location --request GET 'https://testneofura.ngd.network:444' \
---header 'Content-Type: application/json' \
---data-raw '{
+{
   "jsonrpc": "2.0",
-  "method": "GetNFTClass",
-  "params": {  
-      "AssetHash":"0xc7b11b46f97bda7a8c82793841abba120e96695b",
-      "SubClass":[["VbdQL2cl8ngkJjITK8aNzeY07PLKiEyiXCORcgw+lfI=","sNU/EpLlV1GuiH4P0zet1rz+SlCb1/2YNucEanpVWIA="],["79WdS6cDK2ZC74UPFlILgiZlus49WkhYo5z8XpR+ckg=","GSDIwJTkjsqbWMQG4eAkPkzCXrTv/390QciVb/B3cow="]],
-      "MarketHash":"0xf63cccfe6cfac7ee776dada552b976c74fe5b51a" 
-      },
+  "method": "GetMarketIndexByAsset",
+  "params": {     
+      "MarketHash":"0xf63cccfe6cfac7ee776dada552b976c74fe5b51a",
+      "AssetHash":"0xc7b11b46f97bda7a8c82793841abba120e96695b"
+      },      
   "id": 1
-}'
+}
 ```
 ### Response
 ```json5
+
 {
-  "id": 1,
-  "result": {
-    "result": [
-      {
-        "asset": "0xc7b11b46f97bda7a8c82793841abba120e96695b",
-        "claimed": 6,  //已经卖掉的数量
-        "image": "",
-        "name": "sell-1",
-        "price": "5",   //售卖价格
-        "sellAsset": "0xd2a4cff31913016155e38e474a2c06d08be276cf"  //售卖资产
-      },
-      ....
-    ],
-    "totalCount": 2
-  },
-  "error": null
+    "id": 1,
+    "result": {
+        "auctionAmount":  "5",   //地板价价格   nep17
+        "auctionAsset": "0xd2a4cff31913016155e38e474a2c06d08be276cf",
+        "conAmount": 3.2919624466782094,    //地板价价格     usd  
+        "totalowner": 6,   //owner总量
+        "totalsupply": 28, // NFT系列总量
+        "totaltxamount":277.03192125227014   // 交易总额  usd
+    },
+    "error": null
 }
 ```
 

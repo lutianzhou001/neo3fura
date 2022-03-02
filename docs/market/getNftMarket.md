@@ -1,4 +1,4 @@
-# GetNftMarket
+# GetNFTMarket
 Gets the nft token list by contractHash, asset and nftState
 <hr>
 
@@ -10,14 +10,14 @@ Gets the nft token list by contractHash, asset and nftState
 
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
-| ContractHash     | string|  the contractHash||
-| AssetHash     | string|  the asset scriptHash||
-| SecondaryMarket     | string|  | |
-| PrimaryMarket     | string|  | |
-| Nftstate     | string| 3 types: "auction","sale" or "notlisted"| |
-| Sort     | string| 3 types: "timestamp", "price" or "deadline"| |
-| Order     | int|  descending sort: -1, ascending sort: +1| |
-| Limit    | int|  the number of items to return| optional|
+| ContractHash     | string|  the contractHash|optional|
+| SkipAssetHash | intstring | the number of items to returnthe asset scriptHash |optional|
+| SecondaryMarket     | string| the Secondary marketplace hash | optional |
+| SkipPrimaryMarket | intstring | the number of items to returnthe PrimaryMarket marketplace hash | optional |
+| Nftstate     | string| 3 types: "auction","sale" or "notlisted"| optional |
+| SkipSort | intstring | the number of items to return3 types: "timestamp", "price" or "deadline" | optional |
+| Order     | int|  descending sort: -1, ascending sort: +1| optional |
+| SkipLimit | intint | the number of items to returnthe number of items to return | optional |
 | Skip    | int|  the number of items to return| optional |
 
 
@@ -113,11 +113,4 @@ curl --location --request GET 'https://testneofura.ngd.network:444' \
   },
   "error": null
 }
-```
-### Response Analyse
-```
-Status Condition: 
-    auction :  amount >0 && auctionType =2 && owner=market && runtime <deadline
-    sale:      amount >0 && auctionType =1 && owner=market && runtime <deadline
-    notlisted: amount >0 && owner != market
 ```

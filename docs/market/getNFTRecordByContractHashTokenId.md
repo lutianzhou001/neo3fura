@@ -10,9 +10,9 @@ get nft token transfer record
 
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
-| ContractHash     | string|  the contractHash| |
-| MarketHash     | string|  | |
-| TokenId     | string| nft token id | |
+| ContractHash     | string|  the contractHash| required |
+| MarketHash     | string| the marketplace hash | required |
+| TokenId     | string| nft token id | optional |
 
 
 
