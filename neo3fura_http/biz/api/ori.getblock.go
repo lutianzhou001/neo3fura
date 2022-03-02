@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"go.mongodb.org/mongo-driver/bson"
 	"neo3fura_http/lib/type/h256"
 	"neo3fura_http/lib/type/uintval"
 	"neo3fura_http/var/stderr"
@@ -20,32 +21,35 @@ func (me *T) Getblock(args []interface{}, ret *json.RawMessage) error {
 		if blockHash.Valid() == false {
 			return stderr.ErrInvalidArgs
 		}
-		var raw1 map[string]interface{}
-		var raw2 []map[string]interface{}
-		err := me.GetBlockByBlockHash(struct {
-			BlockHash h256.T
-			Filter    map[string]interface{}
-			Raw       *map[string]interface{}
-		}{
-			BlockHash: blockHash,
-			Filter:    nil,
-			Raw:       &raw1,
-		}, ret)
+
+		r1, err := me.Client.QueryAggregate(
+			struct {
+				Collection string
+				Index      string
+				Sort       bson.M
+				Filter     bson.M
+				Pipeline   []bson.M
+				Query      []string
+			}{
+				Collection: "Block",
+				Index:      "someIndex",
+				Sort:       bson.M{},
+				Filter:     bson.M{},
+				Pipeline: []bson.M{
+					bson.M{"$match": bson.M{"hash": blockHash}},
+					bson.M{"$lookup": bson.M{
+						"from":         "Transaction",
+						"localField":   "hash",
+						"foreignField": "blockhash",
+						"as":           "tx"}},
+				},
+				Query: []string{},
+			}, ret)
 		if err != nil {
 			return err
 		}
-		err = me.GetRawTransactionByBlockHash(struct {
-			BlockHash h256.T
-			Limit     int64
-			Skip      int64
-			Filter    map[string]interface{}
-			Raw       *[]map[string]interface{}
-		}{BlockHash: blockHash, Raw: &raw2}, ret)
-		if err != nil {
-			return err
-		}
-		raw1["tx"] = raw2
-		r, err := json.Marshal(raw1)
+
+		r, err := json.Marshal(r1)
 		if err != nil {
 			return err
 		}
@@ -56,32 +60,36 @@ func (me *T) Getblock(args []interface{}, ret *json.RawMessage) error {
 		if blockHeight.Valid() == false {
 			return stderr.ErrInvalidArgs
 		}
-		var raw1 map[string]interface{}
-		var raw2 []map[string]interface{}
-		err := me.GetBlockByBlockHeight(struct {
-			BlockHeight uintval.T
-			Filter      map[string]interface{}
-			Raw         *map[string]interface{}
-		}{
-			BlockHeight: blockHeight,
-			Filter:      nil,
-			Raw:         &raw1,
-		}, ret)
+
+		r1, err := me.Client.QueryAggregate(
+			struct {
+				Collection string
+				Index      string
+				Sort       bson.M
+				Filter     bson.M
+				Pipeline   []bson.M
+				Query      []string
+			}{
+				Collection: "Block",
+				Index:      "someIndex",
+				Sort:       bson.M{},
+				Filter:     bson.M{},
+				Pipeline: []bson.M{
+					bson.M{"$match": bson.M{"index": blockHeight}},
+					bson.M{"$lookup": bson.M{
+						"from":         "Transaction",
+						"localField":   "index",
+						"foreignField": "blockIndex",
+						"as":           "tx"}},
+				},
+				Query: []string{},
+			}, ret)
+
 		if err != nil {
 			return err
 		}
-		err = me.GetRawTransactionByBlockHeight(struct {
-			BlockHeight uintval.T
-			Limit       int64
-			Skip        int64
-			Filter      map[string]interface{}
-			Raw         *[]map[string]interface{}
-		}{BlockHeight: blockHeight, Raw: &raw2}, ret)
-		if err != nil {
-			return err
-		}
-		raw1["tx"] = raw2
-		r, err := json.Marshal(raw1)
+
+		r, err := json.Marshal(r1)
 		if err != nil {
 			return err
 		}
