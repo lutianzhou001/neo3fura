@@ -10,13 +10,22 @@
 <body>
   <div id="app"></div>
   <script src="https://unpkg.com/docute@4/dist/docute.js"></script>
-  <script src="./plugin/evanyou.min.js"></script>
-  <script src="./config.js"></script>
   <script>
     new Docute({
       target :'#app',
       title: 'Neofura',
       layout: 'narrow',
+      logo :`<template>
+                <div style="width: 120px; height: 60px; ">
+                    <div style="width: 50%; height: 60px; float: left" >
+                    <img src="components/WechatIMG1920-removebg-preview.svg" style="text-align:center">
+                    </div>
+                     <div style="width: 50%; height: 60px;float: left;text-align: center">
+                     <span style="line-height: 60px">Neofura</span>
+                    </div>
+                </div>
+
+      </template>`,
       darkThemeToggler: true,
       detectSystemDarkTheme: true,
       nav: [
