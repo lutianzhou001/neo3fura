@@ -10,9 +10,9 @@ get PrimaryMarket classification
 
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
-| AssetHash     | string|  the asset scriptHash| |
-| MarketHash     | string|  | required|
-| SubClass     | Array|  | |
+| AssetHash     | string|  the asset scriptHash| required |
+| MarketHash     | string| the marketplace hash | required|
+| SubClass     | Array| the tokenIds class | required |
 
 
 

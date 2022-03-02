@@ -10,10 +10,10 @@ Gets the nft bid info
 
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
-| Address     | string|  the user's address||
-| AssetHash     | string|  the asset scriptHash||
-| TokenId     | string|  the nft token's| |
-| MarketHash     | string|  | |
+| Address     | string|  the user's address|required|
+| AssetHash     | string|  the asset scriptHash|optional|
+| TokenId     | string|  the nft token's| optional |
+| MarketHash     | string| the marketplace hash | optional |
 
 
 

@@ -10,13 +10,13 @@ Gets the nft token list and nft token state by user's address
 
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
-| ContractHash     | string|  the contractHash| |
-| AssetHash     | string|  the asset scriptHash| |
+| ContractHash     | string|  the contractHash| optional |
+| AssetHash     | string|  the asset scriptHash| optional |
 | Address     | string|  the user's address| required|
-| MarketHash     | string|  | |
-| Nftstate     | string| 3 types: "auction","sale" or "notlisted"| |
-| Sort     | string| 4 types: "timestamp", "price", "deadline" or "unClaimed"| |
-| Order     | int|  descending sort: -1, ascending sort: +1| |
+| MarketHash     | string| the marketplace hash | optional |
+| Nftstate     | string| 3 types: "auction","sale" or "notlisted"| optional |
+| Sort     | string| 4 types: "timestamp", "price", "deadline" or "unClaimed"| optional |
+| Order     | int|  descending sort: -1, ascending sort: +1| optional |
 | Limit    | int|  the number of items to return| optional|
 | Skip    | int|  the number of items to return| optional |
 
@@ -156,11 +156,4 @@ curl --location --request GET 'https://testneofura.ngd.network:444' \
   "error": null
 }
 ```
-### Response Analyse
-```
-Status Condition: 
-    auction :  amount >0 && auctionType =2 && owner=market && runtime <deadline
-    sale:      amount >0 && auctionType =1 && owner=market && runtime <deadline
-    notlisted: amount >0 && owner != market
-    unClaimed: amount >0 && runtime > deadline && owner=market
-```
+###  

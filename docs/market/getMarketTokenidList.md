@@ -1,5 +1,5 @@
 # GetMarketTokenidList
-get the list of on sale tokenId  in the primary market
+get the list of on sale tokenId  in the primary marketplace
 <hr>
 
 ### Request
@@ -10,10 +10,10 @@ get the list of on sale tokenId  in the primary market
 
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
-| Account     | string|  the user's address| |
-| AssetHash     | string| the token scriptHash | |
-| MarketHash     | string|  | |
-| SubClass     | Array|  | |
+| Account     | string|  the user's address| required |
+| AssetHash     | string| the token scriptHash | required |
+| MarketHash     | string| the marketplace hash | required |
+| SubClass     | Array| the nft's tokenid class | optional |
 
 
 
