@@ -1,22 +1,32 @@
----
-description: Gets the active address count in several days
----
+# GetNep11PropertiesByContractHashTokenId
+Gets the Nep11 properties by contracthash and tokenId
+<hr>
 
-# GetActiveAddresses
+### Request
 
-### API Format
+> POST https://testneofura.ngd.network:444
 
-{% swagger baseUrl="https://testneofura.ngd.network:444" method="post" path="" summary="" %}
-{% swagger-description %}
-query active addresses
-{% endswagger-description %}
+#### Body Parameters
 
-{% swagger-parameter in="body" name="Days" required="true" type="int" %}
-The name of the pet
-{% endswagger-parameter %}
+|    Name    | Type | Description | Required |
+| ---------- | --- |    ------    | ----|
+| ContractHash     | string|  contract script hash| required|
+| TokenId   | []string| the array of tokenId| required|
 
-{% swagger-response status="200" description="query successfully returned" %}
-```javascript
+
+#### Example
+```
+curl --location --request POST 'https://testneofura.ngd.network:444' \
+--header 'Content-Type: application/json' \
+--data-raw '{  
+    "jsonrpc": "2.0",
+    "method": "GetNep11PropertiesByContractHashTokenId",
+    "params": {"ContractHash":"0x4f628a187e133fa98a5fd0795df3065f219e414e","TokenId":["QmxpbmQgQm94IDIxNQ"]},
+    "id": 1
+}'
+```
+### Response
+```json5
 {
     "id": 1,
     "result": {
@@ -63,55 +73,3 @@ The name of the pet
     "error": null
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
-
-### Requests
-
-{% tabs %}
-{% tab title="cURL" %}
-
-
-```
-curl --location --request POST 'https://testneofura.ngd.network:444' \
---header 'Content-Type: application/json' \
---data-raw '{
-    "jsonrpc": "2.0",
-    "id": 1,
-    "params": {"Days":5},
-    "method": "GetActiveAddresses"
-}'
-```
-
-
-{% endtab %}
-
-{% tab title="Nodejs" %}
-```
-var request = require('request');
-var options = {
-  'method': 'POST',
-  'url': 'https://testneofura.ngd.network:444',
-  'headers': {
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({
-    "jsonrpc": "2.0",
-    "id": 1,
-    "params": {
-      "Days": 5
-    },
-    "method": "GetActiveAddresses"
-  })
-
-};
-request(options, function (error, response) {
-  if (error) throw new Error(error);
-  console.log(response.body);
-});
-
-```
-
-
-{% endtab %}
-{% endtabs %}
