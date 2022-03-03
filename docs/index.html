@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
+  <title>docs</title>
+  <link rel="stylesheet" href="https://unpkg.com/docute@4/dist/docute.css">
+</head>
+<body>
+  <div id="app"></div>
+  <script src="https://unpkg.com/docute@4/dist/docute.js"></script>
+  <script>
+    new Docute({
+      target :'#app',
+      title: 'Neofura',
+      layout: 'narrow',
+      logo :`<template>
+                <div style="width: 120px; height: 60px; ">
+                    <div style="width: 50%; height: 60px; float: left" >
+                    <img src="components/WechatIMG1920-removebg-preview.svg" style="text-align:center">
+                    </div>
+                     <div style="width: 50%; height: 60px;float: left;text-align: center">
+                     <span style="line-height: 60px">Neofura</span>
+                    </div>
+                </div>
+
+      </template>`,
+      darkThemeToggler: true,
+      detectSystemDarkTheme: true,
+      nav: [
+        {
+          title: 'Home',
+          link: '/'
+        },
+        {
+          title: 'GitHub',
+          link: 'https://github.com/neo-ngd/neo3fura'
+        },
+        // A dropdown menu
+      ],
+      sidebar: [
+        {
+          title: 'Guide',
+          children: [
+            {
+              title: 'Introduction',
+              link: '../README'
+            },
+            {
+              title:'Quick Start',
+              link: '/guide/quick-start'
+            }
+          ],
+        },
+        {
+          title: 'Common APIs',
+          children: [
+            {
+              title: 'getActiveAddress',
+              link: '/api/getActiveAddress'
+            },
+            {
+              title: 'getAddressByAddress',
+              link: '/api/getAddressByAddress.md'
+            },
+            {
+              title: 'getAddressCount',
+              link: '/api/getAddressCount.md'
+            },
+            {
+              title: 'getAddressInfoByAddress',
+              link: '/api/getAddressInfoByAddress.md'
+            },
+            {
+              title: 'getAddressList',
+              link: '/api/getAddressList.md'
+            },
+            {
+              title: 'getApplicationLogByBlockHash',
+              link: '/api/getApplicationLogByBlockhash.md'
+            },
+            {
+              title: 'getApplicationLogByTransactionHash',
+              link: '/api/getApplicationLogByTransactionHash.md'
+            },
+            {
+              title: 'getAssetCount',
+              link: '/api/getAssetCount.md'
+            },
+            {
+              title: 'getAssetHoldersByContractHash',
+              link: '/api/getAssetHoldersByContractHash.md'
+            },
+            {
+              title: 'getAssetHoldersListByContractHash',
+              link: '/api/getAssetHoldersListByContractHash.md'
+            },
+            {
+              title: 'getAssetInfoByContractHash',
+              link: '/api/getAssetInfoByContractHash.md'
+            },
+            {
+              title: 'getAssetInfos',
+              link: '/api/getAssetInfos.md'
+            },
+            {
+              title: 'getAssetInfosByName',
+              link: '/api/getAssetInfosByName.md'
+            },
+            {
+              title: 'getAssetsHeldByAddress',
+              link: '/api/getAssetsHeldByAddress.md'
+            },
+            {
+              title: 'getAssetsHeldByContractHashAddress',
+              link: '/api/getAssetsHeldByContractHashAddress.md'
+            },{
+              title: 'getBalanceByContractHashAddress',
+              link: '/api/getBalanceByContractHashAddress.md'
+            },
+            {
+              title: 'getBestBlockHash',
+              link: '/api/getBestBlockHash.md'
+            },
+            {
+              title: 'getBlockByBlockHash',
+              link: '/api/getBlockByBlockHash.md'
+            },
+            {
+              title: 'getBlockByBlockHeight',
+              link: '/api/getBlockByBlockHeight.md'
+            },{
+              title: 'getBlockCount',
+              link: '/api/getBlockCount.md'
+            },
+            {
+              title: 'getBlockHashByBlockHeight',
+              link: '/api/getBlockHashByBlockHeight.md'
+            },
+            {
+              title: 'getBlockHeaderByBlockHash',
+              link: '/api/getBlockHeaderByBlockHash.md'
+            },
+            {
+              title: 'getBlockHeaderByBlockHeight',
+              link: '/api/getBlockHeaderByBlockHeight.md'
+            },
+            {
+              title: 'getBlockInfoByBlockHash',
+              link: '/api/getBlockInfoByBlockHash.md'
+            },
+            {
+              title: 'getBlockInfoList',
+              link: '/api/getBlockInfoList.md'
+            },
+            {
+              title: 'getBlockRewardByBlockHash',
+              link: '/api/getBlockRewardByBlockHash.md'
+            },
+            {
+              title: 'getCandidate',
+              link: '/api/getCandidate.md'
+            },
+            {
+              title: 'getCandidateByAddress',
+              link: '/api/getCandidateByAddress.md'
+            },
+            {
+              title: 'getCandidateByVoterAddress',
+              link: '/api/getCandidateByVoterAddress.md'
+            },
+            {
+              title: 'getCandidateCount',
+              link: '/api/getCandidateCount.md'
+            },
+            {
+              title: 'getCommittee',
+              link: '/api/getCommittee.md'
+            },
+            {
+              title: 'getContractByContractHash',
+              link: '/api/getContractByContractHash.md'
+            },{
+              title: 'getContractCount',
+              link: '/api/getContractCount.md'
+            },{
+              title: 'getContractList',
+              link: '/api/getContractList.md'
+            },
+            {
+              title: 'getContractListByName',
+              link: '/api/getContractListByName.md'
+            },
+            {
+              title: 'getCumulativeFeeBurn',
+              link: '/api/getCumulativeFeeBurn.md'
+            },
+            {
+              title: 'getDailyTransactions',
+              link: '/api/getDailyTransactions.md'
+            },
+            {
+              title: 'getExecutionByBlockHash',
+              link: '/api/getExecutionByBlockHash.md'
+            },
+            {
+              title: 'getExecutionByTransactionHash',
+              link: '/api/getExecutionByTransactionHash.md'
+            },
+            {
+              title: 'getExecutionByTrigger',
+              link: '/api/getExecutionByTrigger.md'
+            },
+            {
+              title: 'getExtraTransferByBlockHash',
+              link: '/api/getExtraTransferByBlockHash.md'
+            },
+            {
+              title: 'getHourlyTransactions',
+              link: '/api/getHourlyTransactions.md'
+            },
+            {
+              title: 'getNep11BalanceByContractHashAddressTokenId',
+              link: '/api/getNep11BalanceByContractHashAddressTokenId.md'
+            },
+            {
+              title: 'getNep11OwnedByAddress',
+              link: '/api/getNep11OwnedByAddress.md'
+            },
+            {
+              title: 'getNep11OwnedByContractHashAddress',
+              link: '/api/getNep11OwnedByContractHashAddress.md'
+            },
+            {
+              title: 'getNep11PropertiesByContractHashTokenId',
+              link: '/api/getNep11PropertiesByContractHashTokenId.md'
+            },{
+              title: 'getNep11TransferByAddress',
+              link: '/api/getNep11TransferByAddress.md'
+            },
+            {
+              title: 'getNep11TransferByBlockHeight',
+              link: '/api/getNep11TransferByBlockHeight.md'
+            },
+            {
+              title: 'getNep11TransferByContractHashTokenId',
+              link: '/api/getNep11TransferByContractHashTokenId.md'
+            },
+            {
+              title: 'getNep11TransferByTransactionHash',
+              link: '/api/getNep11TransferByTransactionHash.md'
+            },
+            {
+              title: 'getNep11TransferCountByAddress',
+              link: '/api/getNep11TransferCountByAddress.md'
+            },
+            {
+              title: 'getNep17TransferByAddress',
+              link: '/api/getNep17TransferByAddress.md'
+            },
+            {
+              title: 'getNep17TransferByBlockHeight',
+              link: '/api/getNep17TransferByBlockHeight.md'
+            },
+            {
+              title: 'getNep17TransferByContractHash',
+              link: '/api/getNep17TransferByContractHash.md'
+            },
+            {
+              title: 'getNep17TransferByTransactionHash',
+              link: '/api/getNep17TransferByTransactionHash.md'
+            },{
+              title: 'getNep17TransferCountByAddress',
+              link: '/api/getNep17TransferCountByAddress.md'
+            },{
+              title: 'getNetFeeRange',
+              link: '/api/getNetFeeRange.md'
+            },
+            {
+              title: 'getNewAddresses',
+              link: '/api/getNewAddresses.md'
+            },
+            {
+              title: 'getNotificationByContractHash',
+              link: '/api/getNotificationByContractHash.md'
+            },
+            {
+              title: 'getNotificationByEvent',
+              link: '/api/getNotificationByEvent.md'
+            },
+            {
+              title: 'getRawMempool',
+              link: '/api/getRawMempool.md'
+            },
+            {
+              title: 'getRawTransactionByAddress',
+              link: '/api/getRawTransactionByAddress.md'
+            },
+            {
+              title: 'getRawTransactionByBlockHash',
+              link: '/api/getRawTransactionByBlockHash.md'
+            },
+            {
+              title: 'getRawTransactionByBlockHeight',
+              link: '/api/getRawTransactionByBlockHeight.md'
+            },
+            {
+              title: 'getRawTransactionByTransactionHash',
+              link: '/api/getRawTransactionByTransactionHash.md'
+            },
+            {
+              title: 'getScCallByContractHash',
+              link: '/api/getScCallByContractHash.md'
+            },
+            {
+              title: 'getScCallByContractHashAddress',
+              link: '/api/getScCallByContractHashAddress.md'
+            },
+            {
+              title: 'getScCallByTransactionHash',
+              link: '/api/getScCallByTransactionHash.md'
+            },
+            {
+              title: 'getScVoteCallByCandidateAddress',
+              link: '/api/getScVoteCallByCandidateAddress.md'
+            },
+            {
+              title: 'getScVoteCallByTransactionHash',
+              link: '/api/getScVoteCallByTransactionHash.md'
+            },
+            {
+              title: 'getScVoteCallByVoterAddress',
+              link: '/api/getScVoteCallByVoterAddress.md'
+            },
+            {
+              title: 'getSourceCodeByContractHash',
+              link: '/api/getSourceCodeByContractHash.md'
+            },
+            {
+              title: 'getTotalSentAndReceivedByContractHash',
+              link: '/api/getTotalSentAndReceivedByContractHash.md'
+            },
+            {
+              title: 'getTotalVotes',
+              link: '/api/getTotalVotes.md',
+            },
+            {
+              title: 'getTransactionCount',
+              link: '/api/getTransactionCount.md'
+            },
+            {
+              title: 'getTransactionCountByAddress',
+              link: '/api/getTransactionCountByAddress.md'
+            },{
+              title: 'getTransactionList',
+              link: '/api/getTransactionList.md'
+            },
+            {
+              title: 'getTransferByAddress',
+              link: '/api/getTransferByAddress.md'
+            },
+            {
+              title: 'getTransferByBlockHash',
+              link: '/api/getTransferByBlockHash.md'
+            },
+            {
+              title: 'getTransferByBlockHeight',
+              link: '/api/getTransferByBlockHeight.md'
+            },
+            {
+              title: 'getTransferEventByTransactionHash',
+              link: '/api/getTransferEventByTransactionHash.md'
+            },
+            {
+              title: 'getVerifiedContractByContractHash',
+              link: '/api/getVerifiedContractByContractHash.md'
+            },
+            {
+              title: 'getVerifiedContracts',
+              link: '/api/getVerifiedContracts.md'
+            },
+            {
+              title: 'getVmStateByTransactionHash',
+              link: '/api/getVmStateByTransactionHash.md'
+            },
+            {
+              title: 'getVotersByCandidateAddress',
+              link: '/api/getVotersByCandidateAddress.md'
+            },
+            {
+              title: 'getVotesByCandidateAddress',
+              link: '/api/getVotesByCandidateAddress.md'
+            },
+
+
+
+
+
+
+
+
+
+
+
+          ]
+        },
+        {
+          title: 'Market APIs',
+          children: [
+            {
+              title: 'GetNftMarket',
+              link: '/market/getNftMarket.md'
+            },
+            {
+              title: 'GetNFTOwnedByAddress',
+              link: '/market/getNFTOwnedByAddress.md'
+            },
+            {
+              title: 'GetNFTRecordByAddress',
+              link: '/market/getNFTRecordByAddress.md'
+            },
+            {
+              title: 'GetNFTRecordByContractHashTokenId',
+              link: '/market/getNFTRecordByContractHashTokenId.md'
+            },
+            {
+              title: 'GetBidInfoByNFT',
+              link: '/market/getBidInfoByNFT.md'
+            },
+            {
+              title: 'GetNFTByContractHashTokenId',
+              link: '/market/getNFTByContractHashTokenId.md'
+            },
+            {
+              title: 'GetAllBidInfoByNFT',
+              link: '/market/getAllBidInfoByNFT.md'
+            },
+            {
+              title: 'GetNFTClass',
+              link: '/market/getNFTClass.md'
+            },
+            {
+              title: 'GetMarketIndexByAsset',
+              link: '/market/getMarketIndexByAsset.md'
+            },
+            {
+              title: 'GetMarketTokenidList',
+              link: '/market/getMarketTokenidList.md'
+            },
+            {
+              title: 'GetMarketWhiteList',
+              link: '/market/getMarketWhiteList.md'
+            },
+            {
+              title: 'GetWhiteListByMarketHash',
+              link: '/market/getWhiteListByMarketHash.md'
+            },
+            {
+              title: 'GetNFTByWords',
+              link: '/market/GetNFTByWords.md'
+            },
+            {
+              title: 'GetNFSImgStatus',
+              link: '/market/getNFSImgStatus.md'
+            }
+          ]
+        },
+      ]
+    })
+  </script>
+</body>
+</html>
