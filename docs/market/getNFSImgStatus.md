@@ -16,7 +16,7 @@ get image state by url
 
 
 #### Example
-```
+```powershell
 curl --location --request GET 'https://testneofura.ngd.network:444' \
 --header 'Content-Type: text/plain' \
 --data-raw '{
@@ -27,7 +27,7 @@ curl --location --request GET 'https://testneofura.ngd.network:444' \
 }'
 ```
 ### Response
-```json5
+```json
 {
   "id": 1,
   "result": {

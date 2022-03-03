@@ -16,7 +16,7 @@ Gets the Nep11 transfer by block height
 
 
 #### Example
-```
+```powershell
 {  
     "jsonrpc": "2.0",
     "method": "GetNep11TransferByBlockHeight",
@@ -25,7 +25,7 @@ Gets the Nep11 transfer by block height
 }
 ```
 ### Response
-```json5
+```json
 {
   "id": 1,
   "result": {

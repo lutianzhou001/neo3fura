@@ -17,7 +17,7 @@ get PrimaryMarket classification
 
 
 #### Example
-```
+```powershell
 {
   "jsonrpc": "2.0",
   "method": "GetMarketIndexByAsset",
@@ -29,7 +29,7 @@ get PrimaryMarket classification
 }
 ```
 ### Response
-```json5
+```json
 
 {
     "id": 1,

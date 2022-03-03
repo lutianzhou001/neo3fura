@@ -17,7 +17,7 @@ Gets the source code of contract by the contract script hash
 
 
 #### Example
-```
+```powershell
 curl --location --request POST 'https://testneofura.ngd.network:444' \
 --header 'Content-Type: application/json' \
 --data-raw '{
@@ -29,7 +29,7 @@ curl --location --request POST 'https://testneofura.ngd.network:444' \
 }'
 ```
 ### Response
-```json5
+```json
 {
   "id": null,
   "result": {

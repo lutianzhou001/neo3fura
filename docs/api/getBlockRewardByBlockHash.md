@@ -13,7 +13,7 @@ Gets the block reward transaction by the blockhash
 
 
 #### Example
-```
+```powershell
 curl --location --request POST 'https://testneofura.ngd.network:444' \
 --header 'Content-Type: application/json' \
 --data-raw '{
@@ -24,7 +24,7 @@ curl --location --request POST 'https://testneofura.ngd.network:444' \
 }'
 ```
 ### Response
-```json5
+```json
 {
     "id": 1,
         "result": {

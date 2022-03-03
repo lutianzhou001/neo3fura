@@ -4,8 +4,12 @@
 
 Neofura supports all neo rpc requests from [https://docs.neo.org/docs/zh-cn/reference/rpc/latest-version/api.html](https://docs.neo.org/docs/zh-cn/reference/rpc/latest-version/api.html). You can easily test it with Postman or any programming language you like.
 
+Neofura mainnet url:` https://neofura.ngd.network`
+
+Neofura testnet url:` https://testneofura.ngd.network:444`
+
 You can send a request like this
-```
+``` powershell
 curl --location --request POST 'https://testneofura.ngd.network:444' \
 --header 'Content-Type: application/json' \
 --data-raw '{
@@ -18,7 +22,7 @@ curl --location --request POST 'https://testneofura.ngd.network:444' \
 
 And you can easily get the response
 
-```
+```json
 {
     "jsonrpc": "2.0",
     "id": 1,

@@ -16,7 +16,7 @@ Gets the asset balance by the asset contract script hash and user's address
 
 
 #### Example
-```
+```powershell
 curl --location --request POST 'https://testneofura.ngd.network:444' \
 --header 'Content-Type: application/json' \
 --data-raw '{
@@ -27,7 +27,7 @@ curl --location --request POST 'https://testneofura.ngd.network:444' \
 }'
 ```
 ### Response
-```json5
+```json
 {
   "id": 1,
   "result": {

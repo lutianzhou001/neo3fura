@@ -15,7 +15,7 @@ Gets the nep11 transfer by contract script hash and tokenid
 
 
 #### Example
-```
+```powershell
 curl --location --request POST 'https://testneofura.ngd.network:444' \
 --header 'Content-Type: text/plain' \
 --data-raw '{
@@ -26,7 +26,7 @@ curl --location --request POST 'https://testneofura.ngd.network:444' \
 }'
 ```
 ### Response
-```json5
+```json
 {
   "id": 1,
   "result": {
