@@ -7,6 +7,7 @@ Gets the active address count in the specified days.
 |    Name    | Type | Description |  Required |
 | ---------- | --- |    ------    | --------|
 | Days       | int|  The number of recent days| Required|
+
 ### Example
 
 Request body
