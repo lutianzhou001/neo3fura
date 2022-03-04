@@ -7,7 +7,6 @@ Gets the transactions in the memory pool
 None
 
 
-
 ### Example
 
 Request body

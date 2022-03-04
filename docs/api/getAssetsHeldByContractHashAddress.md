@@ -1,6 +1,6 @@
 # GetAssetsHeldByContractHashAddress
 
-Gets the assets information by the given contract script hash and user's address
+Gets the assets information by the given contract script hash and user's address.
 <hr>
 
 ### Parameters
@@ -10,12 +10,11 @@ Gets the assets information by the given contract script hash and user's address
 | ContractHash     | string| The contract script hash | Required|
 | Address   | string| The user's address | Required|
 
-
 ### Example
 
 Request body
 
-```
+```powershell
 curl --location --request POST 'https://testneofura.ngd.network:444' \
 --header 'Content-Type: application/json' \
 --data-raw '{

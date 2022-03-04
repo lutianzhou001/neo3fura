@@ -9,7 +9,6 @@ Gets the block information by the given block hash.
 | ---------- | --- |    ------    | ----|
 | BlockHash      | string| The block hash | Required|
 
-
 ### Example
 
 Request body

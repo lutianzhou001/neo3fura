@@ -1,15 +1,14 @@
 # GetScCallByTransactionHash
-Gets the ScCall by transaction hash
+Gets the ScCall by the transaction hash
 <hr>
 
 ### Parameters
 
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
-| TransactionHash     | string|  the transactionHash| Required |
+| TransactionHash     | string|  The transactionHash| Required |
 | Limit    | int|  The number of items to return| Optional|
 | Skip    | int|  The number of items to return| Optional |
-
 
 
 ### Example

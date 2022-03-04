@@ -1,13 +1,12 @@
 # GetVerifiedContractByContractHash
-Gets the verified contract by contract hash
+Gets the verified contract by the contract hash.
 <hr>
 
 ### Parameters
 
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
-| ContractHash     | string|  contract script hash| Required |Required | UpdateCounter   | int|  The number of times the contract has been updated| Required|
-
+| ContractHash     | string| The contract script hash | Required |
 
 
 ### Example

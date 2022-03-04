@@ -11,7 +11,6 @@ Gets the Nep17 transfer information by the contract script hash
 | Skip    | int|  The number of items to return| Optional |
 
 
-
 ### Example
 
 Request body

@@ -1,16 +1,15 @@
 # GetAssetCount
-Gets The number of all assets.
+Gets the number of all assets.
 <hr>
 
 ### Parameters
 None
 
-
 ### Example
 
 Request body
 
-```
+```powershell
 curl --location --request POST 'https://testneofura.ngd.network:444' \
 --header 'Content-Type: application/json' \
 --data-raw '{

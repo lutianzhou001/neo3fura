@@ -9,7 +9,6 @@ Gets the new addresses
 | Days       | int| The days in which new addresses were generated |
 
 
-
 ### Example
 
 Request body

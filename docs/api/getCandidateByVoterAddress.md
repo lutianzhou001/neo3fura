@@ -7,10 +7,7 @@ Gets the candidate voted by the voter's address.
 
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
-| VoterAddress    | string |  the voter address| Required |
-
-
-
+| VoterAddress    | string |  The voter address| Required |
 ### Example
 
 Request body

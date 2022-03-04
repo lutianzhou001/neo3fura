@@ -1,13 +1,12 @@
 # GetTotalSentAndReceivedByContractHash
-Gets the total sent and received amount by contract hash
+Gets the total sent and received amount by the contract hash.
 <hr>
 
 ### Parameters
 
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
-| ContractHash     | string|  contract script hash| Required |Required | Address   | string|  user's address| Required|
-
+| ContractHash     | string| The contract script hash | Required |
 
 
 ### Example

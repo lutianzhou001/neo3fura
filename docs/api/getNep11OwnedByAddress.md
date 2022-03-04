@@ -11,7 +11,6 @@ Gets the Nep11 asset owned by the user's address.
 | Skip    | int|  The number of items to return| Optional |
 
 
-
 ### Example
 
 Request body

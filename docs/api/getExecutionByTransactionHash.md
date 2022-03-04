@@ -6,8 +6,7 @@ Gets the execution by the transaction hash
 
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
-| TransactionHash     | string| The transaction Hash | Required |
-
+| TransactionHash     | string| The transaction hash | Required |
 
 
 ### Example

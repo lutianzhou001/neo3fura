@@ -6,8 +6,7 @@ Gets the transfer event by transaction hash
 
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
-| TransactionHash     | string|  the transactionHash| Required |
-
+| TransactionHash     | string| The transaction hash | Required |
 
 
 ### Example

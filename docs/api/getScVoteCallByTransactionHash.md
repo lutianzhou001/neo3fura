@@ -1,12 +1,11 @@
 # GetScVoteCallByTransactionHash
-Gets the Scvote call by transaction hash
+Gets the Scvote call by the transaction hash.
 <hr>
 
 ### Parameters
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
-| TransactionHash     | string|  the transactionHash| Required |
-
+| TransactionHash     | string| The transactionHash | Required |
 
 
 ### Example

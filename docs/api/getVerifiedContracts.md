@@ -1,5 +1,5 @@
 # GetVerifiedContracts
-Gets the verified contract
+Gets the verified contract.
 <hr>
 
 ### Parameters
@@ -8,7 +8,6 @@ Gets the verified contract
 | ---------- | --- |    ------    | ----|
 | Limit    | int|  The number of items to return| Optional|
 | Skip    | int|  The number of items to return| Optional |
-
 
 
 ### Example

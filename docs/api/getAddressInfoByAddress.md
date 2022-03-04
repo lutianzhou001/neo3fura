@@ -6,14 +6,13 @@ Gets the address information of the given address
 
 |    Name    | Type | Description |  Required |
 | ---------- | --- |    ------    | -------|
-| Address      | String|  The user's address| Required|
-
+| Address      | string|  The user's address| Required|
 
 ### Example
 
 Request body
 
-```
+```powershell
 curl --location --request POST 'https://testneofura.ngd.network:444' \
 --header 'Content-Type: application/json' \
 --data-raw '{

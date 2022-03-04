@@ -9,7 +9,6 @@ Gets the number of transactions per hour
 | Hours      | int| Recent hours to query |
 
 
-
 ### Example
 
 Request body

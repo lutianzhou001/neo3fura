@@ -7,12 +7,11 @@ Gets the active address count in the specified days.
 |    Name    | Type | Description |  Required |
 | ---------- | --- |    ------    | --------|
 | Days       | int|  The number of recent days| Required|
-
 ### Example
 
 Request body
 
-``` powershell
+```powershell
 curl --location --request POST 'https://testneofura.ngd.network:444' \
 --header 'Content-Type: application/json' \
 --data-raw '{

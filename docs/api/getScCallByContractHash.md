@@ -7,10 +7,9 @@ Gets the ScCall by the contract script hash
 
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
-| ContractHash     | string|  contract script hash| Required |
+| ContractHash     | string| The contract script hash | Required |
 | Limit    | int|  The number of items to return| Optional|
 | Skip    | int|  The number of items to return| Optional |
-
 
 
 ### Example

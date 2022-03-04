@@ -6,10 +6,9 @@ Gets the notification by event
 
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
-| Event    | string|  the name of event eg:"transfer"| Required |
+| Event    | string|  The name of event eg:"transfer"| Required |
 | Limit    | int|  The number of items to return| Optional|
 | Skip    | int|  The number of items to return| Optional |
-
 
 
 ### Example

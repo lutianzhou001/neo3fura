@@ -9,7 +9,6 @@ Gets the Nep11 transfer count by the user's address
 | Address     | string|  The user's address| Required |
 
 
-
 ### Example
 
 Request body

@@ -7,7 +7,6 @@ Gets the range of network fee.
 None
 
 
-
 ### Example
 
 Request body

@@ -7,9 +7,6 @@ Gets the candidate information by the candidate address.
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
 | Address      | string|  The candidate address| Required |
-
-
-
 ### Example
 
 Request body

@@ -5,8 +5,9 @@ Gets the count of contracts
 ### Parameters
 
 None
-
 ### Example
+
+Request body
 
 ``` powershell
 curl --location --request POST 'https://testneofura.ngd.network:444' \

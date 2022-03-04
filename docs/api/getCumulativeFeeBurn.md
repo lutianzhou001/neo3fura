@@ -5,8 +5,9 @@ Gets the cumulative systemFee burnt in total and the last 10 blocks systemFee bu
 ### Parameters
 
 None
-
 ### Example
+
+Request body
 
 ``` powershell
 curl --location --request POST 'https://testneofura.ngd.network:444' \

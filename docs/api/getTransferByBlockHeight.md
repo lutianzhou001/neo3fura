@@ -1,15 +1,14 @@
 # GetTransferByBlockHeight
-Gets the transfer info by blockheight
+Gets the transfer information by the block height
 <hr>
 
 ### Parameters
 
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
-| BlockHeight    | int|  the block height| Required |
+| BlockHeight    | int|  The block height| Required |
 | Limit    | int|  The number of items to return| Optional|
 | Skip    | int|  The number of items to return| Optional |
-
 
 
 ### Example

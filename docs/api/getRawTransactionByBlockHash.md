@@ -1,13 +1,12 @@
 # GetRawTransactionByBlockHash
-Gets the transaction by blockhash
+Gets the transaction by the blockhash.
 <hr>
 
 ### Parameters
 
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
-| BlockHash      | string|  the blockHash of the block| Required |
-
+| BlockHash      | string|  The blockHash of the block| Required |
 
 
 ### Example

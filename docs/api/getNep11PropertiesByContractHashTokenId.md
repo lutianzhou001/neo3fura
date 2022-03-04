@@ -9,7 +9,6 @@ Gets the Nep11 properties by the contract hash and tokenId
 | ContractHash     | string| The contract script hash | Required |
 
 
-
 ### Example
 
 Request body

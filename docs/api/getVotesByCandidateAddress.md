@@ -1,13 +1,12 @@
 # GetVotesByCandidateAddress
-Gets the votes by candidate address
+Gets the votes by the candidate address
 <hr>
 
 ### Parameters
 
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
-| CandidateAddress     | string|  the candidate address| Required |
-
+| CandidateAddress     | string|  The candidate address| Required |
 
 
 ### Example

@@ -9,7 +9,6 @@ Gets the daily transaction counts in the specified days
 | Days       | int|  The number of recent days| Required |
 
 
-
 ### Example
 
 Request body

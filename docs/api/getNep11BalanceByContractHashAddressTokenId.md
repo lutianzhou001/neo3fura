@@ -11,7 +11,6 @@ Gets the Nep11 balance by the contract script hash, user's address, and tokenId 
 | TokenId    | string| The tokenId of the Nep11 standard | Required |
 
 
-
 ### Example
 
 Request body

@@ -1,13 +1,12 @@
 # GetVmStateByTransactionHash
-Gets the vm state by transaction hash
+Gets the vm state by the transaction hash.
 <hr>
 
 ### Parameters
 
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
-| TransactionHash     | string|  the transactionHash| Required |
-
+| TransactionHash     | string| The transaction hash | Required |
 
 
 ### Example

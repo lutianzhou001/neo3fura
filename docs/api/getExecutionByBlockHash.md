@@ -8,7 +8,6 @@ Gets the execution by the block hash.
 | ---------- | --- |    ------    | ----|
 | BlockHash      | string| The block hash | Required|
 
-
 ### Example
 
 Request body

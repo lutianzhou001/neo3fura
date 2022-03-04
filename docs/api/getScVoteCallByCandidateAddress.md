@@ -1,15 +1,14 @@
 # GetScVoteCallByCandidateAddress
-Gets the scvote call by candidate address
+Gets the scvote call by the candidate address.
 <hr>
 
 ### Parameters
 
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
-| CandidateAddress    | string|  the candidate's address| Required |
+| CandidateAddress    | string| The candidate's address | Required |
 | Limit    | int|  The number of items to return| Optional|
 | Skip    | int|  The number of items to return| Optional |
-
 
 
 ### Example

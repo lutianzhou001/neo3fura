@@ -6,10 +6,9 @@ Gets the ScCall by contract script hash and user's address
 
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
-| ContractHash     | string|  the contract script hash| Required |Required | Address     | string|  the user's address| Required|
+| ContractHash     | string|  The contract script hash| Required |
 | Limit    | int|  The number of items to return| Optional|
 | Skip    | int|  The number of items to return| Optional |
-
 
 
 ### Example

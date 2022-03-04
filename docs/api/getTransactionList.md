@@ -1,5 +1,5 @@
 # GetTransactionList
-Gets the transaction list
+Gets the transaction list.
 <hr>
 
 ### Parameters
@@ -8,7 +8,6 @@ Gets the transaction list
 | ---------- | --- |    ------    | ----|
 | Limit    | int|  The number of items to return| Optional|
 | Skip    | int|  The number of items to return| Optional |
-
 
 
 ### Example

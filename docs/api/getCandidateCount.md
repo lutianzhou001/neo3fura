@@ -6,9 +6,6 @@ Gets the count of candidates
 
 ### Parameters
 None
-
-
-
 ### Example
 
 Request body

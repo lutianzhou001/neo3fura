@@ -1,11 +1,10 @@
 # GetTransactionCount
-Gets The number of all transactions executed in the blockchain
+Gets the number of all transactions executed in the blockchain.
 <hr>
 
 ### Parameters
 
 None
-
 
 
 ### Example

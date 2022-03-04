@@ -5,9 +5,6 @@ Gets the total blocks of the blockchain.
 ### Parameters
 
 None
-
-
-
 ### Example
 
 Request body

@@ -9,7 +9,6 @@ Get the Nep17 number of transfers by the address
 | Address     | string|  The user's address| Required |
 
 
-
 ### Example
 
 Request body

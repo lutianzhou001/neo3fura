@@ -11,7 +11,6 @@ Gets the Nep11 transfer information by the user's address (0x0 transaction not i
 | Skip    | int|  The number of items to return| Optional |
 
 
-
 ### Example
 
 Request body

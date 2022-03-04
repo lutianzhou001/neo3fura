@@ -11,7 +11,6 @@ Gets the Nep17 transfer information by the transaction hash
 | Skip    | int|  The number of items to return| Optional |
 
 
-
 ### Example
 
 Request body

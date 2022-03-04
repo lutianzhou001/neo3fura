@@ -1,10 +1,9 @@
 # GetTotalVotes
-Gets the total votes of all candidates
+Gets the total votes of all candidates.
 <hr>
 
 ### Parameters
-none
-
+None
 
 ### Example
 

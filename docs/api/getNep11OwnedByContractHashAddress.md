@@ -11,7 +11,6 @@ Gets the Nep11 assets owned by the contract hash and user's address.
 | Skip    | int|  The number of items to return| Optional |
 
 
-
 ### Example
 
 Request body

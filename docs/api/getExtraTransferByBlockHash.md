@@ -11,7 +11,6 @@ Gets the extra transfer(transfer with the txid of 0) by the block hash
 | Skip    | int|  The number of items to return| Optional |
 
 
-
 ### Example
 
 Request body

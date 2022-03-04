@@ -8,12 +8,11 @@ Gets the blockhash by the block height
 | ---------- | --- |    ------    | ----|
 | BlockHeight     | int| The block height | Required |
 
-
 ### Example
 
 Request body
 
-```
+```powershell
 curl --location --request POST 'https://testneofura.ngd.network:444' \
 --header 'Content-Type: application/json' \
 --data-raw '{

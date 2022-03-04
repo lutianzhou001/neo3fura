@@ -1,13 +1,12 @@
 # GetRawTransactionByTransactionHash
-Gets the raw transaction by transactionhash
+Gets the raw transaction by transactionhash.
 <hr>
 
 ### Parameters
 
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
-| TransactionHash     | string|  the transactionHash| Required |
-
+| TransactionHash     | string| The transaction hash | Required |
 
 
 ### Example

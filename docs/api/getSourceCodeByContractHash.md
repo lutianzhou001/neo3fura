@@ -1,15 +1,14 @@
 # GetSourceCodeByContractHash
-Gets the source code of contract by the contract script hash
+Gets the source code of contract by the contract script hash.
 <hr>
 
 ### Parameters
 
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
-| ContractHash     | string|  the contract script hash| Required |Required | UpdateCounter     | string|  The number of times the contract hash been updated| Required|
+| ContractHash     | string|  The contract script hash| Required |Required | UpdateCounter     | string|  The number of times the contract hash been updated| Required|
 | Limit    | int|  The number of items to return| Optional|
 | Skip    | int|  The number of items to return| Optional |
-
 
 
 ### Example

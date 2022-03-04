@@ -9,7 +9,6 @@ Gets the nep11 transfer information by the contract script hash and tokenid
 | ContractHash     | string| The contract script hash | Required |
 
 
-
 ### Example
 
 Request body

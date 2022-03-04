@@ -6,10 +6,9 @@ Gets the raw transaction by address
 
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
-| Address     | string|  the user's address| Required |
+| Address     | string|  The user's address| Required |
 | Limit    | int|  The number of items to return| Optional|
 | Skip    | int|  The number of items to return| Optional |
-
 
 ### Example
 

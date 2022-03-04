@@ -8,9 +8,6 @@ Gets the candidate(s)
 | ---------- | --- |    ------    | ----|
 | Limit    | int|  The number of items to return| Optional|
 | Skip    | int|  The number of items to return| Optional |
-
-
-
 ### Example
 
 Request body

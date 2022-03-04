@@ -6,10 +6,7 @@ Gets the contract information by the contract script hash
 
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
-| ContractHash     | string|  contract script hash| Required |
-
-
-
+| ContractHash     | string| The contract script hash | Required |
 ### Example
 
 Request body

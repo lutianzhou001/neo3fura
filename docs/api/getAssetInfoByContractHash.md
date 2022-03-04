@@ -1,6 +1,6 @@
 # GetAssetInfoByContractHash
 
-Gets the asset info by the contact script hash
+Gets the asset information by the contact script hash.
 <hr>
 
 ### Parameters
@@ -9,12 +9,11 @@ Gets the asset info by the contact script hash
 | ---------- | --- |    ------    | ----|
 | ContractHash     | string| The scrip hash of the asset to query | Required|
 
-
 ### Example
 
 Request body
 
-```
+```powershell
 curl --location --request POST 'https://testneofura.ngd.network:444' \
 --header 'Content-Type: application/json' \
 --data-raw '{

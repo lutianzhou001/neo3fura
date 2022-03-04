@@ -1,15 +1,14 @@
 # GetVotersByCandidateAddress
-Get voters by candidate address
+Get voters by the candidate address.
 <hr>
 
 ### Parameters
 
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
-| CandidateAddress     | string|  the candidate address| Required |
+| CandidateAddress     | string|  The candidate address| Required |
 | Limit    | int|  The number of items to return| Optional|
 | Skip    | int|  The number of items to return| Optional |
-
 
 ### Example
 

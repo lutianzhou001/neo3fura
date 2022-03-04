@@ -10,7 +10,6 @@ Gets the block information of the recent blocks.
 | Skip    | int|  The number of items to return| Optional |
 
 
-
 ### Example
 
 Request body

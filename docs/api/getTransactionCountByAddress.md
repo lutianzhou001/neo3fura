@@ -1,13 +1,12 @@
 # GetTransactionCountByAddress
-Gets the transaction count by given user's address
+Gets the transaction count by the given user's address.
 <hr>
 
 ### Parameters
 
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
-| Address     | string|  the user's address| Required |
-
+| Address     | string|  The user's address| Required |
 
 
 ### Example

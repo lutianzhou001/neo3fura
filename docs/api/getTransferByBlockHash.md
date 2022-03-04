@@ -1,13 +1,12 @@
 # GetTransferByBlockHash
-Gets the transfer by blockhash
+Gets the transfer by the block hash.
 <hr>
 
 ### Parameters
 
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
-| BlockHash      | string|  the blockHash of the block| Required |
-
+| BlockHash      | string| The block hash of the block | Required |
 
 
 ### Example

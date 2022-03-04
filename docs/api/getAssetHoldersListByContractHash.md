@@ -1,5 +1,5 @@
 # GetAssetHoldersListByContractHash
-Gets all NEP11 assets and related holders with the contract script hash
+Gets all NEP11 assets and related holders with the contract script hash.
 <hr>
 
 ### Parameters
@@ -11,12 +11,11 @@ Gets all NEP11 assets and related holders with the contract script hash
 | Skip    | int| The number of items to return | Optional |
 | Balance    | int| Equals to 1 | Required|
 
-
 ### Example
 
 Request body
 
-```
+```powershell
 curl --location --request POST 'https://testneofura.ngd.network:444' \
 --header 'Content-Type: application/json' \
 --data-raw '{

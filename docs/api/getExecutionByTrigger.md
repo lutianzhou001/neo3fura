@@ -11,7 +11,6 @@ Gets the execution by the given trigger
 | Skip    | int|  The number of items to return| Optional |
 
 
-
 ### Example
 
 Request body
