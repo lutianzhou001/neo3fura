@@ -1,22 +1,20 @@
 # GetApplicationLogByBlockHash
-Gets the applicationlog by blockhash
+Gets the applicationlog by the given blockhash.
 <hr>
 
-### Request
-
-> POST https://testneofura.ngd.network:444
-
-#### Body Parameters
+### Parameters
 
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
-| BlockHash     | string|  blockHash of a transaction| required|
-| Limit    | int|  the number of items to return| optional|
-| Skip    | int|  the number of items to return| optional |
+| BlockHash     | string| BlockHash of the transaction | Required|
+| Limit    | int|  The number of items to return| Optional|
+| Skip    | int|  The number of items to return| Optional |
 
+### Example
 
-#### Example
-``` powershell
+Request body
+
+```powershell
 curl --location --request POST 'https://testneofura.ngd.network:444' \
 --header 'Content-Type: application/json' \
 --data-raw '{
@@ -26,8 +24,11 @@ curl --location --request POST 'https://testneofura.ngd.network:444' \
   "id": 1
 }'
 ```
-### Response
-```json
+
+Response body
+
+
+```json5
 {
     "id": 1,
     "result": {

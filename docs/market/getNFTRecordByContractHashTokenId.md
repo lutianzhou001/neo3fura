@@ -1,23 +1,19 @@
 # GetNFTRecordByContractHashTokenId
-get nft token transfer record 
+Gets the NFT token transfer record. 
 <hr>
 
-### Request
-
-> POST https://testneofura.ngd.network:444
-
-#### Body Parameters
+### Parameters
 
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
-| ContractHash     | string|  the contractHash| required |
-| MarketHash     | string| the marketplace hash | required |
-| TokenId     | string| nft token id | optional |
+| ContractHash     | string|  The contractHash| Required |
+| MarketHash     | string| The marketplace hash | Required |
+| TokenId     | string| The NFT token id | Optional |
 
+### Example
 
+Request body
 
-
-#### Example
 ```powershell
 curl --location --request GET 'https://testneofura.ngd.network:444' \
 --header 'Content-Type: text/plain' \
@@ -32,7 +28,8 @@ curl --location --request GET 'https://testneofura.ngd.network:444' \
   "id": 1
 }'
 ```
-### Response
+Response body
+
 ```json
 {
   "id": 1,

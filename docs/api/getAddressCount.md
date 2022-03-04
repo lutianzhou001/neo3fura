@@ -2,16 +2,14 @@
 Gets the count of all addresses
 <hr>
 
-### Request
+### Parameters
 
-> POST https://testneofura.ngd.network:444
+None
 
-#### Body Parameters
+### Example
 
-none
+Request body
 
-
-#### Example
 ```powershell
 curl --location --request POST 'https://testneofura.ngd.network:444' \
 --header 'Content-Type: application/json' \
@@ -22,7 +20,9 @@ curl --location --request POST 'https://testneofura.ngd.network:444' \
   "id": 1
 }'
 ```
-### Response
+
+Response body
+
 ```json
 {
     "id": 1,

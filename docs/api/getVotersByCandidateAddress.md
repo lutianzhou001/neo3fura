@@ -1,20 +1,19 @@
 # GetVotersByCandidateAddress
-Get voters by candidate address
+Get voters by the candidate address.
 <hr>
 
-### Request
-
-> POST https://testneofura.ngd.network:444
-
-#### Body Parameters
+### Parameters
 
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
-| CandidateAddress     | string|  the candidate address| required|
-| Limit    | int|  the number of items to return| optional|
-| Skip    | int|  the number of items to return| optional |
+| CandidateAddress     | string|  The candidate address| Required |
+| Limit    | int|  The number of items to return| Optional|
+| Skip    | int|  The number of items to return| Optional |
 
-#### Example
+### Example
+
+Request body
+
 ```powershell
 curl --location --request POST 'https://testneofura.ngd.network:444' \
 --header 'Content-Type: application/json' \
@@ -25,7 +24,9 @@ curl --location --request POST 'https://testneofura.ngd.network:444' \
   "id": 1
 }'
 ```
-### Response
+
+Response body
+
 ```json
 {
   "id": 1,

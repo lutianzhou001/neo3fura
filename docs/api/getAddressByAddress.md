@@ -1,19 +1,17 @@
 # GetAddressByAddress
-Gets the address info by the address
+Gets the details of the given address.
 <hr>
 
-### Request
+### Parameters
 
-> POST https://testneofura.ngd.network:444
-
-#### Body Parameters
-
-|    name    | type | description |  Required |
+|    Name    | Type | Description |  Required |
 | ---------- | --- |    ------    | -----|
-| Address       | string|  the user's address| required|
+| Address       | string|  The user's address| Required|
 
+### Example
 
-#### Example
+Request body
+
 ```powershell
 curl --location --request POST 'https://testneofura.ngd.network:444' \
 --header 'Content-Type: application/json' \
@@ -24,8 +22,11 @@ curl --location --request POST 'https://testneofura.ngd.network:444' \
   "id": 1
 }'
 ```
-### Response
-```json
+
+Response body
+
+```json5
+
 {
     "id": 1,
         "result": {

@@ -1,19 +1,18 @@
 # GetRawTransactionByTransactionHash
-Gets the raw transaction by transactionhash
+Gets the raw transaction by transactionhash.
 <hr>
 
-### Request
-
-> POST https://testneofura.ngd.network:444
-
-#### Body Parameters
+### Parameters
 
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
-| TransactionHash     | string|  the transactionHash| required|
+| TransactionHash     | string| The transaction hash | Required |
 
 
-#### Example
+### Example
+
+Request body
+
 ```powershell
 curl --location --request POST 'https://testneofura.ngd.network:444' \
 --header 'Content-Type: application/json' \
@@ -24,7 +23,9 @@ curl --location --request POST 'https://testneofura.ngd.network:444' \
     "method": "GetRawTransactionByTransactionHash"
 }'
 ```
-### Response
+
+Response body
+
 ```json
 {
   "id": 1,

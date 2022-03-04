@@ -1,21 +1,20 @@
 # GetExtraTransferByBlockHash
-Gets the extra transfer(transfer with the txid of 0) by blockhash
+Gets the extra transfer(transfer with the txid of 0) by the block hash
 <hr>
 
-### Request
+### Parameters
 
-> POST https://testneofura.ngd.network:444
-
-#### Body Parameters
-
-|    name    | type | description | Required |
+|    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
-| BlockHash     | string|  blockHash of a transaction| required|
-| Limit    | int|  the number of items to return| optional|
-| Skip    | int|  the number of items to return| optional |
+| BlockHash     | string| The block hash of the transaction | Required |
+| Limit    | int|  The number of items to return| Optional|
+| Skip    | int|  The number of items to return| Optional |
 
 
-#### Example
+### Example
+
+Request body
+
 ```powershell
 curl --location --request POST 'https://testneofura.ngd.network:444' \
 --header 'Content-Type: application/json' \
@@ -26,7 +25,9 @@ curl --location --request POST 'https://testneofura.ngd.network:444' \
   "id": 1
 }'
 ```
-### Response
+
+Response body
+
 ```json
 {
     "id": 1,

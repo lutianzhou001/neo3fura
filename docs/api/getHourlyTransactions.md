@@ -2,18 +2,17 @@
 Gets the number of transactions per hour
 <hr>
 
-### Request
+### Parameters
 
-> POST https://testneofura.ngd.network:444
-
-#### Body Parameters
-
-|    name    | type | description |
+|    Name    | Type | Description |
 | ---------- | --- |    ------    |
-| Hours      | int|  recent x hours to query|
+| Hours      | int| Recent hours to query |
 
 
-#### Example
+### Example
+
+Request body
+
 ```powershell
 curl --location --request POST 'https://testneofura.ngd.network:444' \
 --header 'Content-Type: application/json' \
@@ -24,7 +23,9 @@ curl --location --request POST 'https://testneofura.ngd.network:444' \
     }
 }'
 ```
-### Response
+
+Response body
+
 ```json
 {
     "id": null,

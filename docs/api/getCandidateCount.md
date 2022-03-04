@@ -1,16 +1,15 @@
-#GetCandidateCount
+# GetCandidateCount
+
 Gets the count of candidates
+
 <hr>
 
-### Request
+### Parameters
+None
+### Example
 
-> POST https://testneofura.ngd.network:444
+Request body
 
-#### Body Parameters
-none
-
-
-#### Example
 ```powershell
 curl --location --request POST 'https://testneofura.ngd.network:444' \
 --header 'Content-Type: application/json' \
@@ -21,7 +20,9 @@ curl --location --request POST 'https://testneofura.ngd.network:444' \
   "id": 1
 }'
 ```
-### Response
+
+Response body
+
 ```json
 {
     "id": 1,

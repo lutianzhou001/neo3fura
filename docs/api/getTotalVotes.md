@@ -1,15 +1,14 @@
 # GetTotalVotes
-Gets the total votes of all candidates
+Gets the total votes of all candidates.
 <hr>
 
-### Request
+### Parameters
+None
 
-> POST https://testneofura.ngd.network:444
+### Example
 
-#### Body Parameters
-none
+Request body
 
-#### Example
 ```powershell
 curl --location --request POST 'https://testneofura.ngd.network:444' \
 --header 'Content-Type: application/json' \
@@ -20,7 +19,9 @@ curl --location --request POST 'https://testneofura.ngd.network:444' \
   "id": 1
 }'
 ```
-### Response
+
+Response body
+
 ```json
 {
   "id": 1,

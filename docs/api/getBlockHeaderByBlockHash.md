@@ -1,20 +1,17 @@
 # GetBlockHeaderByBlockHash
-Gets the blockheader by blockhash
+Gets the block header by the blockhash.
 
 <hr>
 
-### Request
-
-> POST https://testneofura.ngd.network:444
-
-#### Body Parameters
+### Parameters
 
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
-| BlockHash      | string|  the blockHash of the block| required |
+| BlockHash      | string|  The blockHash of the block| Required |
+### Example
 
+Request body
 
-#### Example
 ```powershell
 curl --location --request POST 'https://testneofura.ngd.network:444' \
 --header 'Content-Type: application/json' \
@@ -25,8 +22,11 @@ curl --location --request POST 'https://testneofura.ngd.network:444' \
     "method": "GetBlockHeaderByBlockHash"
 }'
 ```
-### Response
-```json
+
+Response body
+
+```json5
+
 {
     "id": 1,
         "result": {
