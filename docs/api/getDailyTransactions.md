@@ -1,19 +1,19 @@
 # GetDailyTransactions
-Gets the daily transaction counts in last several days
+Gets the daily transaction counts in the specified days
 <hr>
 
-### Request
-
-> POST https://testneofura.ngd.network:444
-
-#### Body Parameters
+### Parameters
 
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ---- |
-| Days       | int|  the number of recent days| required |
+| Days       | int|  The number of recent days| Required |
 
 
-#### Example
+
+### Example
+
+Request body
+
 ```powershell
 curl --location --request POST 'https://testneofura.ngd.network:444' \
 --header 'Content-Type: application/json' \
@@ -24,7 +24,9 @@ curl --location --request POST 'https://testneofura.ngd.network:444' \
   "id": 1
 }'
 ```
-### Response
+
+Response body
+
 ```json
 {
     "id": 1,

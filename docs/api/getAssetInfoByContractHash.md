@@ -3,20 +3,18 @@
 Gets the asset info by the contact script hash
 <hr>
 
-### Request
+### Parameters
 
-> POST https://testneofura.ngd.network:444
-
-#### Body Parameters
-
-|    name    | type | description | Required |
+|    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
-| ContractHash     | string|  the scrip hash of the asset want to query| required|
+| ContractHash     | string| The scrip hash of the asset to query | Required|
 
 
+### Example
 
-#### Example
-```powershell
+Request body
+
+```
 curl --location --request POST 'https://testneofura.ngd.network:444' \
 --header 'Content-Type: application/json' \
 --data-raw '{
@@ -27,8 +25,11 @@ curl --location --request POST 'https://testneofura.ngd.network:444' \
     }
 }'
 ```
-### Response
-```json
+
+Response body
+
+```json5
+
 {
     "id": null,
         "result": {

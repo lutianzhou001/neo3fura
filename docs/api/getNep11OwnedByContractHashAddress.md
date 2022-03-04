@@ -1,22 +1,21 @@
 # GetNep11OwnedByContractHashAddress
-Gets the Nep11 owned by contracthash and user's address
+Gets the Nep11 assets owned by the contract hash and user's address.
 <hr>
 
-### Request
-
-> POST https://testneofura.ngd.network:444
-
-#### Body Parameters
+### Parameters
 
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
-| ContractHash    | string|  contract script hash| required|
-| Address   | string|  the user's address| required|
-| Limit    | int|  the number of items to return| optional|
-| Skip    | int|  the number of items to return| optional |
+| ContractHash    | string| The contract script hash | Required |
+| Limit    | int|  The number of items to return| Optional|
+| Skip    | int|  The number of items to return| Optional |
 
 
-#### Example
+
+### Example
+
+Request body
+
 ```powershell
 curl --location --request POST 'https://testneofura.ngd.network:444' \
 --header 'Content-Type: application/json' \
@@ -27,7 +26,9 @@ curl --location --request POST 'https://testneofura.ngd.network:444' \
   "id": 1
 }'
 ```
-### Response
+
+Response body
+
 ```json
 {
     "id": 1,

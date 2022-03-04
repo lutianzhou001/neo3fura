@@ -2,21 +2,20 @@
 Gets the source code of contract by the contract script hash
 <hr>
 
-### Request
-
-> POST https://testneofura.ngd.network:444
-
-#### Body Parameters
+### Parameters
 
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
-| ContractHash     | string|  the contract script hash| required|
-| UpdateCounter     | string|  the number of times the contract hash been updated| required|
-| Limit    | int|  the number of items to return| optional|
-| Skip    | int|  the number of items to return| optional |
+| ContractHash     | string|  the contract script hash| Required |Required | UpdateCounter     | string|  The number of times the contract hash been updated| Required|
+| Limit    | int|  The number of items to return| Optional|
+| Skip    | int|  The number of items to return| Optional |
 
 
-#### Example
+
+### Example
+
+Request body
+
 ```powershell
 curl --location --request POST 'https://testneofura.ngd.network:444' \
 --header 'Content-Type: application/json' \
@@ -28,7 +27,9 @@ curl --location --request POST 'https://testneofura.ngd.network:444' \
     }
 }'
 ```
-### Response
+
+Response body
+
 ```json
 {
   "id": null,

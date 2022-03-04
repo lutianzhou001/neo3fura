@@ -1,20 +1,19 @@
 # GetApplicationLogByTransactionHash
-Gets the applicationlog by transactionhash
+Gets the applicationlog by the given transactionhash
 <hr>
 
-### Request
-
-> POST https://testneofura.ngd.network:444
-
-#### Body Parameters
+### Parameters
 
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
-| TransactionHash       | string|  transactionHash| required|
+| TransactionHash       | string|  TransactionHash| Required |
 
 
-#### Example
-```powershell
+### Example
+
+Request body
+
+```
 curl --location --request POST 'https://testneofura.ngd.network:444' \
 --header 'Content-Type: application/json' \
 --data-raw '{
@@ -24,8 +23,11 @@ curl --location --request POST 'https://testneofura.ngd.network:444' \
   "id": 1
 }'
 ```
-### Response
-```json
+
+Response body
+
+```json5
+
 {
     "id": 1,
         "result": {

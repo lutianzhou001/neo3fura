@@ -2,19 +2,18 @@
 Gets the verified contract by contract hash
 <hr>
 
-### Request
-
-> POST https://testneofura.ngd.network:444
-
-#### Body Parameters
+### Parameters
 
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
-| ContractHash     | string|  contract script hash| required|
-| UpdateCounter   | int|  the number of times the contract has been updated| required|
+| ContractHash     | string|  contract script hash| Required |Required | UpdateCounter   | int|  The number of times the contract has been updated| Required|
 
 
-#### Example
+
+### Example
+
+Request body
+
 ```powershell
 curl --location --request POST 'https://testneofura.ngd.network:444' \
 --header 'Content-Type: application/json' \
@@ -25,7 +24,9 @@ curl --location --request POST 'https://testneofura.ngd.network:444' \
   "id": 1
 }'
 ```
-### Response
+
+Response body
+
 ```json
 {
   "id": 1,

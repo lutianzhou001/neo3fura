@@ -1,20 +1,19 @@
 # GetNep11PropertiesByContractHashTokenId
-Gets the Nep11 properties by contracthash and tokenId
+Gets the Nep11 properties by the contract hash and tokenId
 <hr>
 
-### Request
-
-> POST https://testneofura.ngd.network:444
-
-#### Body Parameters
+### Parameters
 
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
-| ContractHash     | string|  contract script hash| required|
-| TokenId   | []string| the array of tokenId| required|
+| ContractHash     | string| The contract script hash | Required |
 
 
-#### Example
+
+### Example
+
+Request body
+
 ```powershell
 curl --location --request POST 'https://testneofura.ngd.network:444' \
 --header 'Content-Type: application/json' \
@@ -25,7 +24,9 @@ curl --location --request POST 'https://testneofura.ngd.network:444' \
     "id": 1
 }'
 ```
-### Response
+
+Response body
+
 ```json
 {
     "id": 1,

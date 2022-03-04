@@ -1,17 +1,13 @@
 # GetCumulativeFeeBurn
-Gets the cumulative systemFee burn in total and last 10 blocks systemFee burn
+Gets the cumulative systemFee burnt in total and the last 10 blocks systemFee burnt.
 <hr>
 
-### Request
+### Parameters
 
-> POST https://testneofura.ngd.network:444
+None
 
-#### Body Parameters
+### Example
 
-none
-
-
-#### Example
 ``` powershell
 curl --location --request POST 'https://testneofura.ngd.network:444' \
 --header 'Content-Type: application/json' \
@@ -22,7 +18,9 @@ curl --location --request POST 'https://testneofura.ngd.network:444' \
   "id": 1
 }'
 ```
-### Response
+
+Response body
+
 ```json
 {
     "id": 1,

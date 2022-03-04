@@ -1,20 +1,19 @@
 # GetAssetInfosByName
-Gets the asset infos with token name
+Gets the asset information with the token name.
 <hr>
 
-### Request
+### Parameters
 
-> POST https://testneofura.ngd.network:444
-
-#### Body Parameters
-
-|    name    | type | description | Required |
+|    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
-| Name     | string|  token name (fuzzy search supported)| required|
-| Limit    | int|  the number of items to return| optional|
-| Skip    | int|  the number of items to return| optional |
+| Name     | string|  Token name (fuzzy search supported)| Required|
+| Limit    | int|  The number of items to return| Optional|
+| Skip    | int|  The number of items to return| Optional |
 
-#### Example
+### Example
+
+Request body
+
 ```powershell
 curl --location --request POST 'https://testneofura.ngd.network:444' \
 --header 'Content-Type: application/json' \
@@ -25,8 +24,11 @@ curl --location --request POST 'https://testneofura.ngd.network:444' \
   "id": 1
 }'
 ```
-### Response
-```json
+
+Response body
+
+```json5
+
 {
     "id": 1,
         "result": {

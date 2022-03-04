@@ -1,17 +1,17 @@
 # GetTransactionCount
-Gets the number of all transactions executed in the blockchain
+Gets The number of all transactions executed in the blockchain
 <hr>
 
-### Request
+### Parameters
 
-> POST https://testneofura.ngd.network:444
-
-#### Body Parameters
-
-none
+None
 
 
-#### Example
+
+### Example
+
+Request body
+
 ```powershell
 curl --location --request POST 'https://testneofura.ngd.network:444' \
 --header 'Content-Type: application/json' \
@@ -22,7 +22,9 @@ curl --location --request POST 'https://testneofura.ngd.network:444' \
   "id": 1
 }'
 ```
-### Response
+
+Response body
+
 ```json
 {
   "id": 1,

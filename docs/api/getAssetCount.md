@@ -1,17 +1,16 @@
 # GetAssetCount
-Gets the number of all assets
+Gets The number of all assets.
 <hr>
 
-### Request
-
-> POST https://testneofura.ngd.network:444
-
-#### Body Parameters
-none
+### Parameters
+None
 
 
-#### Example
-```powershell
+### Example
+
+Request body
+
+```
 curl --location --request POST 'https://testneofura.ngd.network:444' \
 --header 'Content-Type: application/json' \
 --data-raw '{
@@ -21,7 +20,9 @@ curl --location --request POST 'https://testneofura.ngd.network:444' \
   "id": 1
 }'
 ```
-### Response
+
+Response body
+
 ```json
 {
     "id": 1,
