@@ -1,26 +1,22 @@
 # GetNFTRecordByAddress
-get nft record by user's address
+Gets the NFT record by the user's address.
 <hr>
 
-### Request
-
-> POST https://testneofura.ngd.network:444
-
-#### Body Parameters
+### Parameters
 
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
-| Address     | string|  the user's address| required|
-| MarketHash     | string| the marketplace hash | optional |
-| Skip | int | the number of items to return | optional |
-| Limit | int | the number of items to return | optional |
+| Address     | string|  The user's address| Required|
+| MarketHash     | string| The marketplace hash | Optional |
+| Skip | int | The number of items to return | Optional |
+| Limit | int | The number of items to return | Optional |
 
 
 
+### Example
 
+Request body
 
-
-#### Example
 ```powershell
 curl --location --request GET 'https://testneofura.ngd.network:444' \
 --header 'Content-Type: application/json' \
@@ -34,7 +30,8 @@ curl --location --request GET 'https://testneofura.ngd.network:444' \
   "id": 1
 } '
 ```
-### Response
+Response body
+
 ```json
 {
   "id": 1,

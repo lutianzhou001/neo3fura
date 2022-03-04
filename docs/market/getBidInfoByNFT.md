@@ -1,24 +1,20 @@
 # GetBidInfoByNFT
-Gets the nft bid info 
+Gets the NFT bid information. 
 <hr>
 
-### Request
-
-> POST https://testneofura.ngd.network:444
-
-#### Body Parameters
+### Parameters
 
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
-| Address     | string|  the user's address|required|
-| AssetHash     | string|  the asset scriptHash|optional|
-| TokenId     | string|  the nft token's| optional |
-| MarketHash     | string| the marketplace hash | optional |
+| Address     | string|  The user's address|Required|
+| AssetHash     | string| The asset script hash |Optional|
+| TokenId     | string| The NFT token ID | Optional |
+| MarketHash     | string| The marketplace hash | Optional |
 
+### Example
 
+Request body
 
-
-#### Example
 ```powershell
 curl --location --request GET 'https://testneofura.ngd.network:444' \
 --header 'Content-Type: text/plain' \
@@ -35,7 +31,8 @@ curl --location --request GET 'https://testneofura.ngd.network:444' \
   "id": 1
 }'
 ```
-### Response
+Response body
+
 ```json
 {
   "id": 1,
