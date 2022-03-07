@@ -3,9 +3,7 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"math/big"
 	"neo3fura_http/lib/type/h160"
-	limit "neo3fura_http/var/const"
 	"neo3fura_http/var/stderr"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -108,7 +106,7 @@ func (me *T) GetAssetInfoByContractHash(args struct {
 		Collection: "Address-Asset",
 		Index:      "GetAssetInfos",
 		Sort:       bson.M{},
-		Filter:     bson.M{"asset": args.ContractHash.Val(), "balance": bson.M{"$gt": 0}, "address": bson.M{"$ne": limit.NullAddress}},
+		Filter:     bson.M{"asset": args.ContractHash.Val(), "balance": bson.M{"$gt": 0}},
 		Query:      []string{},
 	}, ret)
 	if err != nil {
@@ -118,7 +116,11 @@ func (me *T) GetAssetInfoByContractHash(args struct {
 		*args.Raw = r1
 	}
 	r1["holders"] = count
-
+	totalsuply, _, err := r1["totalsupply"].(primitive.Decimal128).BigInt()
+	if err != nil {
+		return err
+	}
+	r1["totalsupply"] = totalsuply
 	if r1["type"].(string) == "NEP11" {
 		r3, err1 := me.Client.QueryAggregate(
 			struct {
@@ -134,7 +136,7 @@ func (me *T) GetAssetInfoByContractHash(args struct {
 				Sort:       bson.M{},
 				Filter:     bson.M{},
 				Pipeline: []bson.M{
-					bson.M{"$match": bson.M{"asset": args.ContractHash.Val(), "balance": bson.M{"$gt": 0}, "address": bson.M{"$ne": limit.NullAddress}}},
+					bson.M{"$match": bson.M{"asset": args.ContractHash.Val(), "balance": bson.M{"$gt": 0}}},
 					bson.M{"$group": bson.M{"_id": "$address"}},
 					bson.M{"$count": "addressCounts"},
 				},
@@ -143,16 +145,8 @@ func (me *T) GetAssetInfoByContractHash(args struct {
 		if err1 != nil {
 			return err1
 		}
-		r1["totalsupply"] = big.NewInt(count)
-		r1["holders"] = r3[0]["addressCounts"]
-	} else {
-		//totalsuply :=  r1["totalsupply"].(primitive.Decimal128).BigInt()
-		totalsuply, _, err := r1["totalsupply"].(primitive.Decimal128).BigInt()
-		if err != nil {
-			return err
-		}
-		r1["totalsupply"] = totalsuply
 
+		r1["holders"] = r3[0]["addressCounts"]
 	}
 
 	r1, err = me.Filter(r1, args.Filter)

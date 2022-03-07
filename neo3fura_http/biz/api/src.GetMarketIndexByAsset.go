@@ -11,7 +11,6 @@ import (
 	"math/big"
 	"neo3fura_http/lib/mapsort"
 	"neo3fura_http/lib/type/h160"
-	"neo3fura_http/lib/utils"
 	limit "neo3fura_http/var/const"
 	"neo3fura_http/var/stderr"
 	"net/http"
@@ -92,7 +91,7 @@ func (me *T) GetMarketIndexByAsset(args struct {
 	if err != nil {
 		return err
 	}
-	owner := make([]map[string]interface{}, 0)
+	owner := make(map[string]interface{})
 	for _, item := range r2 {
 		bidAmount, _, err2 := item["bidAmount"].(primitive.Decimal128).BigInt()
 		bidAmountFlag := bidAmount.Cmp(big.NewInt(0))
@@ -110,7 +109,7 @@ func (me *T) GetMarketIndexByAsset(args struct {
 		} else {
 			item["account"] = ""
 		}
-		owner = append(owner, item)
+		owner[item["account"].(string)] = 1
 	}
 
 	//二级市场未上架数据
@@ -128,14 +127,9 @@ func (me *T) GetMarketIndexByAsset(args struct {
 			Sort:       bson.M{},
 			Filter:     bson.M{},
 			Pipeline: []bson.M{
-				bson.M{"$match": bson.M{"owner": bson.M{"$ne": limit.NullAddress}, "amount": bson.M{"$gt": 0}, "asset": args.AssetHash.Val(), "market": nil}}, //上架（正常状态、过期）:auctor，未领取：biddernu
-				bson.M{"$group": bson.M{"_id": "$owner",
-					"owner":    bson.M{"$last": "$owner"},
-					"auctor":   bson.M{"$last": "$auctor"},
-					"bidder":   bson.M{"$last": "$bidder"},
-					"deadline": bson.M{"$last": "$deadline"},
-					"market":   bson.M{"$last": "$market"},
-				}},
+				bson.M{"$match": bson.M{"owner": bson.M{"$ne": limit.NullAddress}, "amount": bson.M{"$gt": 0}, "asset": args.AssetHash.Val(), "market": bson.M{"$in": []interface{}{limit.NullAddress, nil}}}}, //上架（正常状态、过期）:auctor，未领取：biddernu
+				bson.M{"$group": bson.M{"_id": "$owner"}},
+				//bson.M{"$count":"count"},
 			},
 			Query: []string{},
 		}, ret)
@@ -146,14 +140,12 @@ func (me *T) GetMarketIndexByAsset(args struct {
 
 	if len(r3) > 0 {
 		for _, item := range r3 {
-			item["account"] = item["owner"]
-			owner = append(owner, item)
+			owner[item["_id"].(string)] = 1
 		}
 
 	}
-	ownerGroup := utils.GroupBy(owner, "account") // owner 分组
-	ownerCount := len(ownerGroup)
-	result["totalowner"] = ownerCount
+
+	result["totalowner"] = int32(len(owner))
 
 	//交易数额
 	r4, err := me.Client.QueryAggregate(
