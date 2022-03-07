@@ -8,6 +8,7 @@ Gets the block header by the blockhash.
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
 | BlockHash      | string|  The blockHash of the block| Required |
+
 ### Example
 
 Request body

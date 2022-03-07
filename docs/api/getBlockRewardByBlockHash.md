@@ -3,9 +3,11 @@ Gets the block reward transaction by the block hash.
 <hr>
 
 ### Parameters
+
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
 | BlockHash      | string| The block hash | Required |
+
 ### Example
 
 Request body

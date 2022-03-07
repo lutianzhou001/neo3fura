@@ -5,7 +5,9 @@ Gets the count of candidates
 <hr>
 
 ### Parameters
+
 None
+
 ### Example
 
 Request body

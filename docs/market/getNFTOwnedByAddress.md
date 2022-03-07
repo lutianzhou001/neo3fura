@@ -15,6 +15,7 @@ Gets the NFT token list and NFT token state by the user's address
 | Order     | int| Descending sort: -1; Ascending sort: +1 | Optional |
 | Limit    | int|  The number of items to return| Optional|
 | Skip    | int|  The number of items to return| Optional |
+
 ### Example
 
 Request body

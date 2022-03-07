@@ -8,6 +8,7 @@ Gets the block header by the block height.
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
 | BlockHeight     | int| The block height | Required |
+
 ### Example
 
 Request body

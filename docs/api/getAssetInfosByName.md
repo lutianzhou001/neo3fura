@@ -9,6 +9,7 @@ Gets the asset information with the token name.
 | Name     | string|  Token name (fuzzy search supported)| Required|
 | Limit    | int|  The number of items to return| Optional|
 | Skip    | int|  The number of items to return| Optional |
+
 ### Example
 
 Request body
