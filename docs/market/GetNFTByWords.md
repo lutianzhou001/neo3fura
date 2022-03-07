@@ -11,6 +11,7 @@ Fuzzy search by name of NFT
 | Words | string | The search item | Required |
 | Limit    | int|  The number of items to return| Optional|
 | Skip    | int|  The number of items to return| Optional |
+
 ### Example
 
 Request body
