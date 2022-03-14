@@ -33,7 +33,15 @@ func (me *T) GetNFTClass(args struct {
 	if len(args.SubClass) > 0 {
 		for _, i := range args.SubClass {
 			b := bson.M{}
-			if len(i) != 2 || i[0] > i[1] {
+			i0, err2 := base64.URLEncoding.DecodeString(i[0].Val())
+			if err2 != nil {
+				return err2
+			}
+			i1, err2 := base64.URLEncoding.DecodeString(i[1].Val())
+			if err2 != nil {
+				return err2
+			}
+			if len(i) != 2 || string(i0) > string(i1) {
 				return stderr.ErrInvalidArgs
 			} else {
 				a := bson.M{"$and": []interface{}{bson.M{"$gte": []interface{}{"$tokenid", i[0].Val()}}, bson.M{"$lte": []interface{}{"$tokenid", i[1].Val()}}}}
