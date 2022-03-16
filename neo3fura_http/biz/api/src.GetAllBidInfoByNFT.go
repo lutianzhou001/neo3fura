@@ -29,8 +29,9 @@ func (me *T) GetAllBidInfoByNFT(args struct {
 	} else {
 		f = bson.M{"asset": args.AssetHash.Val(), "tokenid": args.TokenId.Val(), "eventname": "Bid"}
 	}
-
-	f["market"] = bson.M{"$in": args.MarketHash}
+	if len(args.MarketHash) > 0 {
+		f["market"] = bson.M{"$in": args.MarketHash}
+	}
 
 	r11, err := me.Client.QueryAggregate(
 		struct {
