@@ -1,24 +1,20 @@
 # GetNFTClass
-get PrimaryMarket classification
+Gets the primary market classification.
 <hr>
 
-### Request
-
-> POST https://testneofura.ngd.network:444
-
-#### Body Parameters
+### Parameters
 
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
-| AssetHash     | string|  the asset scriptHash| required |
-| MarketHash     | string| the marketplace hash | required|
-| SubClass     | Array| the tokenIds class | required |
+| AssetHash     | string| The asset script hash | Required |
+| MarketHash     | string| The marketplace hash | Required|
+| SubClass     | Array| The tokenIds class | Required |
 
+### Example
 
+Request body
 
-
-#### Example
-```
+```powershell
 curl --location --request GET 'https://testneofura.ngd.network:444' \
 --header 'Content-Type: application/json' \
 --data-raw '{
@@ -32,19 +28,20 @@ curl --location --request GET 'https://testneofura.ngd.network:444' \
   "id": 1
 }'
 ```
-### Response
-```json5
+Response body
+
+```json
 {
   "id": 1,
   "result": {
     "result": [
       {
         "asset": "0xc7b11b46f97bda7a8c82793841abba120e96695b",
-        "claimed": 6,  //已经卖掉的数量
+        "claimed": 6,  //The amount sold
         "image": "",
         "name": "sell-1",
-        "price": "5",   //售卖价格
-        "sellAsset": "0xd2a4cff31913016155e38e474a2c06d08be276cf"  //售卖资产
+        "price": "5", 
+        "sellAsset": "0xd2a4cff31913016155e38e474a2c06d08be276cf"  
       },
       ....
     ],

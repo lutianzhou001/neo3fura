@@ -1,22 +1,20 @@
 # GetContractListByName
-Gets the contract list by name (fuzzy search supported)
+Gets the contract list by the given name (fuzzy search supported)
 <hr>
 
-### Request
+### Parameters
 
-> POST https://testneofura.ngd.network:444
-
-#### Body Parameters
-
-|    name    | type | description | Required |
+|    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
-| Name     | string|  the contract name (fuzzy search supported)| required|
-| Limit    | int|  the number of items to return| optional|
-| Skip    | int|  the number of items to return| optional |
+| Name     | string|  The contract name (fuzzy search supported)| Required |
+| Limit    | int|  The number of items to return| Optional|
+| Skip    | int|  The number of items to return| Optional |
 
+### Example
 
-#### Example
-```
+Request body
+
+``` powershell
 curl --location --request POST 'https://testneofura.ngd.network:444' \
 --header 'Content-Type: application/json' \
 --data-raw '{
@@ -26,8 +24,10 @@ curl --location --request POST 'https://testneofura.ngd.network:444' \
   "id": 1
 }'
 ```
-### Response
-```json5
+
+Response body
+
+```json
 {
   "id": 1,
   "result": {

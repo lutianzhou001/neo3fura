@@ -1,25 +1,21 @@
 # GetMarketTokenidList
-get the list of on sale tokenId  in the primary marketplace
+Gets the list of on sale tokenId in the primary marketplace.
 <hr>
 
-### Request
-
-> POST https://testneofura.ngd.network:444
-
-#### Body Parameters
+### Parameters
 
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
-| Account     | string|  the user's address| required |
-| AssetHash     | string| the token scriptHash | required |
-| MarketHash     | string| the marketplace hash | required |
-| SubClass     | Array| the nft's tokenid class | optional |
+| Account     | string|  The user's address| Required |
+| AssetHash     | string| The token scriptHash | Required |
+| MarketHash     | string| The marketplace hash | Required |
+| SubClass     | Array| The NFT's tokenid class | Optional |
 
+### Example
 
+Request body
 
-
-#### Example
-```
+```powershell
 curl --location --request GET 'https://testneofura.ngd.network:444' \
 --header 'Content-Type: text/plain' \
 --data-raw '{
@@ -109,8 +105,9 @@ curl --location --request GET 'https://testneofura.ngd.network:444' \
   "id": 1
 }'
 ```
-### Response
-```json5
+Response body
+
+```json
 {
   "id": 1,
   "result": {

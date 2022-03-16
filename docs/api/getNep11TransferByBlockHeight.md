@@ -1,22 +1,21 @@
 # GetNep11TransferByBlockHeight
-Gets the Nep11 transfer by block height
+Gets the Nep11 transfer information by the block height
 <hr>
 
-### Request
-
-> POST https://testneofura.ngd.network:444
-
-#### Body Parameters
+### Parameters
 
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
-| BlockHeight    | int|  the blockHeight| required|
-| Limit    | int|  the number of items to return| optional|
-| Skip    | int|  the number of items to return| optional |
+| BlockHeight    | int| The block height | Required |
+| Limit    | int|  The number of items to return| Optional|
+| Skip    | int|  The number of items to return| Optional |
 
 
-#### Example
-```
+### Example
+
+Request body
+
+```powershell
 {  
     "jsonrpc": "2.0",
     "method": "GetNep11TransferByBlockHeight",
@@ -24,8 +23,10 @@ Gets the Nep11 transfer by block height
     "id": 1
 }
 ```
-### Response
-```json5
+
+Response body
+
+```json
 {
   "id": 1,
   "result": {

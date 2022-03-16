@@ -2,19 +2,18 @@
 Gets the new addresses
 <hr>
 
-### Request
+### Parameters
 
-> POST https://testneofura.ngd.network:444
-
-#### Body Parameters
-
-|    name    | type | description |
+|    Name    | Type | Description |
 | ---------- | --- |    ------    |
-| Days       | int|  the days in which new addresses generated|
+| Days       | int| The days in which new addresses were generated |
 
 
-#### Example
-```
+### Example
+
+Request body
+
+```powershell
 curl --location --request POST 'https://testneofura.ngd.network:444' \
 --header 'Content-Type: application/json' \
 --data-raw '{
@@ -24,8 +23,10 @@ curl --location --request POST 'https://testneofura.ngd.network:444' \
   "id": 1
 }'
 ```
-### Response
-```json5
+
+Response body
+
+```json
 {
     "id": 1,
         "result": [

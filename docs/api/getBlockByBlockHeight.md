@@ -1,20 +1,18 @@
 # GetBlockByBlockHeight
-Gets the block the blockheight
+Gets the block information by the block height.
 <hr>
 
-### Request
-
-> POST https://testneofura.ngd.network:444
-
-#### Body Parameters
+### Parameters
 
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
-| BlockHeight      | int|  the blockHeight| required |
+| BlockHeight      | int| The block height | Required |
 
+### Example
 
-#### Example
-```
+Request body
+
+```powershell
 curl --location --request POST 'https://testneofura.ngd.network:444' \
 --header 'Content-Type: application/json' \
 --data-raw '{
@@ -24,8 +22,11 @@ curl --location --request POST 'https://testneofura.ngd.network:444' \
     "method": "GetBlockByBlockHeight"
 }'
 ```
-### Response
+
+Response body
+
 ```json5
+
 {
   "id": 1,
   "result": {

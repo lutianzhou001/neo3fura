@@ -1,19 +1,18 @@
 # GetBlockRewardByBlockHash
-Gets the block reward transaction by the blockhash
+Gets the block reward transaction by the block hash.
 <hr>
 
-### Request
+### Parameters
 
-> POST https://testneofura.ngd.network:444
-
-#### Body Parameters
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
-| BlockHash      | string|  the blockHash of the block| required |
+| BlockHash      | string| The block hash | Required |
 
+### Example
 
-#### Example
-```
+Request body
+
+```powershell
 curl --location --request POST 'https://testneofura.ngd.network:444' \
 --header 'Content-Type: application/json' \
 --data-raw '{
@@ -23,8 +22,10 @@ curl --location --request POST 'https://testneofura.ngd.network:444' \
   "id": 1
 }'
 ```
-### Response
-```json5
+
+Response body
+
+```json
 {
     "id": 1,
         "result": {

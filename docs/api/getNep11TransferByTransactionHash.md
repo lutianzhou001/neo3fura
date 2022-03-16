@@ -1,22 +1,21 @@
 # GetNep11TransferByTransactionHash
-Gets the Nep11 transfer By transactionhash
+Gets the Nep11 transfer information by the transaction hash
 <hr>
 
-### Request
-
-> POST https://testneofura.ngd.network:444
-
-#### Body Parameters
+### Parameters
 
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
-| TransactionHash     | string|  the transactionHash| required|
-| Limit    | int|  the number of items to return| optional|
-| Skip    | int|  the number of items to return| optional |
+| TransactionHash     | string| The transaction hash | Required |
+| Limit    | int|  The number of items to return| Optional|
+| Skip    | int|  The number of items to return| Optional |
 
 
-#### Example
-```
+### Example
+
+Request body
+
+```powershell
 curl --location --request POST 'https://testneofura.ngd.network:444' \
 --header 'Content-Type: application/json' \
 --data-raw '{
@@ -27,8 +26,10 @@ curl --location --request POST 'https://testneofura.ngd.network:444' \
   "id": 1
 }'
 ```
-### Response
-```json5
+
+Response body
+
+```json
 {
   "id": 1,
   "result": {

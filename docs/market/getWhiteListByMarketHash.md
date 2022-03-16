@@ -1,22 +1,18 @@
 # GetWhiteListByMarketHash
-get the white list and details by market hash
+Gets the white list and details by the market hash
 <hr>
 
-### Request
-
-> POST https://testneofura.ngd.network:444
-
-#### Body Parameters
+### Parameters
 
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
-| MarketHash     | string| the marketplace hash | required |
+| MarketHash     | string| The marketplace hash | Required |
 
+### Example
 
+Request body
 
-
-#### Example
-```
+```powershell
 curl --location --request GET 'https://testneofura.ngd.network:444' \
 --header 'Content-Type: text/plain' \
 --data-raw '{
@@ -29,8 +25,9 @@ curl --location --request GET 'https://testneofura.ngd.network:444' \
   "id": 1
 }'
 ```
-### Response
-```json5
+Response body
+
+```json
 {
   "id": 1,
   "result": {

@@ -1,23 +1,19 @@
 # GetMarketIndexByAsset
-get PrimaryMarket classification
+Gets the primary market classification.
 <hr>
 
-### Request
-
-> POST https://testneofura.ngd.network:444
-
-#### Body Parameters
+### Parameters
 
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
-| AssetHash     | string|  the asset scriptHash| required |
-| MarketHash     | string| the marketplace hash | required|
+| AssetHash     | string| The asset script hash | Required |
+| MarketHash     | string| The marketplace hash | Required|
 
+### Example
 
+Request body
 
-
-#### Example
-```
+```powershell
 {
   "jsonrpc": "2.0",
   "method": "GetMarketIndexByAsset",
@@ -28,18 +24,19 @@ get PrimaryMarket classification
   "id": 1
 }
 ```
-### Response
-```json5
+Response body
+
+```json
 
 {
     "id": 1,
     "result": {
-        "auctionAmount":  "5",   //地板价价格   nep17
+        "auctionAmount":  "5",   
         "auctionAsset": "0xd2a4cff31913016155e38e474a2c06d08be276cf",
-        "conAmount": 3.2919624466782094,    //地板价价格     usd  
-        "totalowner": 6,   //owner总量
-        "totalsupply": 28, // NFT系列总量
-        "totaltxamount":277.03192125227014   // 交易总额  usd
+        "conAmount": 3.2919624466782094,    //The floor price (usd)  
+        "totalowner": 6,   
+        "totalsupply": 28, 
+        "totaltxamount":277.03192125227014   
     },
     "error": null
 }

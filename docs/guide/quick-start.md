@@ -1,11 +1,16 @@
 # Quick Start
 
-### Send a request refer to neo rpc doc
+### Send a request with Neo RPC API
 
-Neofura supports all neo rpc requests from [https://docs.neo.org/docs/zh-cn/reference/rpc/latest-version/api.html](https://docs.neo.org/docs/zh-cn/reference/rpc/latest-version/api.html). You can easily test it with Postman or any programming language you like.
+Neofura supports all [Neo RPC APIs](https://docs.neo.org/docs/zh-cn/reference/rpc/latest-version/api.html). You can easily test them with Postman or any programming language you like.
+
+
+Neofura mainnet url:` https://neofura.ngd.network`
+
+Neofura testnet url:` https://testneofura.ngd.network:444`
 
 You can send a request like this
-```
+``` powershell
 curl --location --request POST 'https://testneofura.ngd.network:444' \
 --header 'Content-Type: application/json' \
 --data-raw '{
@@ -16,9 +21,9 @@ curl --location --request POST 'https://testneofura.ngd.network:444' \
 	}'
 ```
 
-And you can easily get the response
+Then you will easily get the following response:
 
-```
+```json
 {
     "jsonrpc": "2.0",
     "id": 1,
@@ -153,6 +158,8 @@ And you can easily get the response
 }
 ```
 
-### Send a request refer to neofura doc
+### Send a request with Neofura API
 
-Refer to JSON-RPC Requests in this doc to make a request by yourself!
+Refer to later sections in this document to make a request by yourself!
+
+> The request URL is POST https://testneofura.ngd.network:444

@@ -1,21 +1,19 @@
 # GetNep11TransferByContractHashTokenId
-Gets the nep11 transfer by contract script hash and tokenid
+Gets the nep11 transfer information by the contract script hash and tokenid
 <hr>
 
-### Request
-
-> POST https://testneofura.ngd.network:444
-
-#### Body Parameters
+### Parameters
 
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
-| ContractHash     | string|  contract script hash| required|
-| TokenId     | string|  nft tokenId| required|
+| ContractHash     | string| The contract script hash | Required |
 
 
-#### Example
-```
+### Example
+
+Request body
+
+```powershell
 curl --location --request POST 'https://testneofura.ngd.network:444' \
 --header 'Content-Type: text/plain' \
 --data-raw '{
@@ -25,8 +23,10 @@ curl --location --request POST 'https://testneofura.ngd.network:444' \
   "id": 1
 }'
 ```
-### Response
-```json5
+
+Response body
+
+```json
 {
   "id": 1,
   "result": {

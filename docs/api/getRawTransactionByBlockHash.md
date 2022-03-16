@@ -1,20 +1,19 @@
 # GetRawTransactionByBlockHash
-Gets the transaction by blockhash
+Gets the transaction by the blockhash.
 <hr>
 
-### Request
-
-> POST https://testneofura.ngd.network:444
-
-#### Body Parameters
+### Parameters
 
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
-| BlockHash      | string|  the blockHash of the block| required |
+| BlockHash      | string|  The blockHash of the block| Required |
 
 
-#### Example
-```
+### Example
+
+Request body
+
+```powershell
 curl --location --request POST 'https://testneofura.ngd.network:444' \
 --header 'Content-Type: application/json' \
 --data-raw '{
@@ -24,8 +23,10 @@ curl --location --request POST 'https://testneofura.ngd.network:444' \
   "id": 1
 }'
 ```
-### Response
-```json5
+
+Response body
+
+```json
 {
   "id": 1,
   "result": {

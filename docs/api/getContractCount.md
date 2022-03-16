@@ -2,17 +2,14 @@
 Gets the count of contracts
 <hr>
 
-### Request
+### Parameters
 
-> POST https://testneofura.ngd.network:444
+None
+### Example
 
-#### Body Parameters
+Request body
 
-none
-
-
-#### Example
-```
+``` powershell
 curl --location --request POST 'https://testneofura.ngd.network:444' \
 --header 'Content-Type: application/json' \
 --data-raw '{
@@ -22,8 +19,10 @@ curl --location --request POST 'https://testneofura.ngd.network:444' \
   "id": 1
 }'
 ```
-### Response
-```json5
+
+Response body
+
+```json
 {
     "id": 1,
         "result": {

@@ -1,17 +1,15 @@
 # GetBlockCount
-Gets the total blocks of the chain
+Gets the total blocks of the blockchain.
 <hr>
 
-### Request
+### Parameters
 
-> POST https://testneofura.ngd.network:444
+None
+### Example
 
-#### Body Parameters
-none
+Request body
 
-
-#### Example
-```
+```powershell
 curl --location --request POST 'https://testneofura.ngd.network:444' \
 --header 'Content-Type: application/json' \
 --data-raw '{
@@ -21,8 +19,11 @@ curl --location --request POST 'https://testneofura.ngd.network:444' \
     "method": "GetBlockCount"
 }'
 ```
-### Response
+
+Response body
+
 ```json5
+
 {
     "id": 1,
     "result": {

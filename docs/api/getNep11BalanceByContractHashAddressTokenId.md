@@ -1,22 +1,21 @@
 # GetNep11BalanceByContractHashAddressTokenId
-Gets the Nep11 balance by contract script hash user's address and tokenId of the Nep11 standard
+Gets the Nep11 balance by the contract script hash, user's address, and tokenId of the Nep11 standard.
 <hr>
 
-### Request
-
-> POST https://testneofura.ngd.network:444
-
-#### Body Parameters
+### Parameters
 
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
-| ContractHash     | string| contract script hash| required|
-| Address    | string|  user's address| required|
-| TokenId    | string|  ttokenId of the Nep11 standard| required |
+| ContractHash     | string| The contract script hash | Required |
+| Address | string | The user's address | Required |
+| TokenId    | string| The tokenId of the Nep11 standard | Required |
 
 
-#### Example
-```
+### Example
+
+Request body
+
+```powershell
 curl --location --request POST 'https://testneofura.ngd.network:444' \
 --header 'Content-Type: application/json' \
 --data-raw '{
@@ -26,8 +25,10 @@ curl --location --request POST 'https://testneofura.ngd.network:444' \
   "id": 1
 }'
 ```
-### Response
-```json5
+
+Response body
+
+```json
 {
     "id": 1,
         "result": {

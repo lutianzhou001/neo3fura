@@ -1,22 +1,20 @@
 # GetAssetInfos
-Gets asset infos by the contract script hash array
+Gets the asset information by the contract script hash array.
 <hr>
 
-### Request
+### Parameters
 
-> POST https://testneofura.ngd.network:444
-
-#### Body Parameters
-
-|    name    | type | description | Required |
+|    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
-| Addresses     | string[]|  the script hash array of the asset want to query| required|
-| Limit    | int|  the number of items to return| optional|
-| Skip    | int|  the number of items to return| optional |
+| Addresses     | string[]|  The script hash array of the asset want to query| Required|
+| Limit    | int|  The number of items to return| Optional|
+| Skip    | int|  The number of items to return| Optional |
 
+### Example
 
-#### Example
-```
+Request body
+
+```powershell
 curl --location --request POST 'https://testneofura.ngd.network:444' \
 --header 'Content-Type: application/json' \
 --data-raw '{
@@ -26,8 +24,11 @@ curl --location --request POST 'https://testneofura.ngd.network:444' \
   "id": 1
 }'
 ```
-### Response
+
+Response body
+
 ```json5
+
 {
   "id": 1,
   "result": {

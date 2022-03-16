@@ -1,29 +1,25 @@
 # GetNFTMarket
-Gets the nft token list by contractHash, asset and nftState
+Gets the NFT token list by the contract hash, asset and NFT state.
 <hr>
 
-### Request
-
-> POST https://testneofura.ngd.network:444
-
-#### Body Parameters
+### Parameters
 
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
-| ContractHash     | string|  the contractHash|optional|
-| SkipAssetHash | intstring | the number of items to returnthe asset scriptHash |optional|
-| SecondaryMarket     | string| the Secondary marketplace hash | optional |
-| SkipPrimaryMarket | intstring | the number of items to returnthe PrimaryMarket marketplace hash | optional |
-| Nftstate     | string| 3 types: "auction","sale" or "notlisted"| optional |
-| SkipSort | intstring | the number of items to return3 types: "timestamp", "price" or "deadline" | optional |
-| Order     | int|  descending sort: -1, ascending sort: +1| optional |
-| SkipLimit | intint | the number of items to returnthe number of items to return | optional |
-| Skip    | int|  the number of items to return| optional |
+| ContractHash     | string| The contract hash |Optional|
+| SkipAssetHash | intstring | The number of items to return the asset script hash |Optional|
+| SecondaryMarket     | string| The secondary marketplace hash | Optional |
+| SkipPrimaryMarket | intstring | The number of items to return the primary marketplace hash | Optional |
+| Nftstate     | string| 3 types: "auction","sale" or "notlisted"| Optional |
+| SkipSort | intstring | The number of items to return 3 types: "timestamp", "price" or "deadline" | Optional |
+| Order     | int|  Descending sort: -1; Ascending sort: +1| Optional |
+| Limit | intint | The number of items to return | Optional |
+| Skip    | int|  The number of items to return| Optional |
+### Example
 
+Request body
 
-
-#### Example
-```
+```powershell
 curl --location --request GET 'https://testneofura.ngd.network:444' \
 --header 'Content-Type: text/plain' \
 --data-raw '{
@@ -44,8 +40,9 @@ curl --location --request GET 'https://testneofura.ngd.network:444' \
   "id": 1
 }'
 ```
-### Response
-```json5
+Response body
+
+```json
 {
   "id": 1,
   "result": {
