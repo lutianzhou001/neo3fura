@@ -15,7 +15,7 @@ import (
 func (me *T) GetAllBidInfoByNFT(args struct {
 	AssetHash  h160.T
 	TokenId    strval.T
-	MarketHash h160.T
+	MarketHash []h160.T
 	Filter     map[string]interface{}
 	Raw        *[]map[string]interface{}
 }, ret *json.RawMessage) error {
@@ -30,13 +30,7 @@ func (me *T) GetAllBidInfoByNFT(args struct {
 		f = bson.M{"asset": args.AssetHash.Val(), "tokenid": args.TokenId.Val(), "eventname": "Bid"}
 	}
 
-	if len(args.MarketHash) > 0 {
-		if args.MarketHash.Valid() == false {
-			return stderr.ErrInvalidArgs
-		} else {
-			f["market"] = args.MarketHash.Val()
-		}
-	}
+	f["market"] = bson.M{"$in": args.MarketHash}
 
 	r11, err := me.Client.QueryAggregate(
 		struct {

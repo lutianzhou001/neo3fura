@@ -21,11 +21,12 @@ import (
 )
 
 func (me *T) GetNFTRecordByAddress(args struct {
-	Address    h160.T
-	MarketHash h160.T // market合约地址
-	Limit      int64
-	Skip       int64
-	Filter     map[string]interface{}
+	Address         h160.T
+	SecondaryMarket h160.T //
+	PrimaryMarket   h160.T
+	Limit           int64
+	Skip            int64
+	Filter          map[string]interface{}
 }, ret *json.RawMessage) error {
 	if args.Address.Valid() == false {
 		return stderr.ErrInvalidArgs
@@ -33,8 +34,8 @@ func (me *T) GetNFTRecordByAddress(args struct {
 
 	f := bson.M{"user": args.Address.Val()}
 	var wl []interface{}
-	if len(args.MarketHash) > 0 {
-		if args.MarketHash.Valid() == false {
+	if len(args.SecondaryMarket) > 0 {
+		if args.SecondaryMarket.Valid() == false {
 			return stderr.ErrInvalidArgs
 		} else {
 			//f["market"] = args.MarketHash.Val()
@@ -44,7 +45,7 @@ func (me *T) GetNFTRecordByAddress(args struct {
 				MarketHash h160.T
 				Filter     map[string]interface{}
 				Raw        *map[string]interface{}
-			}{MarketHash: args.MarketHash, Raw: &raw1}, ret) //nonce 分组，并按时间排序
+			}{MarketHash: args.SecondaryMarket, Raw: &raw1}, ret) //nonce 分组，并按时间排序
 			if err1 != nil {
 				return err1
 			}
@@ -133,32 +134,6 @@ func (me *T) GetNFTRecordByAddress(args struct {
 		}
 		if len(raw1) > 0 {
 			nowNFTState := raw1[0]["state"]
-			// 上架过期 （卖家事件）
-			//if nowNFTState == NFTstate.Expired.Val() {
-			//	rr1 := make(map[string]interface{})
-			//	rr1["event"] = ""
-			//	rr1["user"] = ""
-			//	rr1["asset"] = raw1[0]["asset"]
-			//	rr1["tokenid"] = raw1[0]["tokenid"]
-			//	rr1["timestamp"] = raw1[0]["timestamp"]
-			//	rr1["auctionAsset"] = raw1[0]["auctionAsset"]
-			//	rr1["auctionAmount"] = raw1[0]["auctionAmount"]
-			//	rr1["from"] = raw1[0]["auctor"]
-			//	rr1["to"] = ""
-			//	auctionType, _ := raw1[0]["auctionType"].(int32)
-			//	if auctionType == 1 {
-			//		rr1["state"] = NFTevent.Sell_Expired.Val() //上架过期
-			//	} else if auctionType == 2 {
-			//		rr1["state"] = NFTevent.Auction_Expired.Val() //拍卖过期
-			//	}
-			//
-			//	rr1["image"] = raw1[0]["image"]
-			//	rr1["name"] = raw1[0]["name"]
-			//	rr1["number"] = raw1[0]["number"]
-			//	rr1["properties"] = raw1[0]["properties"]
-			//
-			//	result = append(result, rr1)
-			//}
 
 			if item["eventname"].(string) == "Auction" { //2种状态   正常   已过期  (卖家事件)
 
@@ -206,7 +181,7 @@ func (me *T) GetNFTRecordByAddress(args struct {
 						Collection: "MarketNotification",
 						Index:      "someindex",
 						Sort:       bson.M{},
-						Filter:     bson.M{"nonce": nonce1, "eventname": "Claim", "asset": asset1, "tokenid": tokenid1, "market": args.MarketHash},
+						Filter:     bson.M{"nonce": nonce1, "eventname": "Claim", "asset": asset1, "tokenid": tokenid1, "market": bson.M{"$in": []interface{}{args.SecondaryMarket, args.PrimaryMarket}}},
 						Query:      []string{},
 					}, ret)
 					if err14 != nil {
@@ -274,10 +249,10 @@ func (me *T) GetNFTRecordByAddress(args struct {
 				err4 := me.GetAllBidInfoByNFT(struct {
 					AssetHash  h160.T
 					TokenId    strval.T
-					MarketHash h160.T
+					MarketHash []h160.T
 					Filter     map[string]interface{}
 					Raw        *[]map[string]interface{}
-				}{AssetHash: h160.T(asset), TokenId: strval.T(tokenid), MarketHash: args.MarketHash, Raw: &raw3}, ret) //nonce 分组，并按时间排序
+				}{AssetHash: h160.T(asset), TokenId: strval.T(tokenid), MarketHash: []h160.T{args.SecondaryMarket, args.PrimaryMarket}, Raw: &raw3}, ret) //nonce 分组，并按时间排序
 				if err4 != nil {
 					return err4
 				}
@@ -375,7 +350,7 @@ func (me *T) GetNFTRecordByAddress(args struct {
 		bson.M{"to": args.Address.TransferredVal()},
 	}
 	//
-	if args.MarketHash.Valid() == true {
+	if args.SecondaryMarket.Valid() == true {
 		if len(wl) > 0 {
 			filter["asset"] = bson.M{"$in": wl}
 		}
@@ -411,7 +386,7 @@ func (me *T) GetNFTRecordByAddress(args struct {
 			to = item["to"].(string)
 		}
 
-		if from != args.MarketHash.Val() && to != args.MarketHash.Val() {
+		if from != args.SecondaryMarket.Val() && to != args.SecondaryMarket.Val() && from != args.PrimaryMarket.Val() && to != args.PrimaryMarket.Val() {
 			rr := make(map[string]interface{})
 
 			asset := item["contract"].(string)
@@ -442,10 +417,10 @@ func (me *T) GetNFTRecordByAddress(args struct {
 			rr["number"] = raw3["number"]
 			rr["properties"] = raw3["properties"]
 
-			if from == args.Address.Val() && to != args.MarketHash.Val() {
+			if from == args.Address.Val() && (to != args.SecondaryMarket.Val() || to != args.PrimaryMarket.Val()) {
 				rr["user"] = from
 				rr["state"] = NFTevent.Send.Val()
-			} else if to == args.Address.Val() && from != args.MarketHash.Val() {
+			} else if to == args.Address.Val() && (from != args.SecondaryMarket.Val() || from != args.PrimaryMarket.Val()) {
 				rr["user"] = to
 				rr["state"] = NFTevent.Receive.Val()
 			}
