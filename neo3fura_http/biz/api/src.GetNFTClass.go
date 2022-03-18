@@ -30,28 +30,62 @@ func (me *T) GetNFTClass(args struct {
 	currentTime := time.Now().UnixNano() / 1e6
 	length := 0
 	cond := bson.M{}
+	var tokenidClassList [][]interface{}
 	if len(args.SubClass) > 0 {
 		for _, i := range args.SubClass {
-			b := bson.M{}
-			i0, err2 := base64.URLEncoding.DecodeString(i[0].Val())
-			if err2 != nil {
-				return err2
-			}
-			i1, err2 := base64.URLEncoding.DecodeString(i[1].Val())
-			if err2 != nil {
-				return err2
-			}
-			if len(i) != 2 || string(i0) > string(i1) {
+			if len(i) != 2 {
 				return stderr.ErrInvalidArgs
 			} else {
-				a := bson.M{"$and": []interface{}{bson.M{"$gte": []interface{}{"$tokenid", i[0].Val()}}, bson.M{"$lte": []interface{}{"$tokenid", i[1].Val()}}}}
-				if length == 0 {
-					b = bson.M{"if": a, "then": length, "else": length - 1}
+				_tokenid, _ := base64.StdEncoding.DecodeString(i[1].Val())
+				tokenid := string(_tokenid)
+				var number = 1
+				var str = ""
+				var numberstr []string
+				if len(tokenid) == 17 {
+					series := tokenid[13:14]
+					num := tokenid[15:17]
+					numberstr = append(numberstr, num)
+					number, _ = strconv.Atoi(num)
+					str = "MetaPanacea #" + series + "-"
+				} else if len(tokenid) == 18 {
+					series := tokenid[13:15]
+					num := tokenid[16:18]
+					numberstr = append(numberstr, num)
+					number, _ = strconv.Atoi(num)
+					str = "MetaPanacea #" + series + "-"
+
 				} else {
-					b = bson.M{"if": a, "then": length, "else": cond}
+					return stderr.ErrInvalidArgs
 				}
-				length++
+				var tokenidList []interface{}
+				for j := 1; j <= number; j++ {
+					var s string
+					if j < 10 {
+						s = str + "0" + strconv.Itoa(j)
+					} else {
+						s = str + strconv.Itoa(j)
+					}
+
+					token := base64.StdEncoding.EncodeToString([]byte(s))
+					tokenidList = append(tokenidList, token)
+				}
+				tokenidClassList = append(tokenidClassList, tokenidList)
 			}
+		}
+
+		for _, i := range tokenidClassList {
+			//classSort[]
+			b := bson.M{}
+			//a := bson.M{"$and": []interface{}{bson.M{"$gte": []interface{}{"$tokenid", i[0].Val()}}, bson.M{"$lte": []interface{}{"$tokenid", i[1].Val()}}}}
+			a := bson.M{"$and": []interface{}{bson.M{"$in": []interface{}{"$tokenid", i}}}}
+			//a :=bson.M{"tokenid":bson.M{"$in":i}}
+			if length == 0 {
+				b = bson.M{"if": a, "then": length, "else": length - 1}
+			} else {
+				b = bson.M{"if": a, "then": length, "else": cond}
+			}
+			length++
+
 			cond = bson.M{"$cond": b}
 		}
 	} else {
@@ -64,7 +98,7 @@ func (me *T) GetNFTClass(args struct {
 		bson.M{"$match": bson.M{"asset": args.AssetHash}},
 		bson.M{"$match": bson.M{"eventname": "Auction"}},
 		bson.M{"$project": bson.M{"class": cond, "asset": 1, "tokenid": 1, "extendData": 1}},
-		bson.M{"$group": bson.M{"_id": "$class", "asset": bson.M{"$last": "$asset"}, "tokenid": bson.M{"$last": "$tokenid"}, "tokenidArr": bson.M{"$push": "$$ROOT"}, "extendData": bson.M{"$last": "$extendData"}}},
+		bson.M{"$group": bson.M{"_id": "$class", "asset": bson.M{"$first": "$asset"}, "tokenid": bson.M{"$first": "$tokenid"}, "tokenidArr": bson.M{"$push": "$$ROOT"}, "extendData": bson.M{"$first": "$extendData"}}},
 	}
 
 	var r1, err = me.Client.QueryAggregate(
@@ -192,14 +226,15 @@ func (me *T) GetNFTClass(args struct {
 				item["claimed"] = claimed
 			}
 
-			delete(item, "_id")
+			//delete(item, "_id")
 			delete(item, "extendData")
 			delete(item, "tokenid")
 			delete(item, "tokenidArr")
 			result = append(result, item)
 		}
 	}
-	mapsort.MapSort2(result, "number")
+
+	mapsort.MapSort5(result, "_id")
 
 	count := len(result)
 
