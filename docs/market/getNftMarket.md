@@ -7,9 +7,9 @@ Gets the NFT token list by the contract hash, asset and NFT state.
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
 | ContractHash     | string| The contract hash |Optional|
-| SkipAssetHash | intstring | The number of items to return the asset script hash |Optional|
+| AssetHash | intstring | The  asset script hash |Optional|
 | SecondaryMarket     | string| The secondary marketplace hash | Optional |
-| SkipPrimaryMarket | intstring | The number of items to return the primary marketplace hash | Optional |
+| PrimaryMarket | intstring | The primary marketplace hash | Optional |
 | Nftstate     | string| 3 types: "auction","sale" or "notlisted"| Optional |
 | SkipSort | intstring | The number of items to return 3 types: "timestamp", "price" or "deadline" | Optional |
 | Order     | int|  Descending sort: -1; Ascending sort: +1| Optional |

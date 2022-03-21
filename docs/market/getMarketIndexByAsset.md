@@ -7,7 +7,10 @@ Gets the primary market classification.
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
 | AssetHash     | string| The asset script hash | Required |
-| MarketHash     | string| The marketplace hash | Required|
+| PrimaryMarket | string| The primary marketplace hash | Required|
+| SecondaryMarket | string | The secondary marketplace hash | Required |
+
+
 
 ### Example
 
@@ -18,8 +21,9 @@ Request body
   "jsonrpc": "2.0",
   "method": "GetMarketIndexByAsset",
   "params": {     
-      "MarketHash":"0xf63cccfe6cfac7ee776dada552b976c74fe5b51a",
-      "AssetHash":"0xc7b11b46f97bda7a8c82793841abba120e96695b"
+      "PrimaryMarket":"0xa41600dec34741b143c66f2d3448d15c7d79a0b7",
+      "SecondaryMarket":"0xd2e7cf18ee0d9b509fac02457f54b63e47b25e29",
+      "AssetHash":"0x19ed09dadac28e6b6a2f76588516ef681aff29b1"
       },      
   "id": 1
 }
