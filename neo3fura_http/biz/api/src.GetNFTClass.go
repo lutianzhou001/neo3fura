@@ -98,7 +98,7 @@ func (me *T) GetNFTClass(args struct {
 		bson.M{"$match": bson.M{"asset": args.AssetHash}},
 		bson.M{"$match": bson.M{"eventname": "Auction"}},
 		bson.M{"$project": bson.M{"class": cond, "asset": 1, "tokenid": 1, "extendData": 1}},
-		bson.M{"$group": bson.M{"_id": "$class", "asset": bson.M{"$first": "$asset"}, "tokenid": bson.M{"$first": "$tokenid"}, "tokenidArr": bson.M{"$push": "$$ROOT"}, "extendData": bson.M{"$first": "$extendData"}}},
+		bson.M{"$group": bson.M{"_id": "$class", "asset": bson.M{"$last": "$asset"}, "tokenid": bson.M{"$last": "$tokenid"}, "tokenidArr": bson.M{"$push": "$$ROOT"}, "extendData": bson.M{"$last": "$extendData"}}},
 	}
 
 	var r1, err = me.Client.QueryAggregate(
