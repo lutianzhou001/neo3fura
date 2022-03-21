@@ -20,14 +20,18 @@ import (
 )
 
 func (me *T) GetMarketIndexByAsset(args struct {
-	MarketHash h160.T
-	AssetHash  h160.T
-	Filter     map[string]interface{}
-	Raw        *map[string]interface{}
+	PrimaryMarket   h160.T
+	SecondaryMarket h160.T
+	AssetHash       h160.T
+	Filter          map[string]interface{}
+	Raw             *map[string]interface{}
 }, ret *json.RawMessage) error {
 
 	currentTime := time.Now().UnixNano() / 1e6
-	if args.MarketHash.Valid() == false {
+	if args.SecondaryMarket.Valid() == false {
+		return stderr.ErrInvalidArgs
+	}
+	if args.PrimaryMarket.Valid() == false {
 		return stderr.ErrInvalidArgs
 	}
 	if args.AssetHash.Valid() == false {
@@ -81,7 +85,7 @@ func (me *T) GetMarketIndexByAsset(args struct {
 			Sort:       bson.M{},
 			Filter:     bson.M{},
 			Pipeline: []bson.M{
-				bson.M{"$match": bson.M{"owner": bson.M{"$ne": limit.NullAddress}, "asset": args.AssetHash.Val(), "market": args.MarketHash.Val(), "amount": bson.M{"$gt": 0}}}, //上架（正常状态、过期）:auctor，未领取：bidder
+				bson.M{"$match": bson.M{"owner": bson.M{"$ne": limit.NullAddress}, "asset": args.AssetHash.Val(), "market": args.SecondaryMarket.Val(), "amount": bson.M{"$gt": 0}}}, //上架（正常状态、过期）:auctor，未领取：bidder
 				bson.M{"$project": bson.M{"_id": 1, "asset": 1, "tokenid": 1, "amount": 1, "owner": 1, "market": 1, "difference": bson.M{"$eq": []string{"$owner", "$market"}}, "auctionType": 1, "auctor": 1, "auctionAsset": 1, "auctionAmount": 1, "deadline": 1, "bidder": 1, "bidAmount": 1, "timestamp": 1}},
 				bson.M{"$match": bson.M{"difference": true}},
 			},
@@ -162,7 +166,7 @@ func (me *T) GetMarketIndexByAsset(args struct {
 			Sort:       bson.M{},
 			Filter:     bson.M{},
 			Pipeline: []bson.M{
-				bson.M{"$match": bson.M{"asset": args.AssetHash.Val(), "market": args.MarketHash, "eventname": "Claim"}},
+				bson.M{"$match": bson.M{"asset": args.AssetHash.Val(), "market": bson.M{"$in": []interface{}{args.PrimaryMarket, args.SecondaryMarket}}, "eventname": "Claim"}},
 			},
 			Query: []string{"extendData"},
 		}, ret)
@@ -236,7 +240,7 @@ func (me *T) GetMarketIndexByAsset(args struct {
 			Sort:       bson.M{},
 			Filter:     bson.M{},
 			Pipeline: []bson.M{
-				bson.M{"$match": bson.M{"asset": args.AssetHash.Val(), "market": args.MarketHash.Val(), "deadline": bson.M{"$gt": currentTime}, "amount": bson.M{"$gt": 0}, "auctionType": bson.M{"$eq": 1}}},
+				bson.M{"$match": bson.M{"asset": args.AssetHash.Val(), "market": args.SecondaryMarket.Val(), "deadline": bson.M{"$gt": currentTime}, "amount": bson.M{"$gt": 0}, "auctionType": bson.M{"$eq": 1}}},
 			},
 
 			Query: []string{},
