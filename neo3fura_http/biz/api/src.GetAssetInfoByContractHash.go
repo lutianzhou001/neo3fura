@@ -146,7 +146,12 @@ func (me *T) GetAssetInfoByContractHash(args struct {
 			return err1
 		}
 
-		r1["holders"] = r3[0]["addressCounts"]
+		if len(r3) > 0 {
+			r1["holders"] = r3[0]["addressCounts"]
+		} else {
+			r1["holders"] = 0
+		}
+
 	}
 
 	r1, err = me.Filter(r1, args.Filter)
