@@ -30,10 +30,28 @@ func (me *T) GetNNSNameByAdmin(args struct {
 
 	rea := helper.ReverseBytes(little_endian)
 	encodeAdmin := crypto.Base64Encode(rea)
-	bakEncodeAdmin := ""
+	var arr = []interface{}{}
+
 	if strings.Index(encodeAdmin, "+") >= 0 {
-		bakEncodeAdmin = strings.Split(encodeAdmin, "+")[0] + "+"
+		splitArr := strings.Split(encodeAdmin, "+")
+		strlen := len(splitArr)
+
+		before := splitArr[0] + "+"
+		arr = append(arr, bson.M{"properties": bson.M{"$regex": "admin\": \"" + before, "$options": "$i"}})
+		for i := 1; i < strlen; i++ {
+			arr = append(arr, bson.M{"properties": bson.M{"$regex": splitArr[i], "$options": "$i"}})
+		}
+
+	} else {
+		arr = append(arr, bson.M{"properties": bson.M{"$regex": "admin\": \"" + encodeAdmin, "$options": "$i"}})
+		//arr = append(arr, bson.M{"properties": bson.M{"$regex": "admin\":\"" + encodeAdmin, "$options": "$i"}})
 	}
+
+	pipe := []bson.M{}
+	pipe = append(pipe, bson.M{"$match": bson.M{"asset": args.Asset}})
+	pipe = append(pipe, bson.M{"$match": bson.M{"$and": arr}})
+	pipe = append(pipe, bson.M{"$skip": args.Skip})
+	pipe = append(pipe, bson.M{"$limit": args.Limit})
 
 	var r1, err = me.Client.QueryAggregate(
 		struct {
@@ -48,19 +66,8 @@ func (me *T) GetNNSNameByAdmin(args struct {
 			Index:      "GetNFTByWords",
 			Sort:       bson.M{},
 			Filter:     bson.M{},
-			Pipeline: []bson.M{
-				bson.M{"$match": bson.M{"asset": args.Asset}},
-				bson.M{"$match": bson.M{"$or": []interface{}{
-					bson.M{"properties": bson.M{"$regex": "admin\":\"" + encodeAdmin, "$options": "$i"}},
-					bson.M{"properties": bson.M{"$regex": "admin\": \"" + encodeAdmin, "$options": "$i"}},
-					bson.M{"properties": bson.M{"$regex": "admin\":\"" + bakEncodeAdmin, "$options": "$i"}},
-					bson.M{"properties": bson.M{"$regex": "admin\": \"" + bakEncodeAdmin, "$options": "$i"}},
-				}}},
-				bson.M{"$skip": args.Skip},
-				bson.M{"$limit": args.Limit},
-			},
-
-			Query: []string{},
+			Pipeline:   pipe,
+			Query:      []string{},
 		}, ret)
 
 	if err != nil {
