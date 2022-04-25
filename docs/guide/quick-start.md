@@ -158,7 +158,7 @@ Then you will easily get the following response:
 }
 ```
 
-### Send a request with Magent API
+### Send a request with Magnet API
 
 Refer to later sections in this document to make a request by yourself!
 
