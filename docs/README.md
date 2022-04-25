@@ -1,12 +1,12 @@
 
-# Welcome to Neofura!
+# Welcome to Magnet!
 
-### What is Neofura
-Neofura is a web service that provides on-chain data of Neo.
+### What is Magnet
+Magnet is a web service that provides on-chain data of Neo.
 
-### What kind of data can you get from Neofura
+### What kind of data can you get from Magnet
 
-Anything about Neo! You can not only use Neo RPC ([https://docs.neo.org/docs/zh-cn/reference/rpc/latest-version/api.html](https://docs.neo.org/docs/zh-cn/reference/rpc/latest-version/api.html)) directly in Neofura but also use many re-designed APIs. For example, how many assets in your address? What's the balance of your assets? How many transactions have occurred in the last hour? Who are the committees and candidates? You can get the answer from Neofura now. Further more, you can email us to submit your own data needs of Neo.
+Anything about Neo! You can not only use Neo RPC ([https://docs.neo.org/docs/zh-cn/reference/rpc/latest-version/api.html](https://docs.neo.org/docs/zh-cn/reference/rpc/latest-version/api.html)) directly in Magnet but also use many re-designed APIs. For example, how many assets in your address? What's the balance of your assets? How many transactions have occurred in the last hour? Who are the committees and candidates? You can get the answer from Magnet now. Further more, you can email us to submit your own data needs of Neo.
 
 ### Want to jump right in?
 
