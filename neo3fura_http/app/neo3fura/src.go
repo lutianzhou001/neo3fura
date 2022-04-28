@@ -87,15 +87,15 @@ type Config struct {
 	Proxy struct {
 		Uri []string `yaml:"uri"`
 	} `yaml:"proxy"`
-	Replica string `yaml:"replica"`
+	Replica    string `yaml:"replica"`
 	NeoFs_Main struct {
-		Host string `yaml:"host"`
-		Port string `yaml:"port"`
+		Host        string `yaml:"host"`
+		Port        string `yaml:"port"`
 		ContainerId string `yaml:"containerid"`
 	} `yaml:"neofs_main"`
-	NeoFs_Test struct{
-		Host string `yaml:"host"`
-		Port string `yaml:"port"`
+	NeoFs_Test struct {
+		Host        string `yaml:"host"`
+		Port        string `yaml:"port"`
 		ContainerId string `yaml:"containerid"`
 	} `yaml:"neofs_test"`
 }
@@ -122,7 +122,7 @@ func main() {
 		Ctx:       ctx,
 		RpcCli:    neoRpc.NewClient(""), // placeholder
 		RpcPorts:  cfg.Proxy.Uri,
-		NeoFs: 	   fs,
+		NeoFs:     fs,
 	}
 
 	rpc.Register(&api.T{
@@ -215,6 +215,9 @@ func initializeMongoOnlineClient(cfg Config, ctx context.Context) (*mongo.Client
 	case "test":
 		clientOptions = options.Client().ApplyURI("mongodb://" + cfg.Database_Test.User + ":" + cfg.Database_Test.Pass + "@" + cfg.Database_Test.Host + ":" + cfg.Database_Test.Port + "/" + cfg.Database_Test.Database)
 		dbOnline = cfg.Database_Test.Database
+	case "test2":
+		clientOptions = options.Client().ApplyURI("mongodb://" + cfg.Database_Test.User + ":" + cfg.Database_Test.Pass + "@" + cfg.Database_Test.Host + ":" + cfg.Database_Test.Port + "/" + cfg.Database_Test.Database)
+		dbOnline = cfg.Database_Test.Database
 	case "staging":
 		clientOptions = options.Client().ApplyURI("mongodb://" + cfg.Database_Staging.User + ":" + cfg.Database_Staging.Pass + "@" + cfg.Database_Staging.Host + ":" + cfg.Database_Staging.Port + "/" + cfg.Database_Staging.Database)
 		dbOnline = cfg.Database_Staging.Database
@@ -237,9 +240,9 @@ func initializeNeoFsHost(cfg Config) string {
 	var neoFsHost string
 	switch rt {
 	case "test":
-		neoFsHost = cfg.NeoFs_Test.Host+":"+cfg.NeoFs_Test.Port+"/gate"+"/get/"+cfg.NeoFs_Test.ContainerId+"/"
+		neoFsHost = cfg.NeoFs_Test.Host + ":" + cfg.NeoFs_Test.Port + "/gate" + "/get/" + cfg.NeoFs_Test.ContainerId + "/"
 	case "staging":
-		neoFsHost = cfg.NeoFs_Main.Host+":"+cfg.NeoFs_Main.Port+"/gate"+"/get/"+cfg.NeoFs_Main.ContainerId+"/"
+		neoFsHost = cfg.NeoFs_Main.Host + ":" + cfg.NeoFs_Main.Port + "/gate" + "/get/" + cfg.NeoFs_Main.ContainerId + "/"
 	default:
 		log2.Fatalf("runtime environment mismatch")
 	}
