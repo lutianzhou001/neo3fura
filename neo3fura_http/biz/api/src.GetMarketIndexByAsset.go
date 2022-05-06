@@ -26,6 +26,9 @@ func (me *T) GetMarketIndexByAsset(args struct {
 	Filter          map[string]interface{}
 	Raw             *map[string]interface{}
 }, ret *json.RawMessage) error {
+	_, assets, _ := OpenAssetHashFile()
+	price, _ := GetPriceList(assets)
+	fmt.Println(price)
 
 	currentTime := time.Now().UnixNano() / 1e6
 	if args.SecondaryMarket.Valid() == false {
@@ -167,6 +170,8 @@ func (me *T) GetMarketIndexByAsset(args struct {
 			Filter:     bson.M{},
 			Pipeline: []bson.M{
 				bson.M{"$match": bson.M{"asset": args.AssetHash.Val(), "market": bson.M{"$in": []interface{}{args.PrimaryMarket, args.SecondaryMarket}}, "eventname": "Claim"}},
+				//bson.M{"$match": bson.M{"asset": args.AssetHash.Val(),  "eventname": "Claim"}},
+				//bson.M{"$match":bson.M{"$or":[]interface{}{bson.M{"market":args.SecondaryMarket},bson.M{"market":args.PrimaryMarket}}}},
 			},
 			Query: []string{"extendData"},
 		}, ret)
@@ -184,7 +189,7 @@ func (me *T) GetMarketIndexByAsset(args struct {
 				var data map[string]interface{}
 				if err1 := json.Unmarshal([]byte(extendData), &data); err1 == nil {
 					auctionAsset := data["auctionAsset"].(string)
-					dd, _ := OpenAssetHashFile()
+					dd, _, _ := OpenAssetHashFile()
 					decimal := dd[auctionAsset]
 
 					ba := data["bidAmount"].(string)
@@ -192,20 +197,21 @@ func (me *T) GetMarketIndexByAsset(args struct {
 					if err2 == false {
 						bidAmount = big.NewInt(0)
 					}
-					price, err3 := GetPrice(auctionAsset) //
-					if err3 != nil {
-						return err3
-					}
-
-					if price == 0 {
-						price = 1
+					assetPrice := float64(0)
+					//price, err3 := GetPrice(auctionAsset) //
+					//if err3 != nil {
+					//	return err3
+					//}
+					assetPrice = price[auctionAsset]
+					if assetPrice == 0 {
+						assetPrice = 1
 					}
 
 					bfbidAmount := new(big.Float).SetInt(bidAmount)
 					flag := bidAmount.Cmp(big.NewInt(0))
 
 					if flag == 1 {
-						bfprice := big.NewFloat(price)
+						bfprice := big.NewFloat(assetPrice)
 						ffprice := big.NewFloat(1).Mul(bfprice, bfbidAmount)
 						de := math.Pow(10, float64(decimal))
 						usdbidAmount := new(big.Float).Quo(ffprice, big.NewFloat(float64(de)))
@@ -258,21 +264,23 @@ func (me *T) GetMarketIndexByAsset(args struct {
 		}
 
 		//价格转换
-		dd, _ := OpenAssetHashFile()
-		decimal := dd[auctionAsset]           //获取精度
-		price, err3 := GetPrice(auctionAsset) //  获取价格
-		if err3 != nil {
-			return err3
-		}
-		if price == 0 {
-			price = 1
+		dd, _, _ := OpenAssetHashFile()
+		decimal := dd[auctionAsset] //获取精度
+		assetPrice := float64(0)
+		//price, err3 := GetPrice(auctionAsset) //  获取价格,
+		//if err3 != nil {
+		//	return err3
+		//}
+		assetPrice = price[auctionAsset]
+		if assetPrice == 0 {
+			assetPrice = 1
 		}
 
 		bfauctionAmount := new(big.Float).SetInt(auctionAmount)
 		flag := auctionAmount.Cmp(big.NewInt(0))
 
 		if flag == 1 {
-			bfprice := big.NewFloat(price)
+			bfprice := big.NewFloat(assetPrice)
 			ffprice := big.NewFloat(1).Mul(bfprice, bfauctionAmount)
 			de := math.Pow(10, float64(decimal))
 			usdAuctionAmount := new(big.Float).Quo(ffprice, big.NewFloat(float64(de)))
@@ -304,13 +312,11 @@ func (me *T) GetMarketIndexByAsset(args struct {
 }
 
 func GetPrice(asset string) (float64, error) {
-
 	client := &http.Client{}
 	reqBody := []byte(`["` + asset + `"]`)
 	url := "https://onegate.space/api/quote?convert=usd"
 	//str :=[]string{asset}
-	req, _ :=
-		http.NewRequest("POST", url, bytes.NewBuffer(reqBody))
+	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(reqBody))
 	req.Header.Set("Content-Type", "application/json")
 	resp, err := client.Do(req)
 	if err != nil {
@@ -330,62 +336,53 @@ func GetPrice(asset string) (float64, error) {
 	}
 	return price, nil
 }
-func GetPrice2(asset string, amount primitive.Decimal128) (*big.Float, error) {
-
+func GetPriceList(assetList []string) (map[string]float64, error) {
+	result := map[string]float64{}
 	client := &http.Client{}
-	reqBody := []byte(`["` + asset + `"]`)
+	str := ""
+	for i := 0; i < len(assetList); i++ {
+		if i != len(assetList)-1 {
+			str += `"` + assetList[i] + `",`
+		} else {
+			str += assetList[i]
+		}
+	}
+	reqBody := []byte(`[` + str + `]`)
+
+	//reqBody1 := []byte(str )
 	url := "https://onegate.space/api/quote?convert=usd"
-	//str :=[]string{asset}
-	req, _ :=
-		http.NewRequest("POST", url, bytes.NewBuffer(reqBody))
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(reqBody))
+
+	if err != nil {
+		return nil, stderr.ErrPrice
+	}
 	req.Header.Set("Content-Type", "application/json")
 	resp, err := client.Do(req)
 	if err != nil {
-		return big.NewFloat(float64(0)), stderr.ErrPrice
+		return nil, stderr.ErrPrice
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 
 	if err != nil {
-		return big.NewFloat(float64(0)), stderr.ErrPrice
-	}
-	response := string(body)
-	re := response[1 : len(response)-1]
-	price, err1 := strconv.ParseFloat(re, 64)
-
-	//获取decimal
-	decimal := int64(1)
-	if asset != "" {
-		dd, _ := OpenAssetHashFile()
-		decimal = dd[asset] //获取精度
-		if decimal == int64(0) {
-			decimal = int64(1)
-		}
+		return nil, stderr.ErrPrice
 	}
 
-	var usdAuctionAmount *big.Float
-	//计算价格
-	bamount, _, err := amount.BigInt()
-	bfauctionAmount := new(big.Float).SetInt(bamount)
-	flag := bamount.Cmp(big.NewInt(0))
+	var v interface{}
+	json.Unmarshal(body, &v)
+	data := v.([]interface{})
 
-	if flag == 1 {
-		bfprice := big.NewFloat(price)
-		ffprice := big.NewFloat(1).Mul(bfprice, bfauctionAmount)
-		de := math.Pow(10, float64(decimal))
-		usdAuctionAmount = new(big.Float).Quo(ffprice, big.NewFloat(de))
-
-	} else {
-		usdAuctionAmount = big.NewFloat(float64(0))
+	if len(data) != len(assetList) {
+		return nil, stderr.ErrPrice
+	}
+	for i := 0; i < len(data); i++ {
+		result[assetList[i]] = data[i].(float64)
 	}
 
-	if err1 != nil {
-		return big.NewFloat(0), stderr.ErrPrice
-	}
-	return usdAuctionAmount, nil
+	return result, nil
 }
 
-func OpenAssetHashFile() (map[string]int64, error) {
+func OpenAssetHashFile() (map[string]int64, []string, error) {
 	absPath, _ := filepath.Abs("./assethash.json")
 
 	b, err := ioutil.ReadFile(absPath)
@@ -398,5 +395,10 @@ func OpenAssetHashFile() (map[string]int64, error) {
 		panic(err)
 	}
 
-	return whitelist, err
+	keys := make([]string, 0, len(whitelist))
+	for k := range whitelist {
+		keys = append(keys, k)
+	}
+
+	return whitelist, keys, err
 }
