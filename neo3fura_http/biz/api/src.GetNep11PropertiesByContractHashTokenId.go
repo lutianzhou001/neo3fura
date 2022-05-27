@@ -2,6 +2,7 @@ package api
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -107,16 +108,40 @@ func (me *T) getNep11PropertiesByContract(asset string, tokenid string) (map[str
 		log2.Fatalf("Open config file error:%s", err)
 	}
 	nodes := c.Proxy.URI
-	result := make(map[string]interface{})
-	//result1 :=make(map[string]interface{})
+	re := make(map[string]interface{})
+
 	for _, item := range nodes {
-		result, err = me.getPropertiesByRPC(item, asset, tokenid)
+		re, err = me.getPropertiesByRPC(item, asset, tokenid)
 		if err != nil {
-			break
+			continue
 		}
-		continue
+		break
 	}
-	return result, nil
+
+	res := re["result"].(map[string]interface{})
+	state := res["state"]
+	exception := res["exception"]
+
+	if state != "HALT" || exception != nil {
+		return nil, stderr.ErrFind
+	}
+
+	result := res["stack"].([]interface{})[0].(map[string]interface{})["value"].([]interface{})
+	properties := make(map[string]interface{})
+	for _, item := range result {
+		it := item.(map[string]interface{})
+		key, err := base64.StdEncoding.DecodeString(it["key"].(map[string]interface{})["value"].(string))
+		if err != nil {
+			return nil, err
+		}
+		value, err := base64.StdEncoding.DecodeString(it["value"].(map[string]interface{})["value"].(string))
+		if err != nil {
+			return nil, err
+		}
+		properties[string(key)] = string(value)
+	}
+
+	return properties, nil
 }
 
 func (me *T) getPropertiesByRPC(url string, asset string, tokenid string) (map[string]interface{}, error) {
@@ -125,14 +150,14 @@ func (me *T) getPropertiesByRPC(url string, asset string, tokenid string) (map[s
 		"jsonrpc": "2.0",
 			"id": 1,
 			"method": "invokefunction",
-			"params": [" ` + asset + `",
+			"params": ["` + asset + `",
 					"properties",[
 						{"type":"ByteArray","value":"` + tokenid + `"}
 					]]}`
 
 	jsonData := []byte(para)
 	body := bytes.NewBuffer(jsonData)
-	response, err := http.Post(url, "application/json;charset=utf-8", body)
+	response, err := http.Post(url, "application/json", body)
 	if err != nil {
 		return nil, err
 	}
@@ -146,10 +171,11 @@ func (me *T) getPropertiesByRPC(url string, asset string, tokenid string) (map[s
 		return nil, stderr.ErrPrice
 	}
 
-	result := make(map[string]interface{})
-	err = json.Unmarshal(resbody, &result)
+	re := make(map[string]interface{})
+	err = json.Unmarshal(resbody, &re)
 	if err != nil {
 		return nil, err
 	}
-	return result, nil
+
+	return re, nil
 }
