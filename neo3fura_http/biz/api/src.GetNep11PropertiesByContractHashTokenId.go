@@ -1,12 +1,18 @@
 package api
 
 import (
+	"bytes"
 	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"neo3fura_http/lib/joh"
+	log2 "neo3fura_http/lib/log"
 	"neo3fura_http/lib/type/h160"
 	"neo3fura_http/lib/type/strval"
 	"neo3fura_http/var/stderr"
-
-	"go.mongodb.org/mongo-driver/bson"
+	//"go.mongodb.org/mongo-driver/bson"
+	"net/http"
+	//"strconv"
 )
 
 func (me *T) GetNep11PropertiesByContractHashTokenId(args struct {
@@ -57,19 +63,22 @@ func getNep11Properties(tokenIds []strval.T, me *T, contractHash h160.T, ret *js
 			return stderr.ErrInvalidArgs
 		}
 
-		r1, err := me.Client.QueryOne(struct {
-			Collection string
-			Index      string
-			Sort       bson.M
-			Filter     bson.M
-			Query      []string
-		}{
-			Collection: "Nep11Properties",
-			Index:      "GetNep11PropertiesByContractHashTokenId",
-			Sort:       bson.M{"balance": -1},
-			Filter:     bson.M{"asset": contractHash.TransferredVal(), "tokenid": tokenId},
-			Query:      []string{},
-		}, ret)
+		//r1, err := me.Client.QueryOne(struct {
+		//	Collection string
+		//	Index      string
+		//	Sort       bson.M
+		//	Filter     bson.M
+		//	Query      []string
+		//}{
+		//	Collection: "Nep11Properties",
+		//	Index:      "GetNep11PropertiesByContractHashTokenId",
+		//	Sort:       bson.M{"balance": -1},
+		//	Filter:     bson.M{"asset": contractHash.TransferredVal(), "tokenid": tokenId},
+		//	Query:      []string{},
+		//}, ret)
+
+		r1, err := me.getNep11PropertiesByContract(contractHash.TransferredVal(), tokenId.Val())
+
 		if err != nil {
 			return err
 		}
@@ -89,4 +98,58 @@ func getNep11Properties(tokenIds []strval.T, me *T, contractHash h160.T, ret *js
 	}
 	*ret = json.RawMessage(r)
 	return nil
+}
+
+func (me *T) getNep11PropertiesByContract(asset string, tokenid string) (map[string]interface{}, error) {
+	h := &joh.T{}
+	c, err := h.OpenConfigFile()
+	if err != nil {
+		log2.Fatalf("Open config file error:%s", err)
+	}
+	nodes := c.Proxy.URI
+	result := make(map[string]interface{})
+	//result1 :=make(map[string]interface{})
+	for _, item := range nodes {
+		result, err = me.getPropertiesByRPC(item, asset, tokenid)
+		if err != nil {
+			break
+		}
+		continue
+	}
+	return result, nil
+}
+
+func (me *T) getPropertiesByRPC(url string, asset string, tokenid string) (map[string]interface{}, error) {
+
+	para := `{
+		"jsonrpc": "2.0",
+			"id": 1,
+			"method": "invokefunction",
+			"params": [" ` + asset + `",
+					"properties",[
+						{"type":"ByteArray","value":"` + tokenid + `"}
+					]]}`
+
+	jsonData := []byte(para)
+	body := bytes.NewBuffer(jsonData)
+	response, err := http.Post(url, "application/json;charset=utf-8", body)
+	if err != nil {
+		return nil, err
+	}
+	defer response.Body.Close()
+
+	if response.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("http get error : uri=%v , statusCode=%v", url, response.StatusCode)
+	}
+	resbody, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return nil, stderr.ErrPrice
+	}
+
+	result := make(map[string]interface{})
+	err = json.Unmarshal(resbody, &result)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
 }
