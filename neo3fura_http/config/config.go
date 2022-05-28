@@ -115,4 +115,5 @@ var Apis = []string{
 	"InsertVerifiedContract",
 	"GetNFSImgStatus",
 	"GetNNSNameByAdmin",
+	"GetNNSNameByOwner",
 }
