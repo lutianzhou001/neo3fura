@@ -74,6 +74,8 @@ func (me *T) GetNNSNameByAdmin(args struct {
 		return err
 	}
 	var namelist []string
+
+	namelist2 := make(map[string]interface{})
 	for _, item := range r1 {
 		//获取nft 属性
 		if item["properties"] != nil {
@@ -94,7 +96,7 @@ func (me *T) GetNNSNameByAdmin(args struct {
 					if ok3 {
 						item["expiration"] = expiration
 					}
-
+					namelist2[name.(string)] = expiration
 				} else {
 					return err2
 				}
@@ -112,16 +114,11 @@ func (me *T) GetNNSNameByAdmin(args struct {
 	if err != nil {
 		return err
 	}
-	r, err := json.Marshal(result)
+	r, err := json.Marshal(namelist2)
 	if err != nil {
 		return err
 	}
 
 	*ret = json.RawMessage(r)
 	return nil
-}
-
-func UnicodeRegexToString(source string) string {
-
-	return source
 }
