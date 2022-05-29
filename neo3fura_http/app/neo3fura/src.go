@@ -182,7 +182,7 @@ func main() {
 		c2.Start()
 	}
 
-	listen := os.ExpandEnv("0.0.0.0:1926")
+	listen := os.ExpandEnv("0.0.0.0:1927")
 	log2.Infof("NOW LISTEN ON: %s", listen)
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", func(writer http.ResponseWriter, request *http.Request) {
