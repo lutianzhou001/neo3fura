@@ -37,7 +37,7 @@ func (me *T) GetNNSNameByOwner(args struct {
 			Sort:       bson.M{},
 			Filter:     bson.M{},
 			Pipeline: []bson.M{
-				bson.M{"$match": bson.M{"asset": args.Asset, "address": args.Owner}},
+				bson.M{"$match": bson.M{"asset": args.Asset, "address": args.Owner, "balance": bson.M{"$gt": 0}}},
 				bson.M{"$sort": bson.M{"id": 1}},
 				bson.M{"$skip": args.Skip},
 				bson.M{"$limit": args.Limit},
