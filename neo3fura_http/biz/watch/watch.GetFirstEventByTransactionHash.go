@@ -59,14 +59,17 @@ func (me *T) GetFirstEventByTransactionHash() error {
 			log2.Fatalf("Query Execution error:%v", err)
 		}
 
-		r2["vmstate"] = r1["vmstate"].(string)
-		_, err = me.Client.SaveJob(struct {
-			Collection string
-			Data       bson.M
-		}{Collection: "TransferEvent", Data: r2})
-		if err != nil {
-			log2.Fatalf("Save Job Error: %v", err)
+		if r1["vmstate"] != nil {
+			r2["vmstate"] = r1["vmstate"].(string)
+			_, err = me.Client.SaveJob(struct {
+				Collection string
+				Data       bson.M
+			}{Collection: "TransferEvent", Data: r2})
+			if err != nil {
+				log2.Fatalf("Save Job Error: %v", err)
+			}
 		}
+
 	}
 	return nil
 }

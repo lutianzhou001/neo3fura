@@ -5,6 +5,8 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"github.com/joeqian10/neo3-gogogo/crypto"
+	"github.com/joeqian10/neo3-gogogo/helper"
 	"io/ioutil"
 	"neo3fura_http/lib/joh"
 	log2 "neo3fura_http/lib/log"
@@ -134,11 +136,77 @@ func (me *T) getNep11PropertiesByContract(asset string, tokenid string) (map[str
 		if err != nil {
 			return nil, err
 		}
-		value, err := base64.StdEncoding.DecodeString(it["value"].(map[string]interface{})["value"].(string))
-		if err != nil {
-			return nil, err
+
+		value_key := it["value"].(map[string]interface{})["type"].(string)
+
+		//aa := it["value"].(map[string]interface{})["value"].(string)
+		//fmt.Printf(aa)
+
+		var value_result interface{}
+		if value_key == "ByteString" {
+			value_pre := it["value"].(map[string]interface{})["value"].(string)
+
+			value_decode, _ := crypto.Base64Decode(value_pre)
+			value_reverse := "0x" + helper.BytesToHex(helper.ReverseBytes(value_decode))
+			//ow,_:=helper.UInt160FromString(value_reverse)
+
+			if h160.T(value_reverse).Valid() {
+				value_result = value_reverse
+			} else {
+
+				value, err := base64.StdEncoding.DecodeString(value_pre)
+				value_result = string(value)
+				if err != nil {
+					return nil, err
+				}
+			}
+
+		} else if value_key == "Map" {
+			valueArray := it["value"].(map[string]interface{})["value"].([]interface{})
+
+			mapresult := make([]map[string]interface{}, 0)
+			for _, items := range valueArray {
+				it_map := make(map[string]interface{})
+				item2map := items.(map[string]interface{})
+				item2map_key := item2map["value"].(map[string]interface{})["type"].(string)
+				var value2_result interface{}
+				it_key, err := base64.StdEncoding.DecodeString(item2map["key"].(map[string]interface{})["value"].(string))
+				if err != nil {
+					return nil, err
+				}
+
+				if item2map_key == "ByteString" {
+
+					value2_pre := item2map["value"].(map[string]interface{})["value"].(string)
+
+					value2_decode, _ := crypto.Base64Decode(value2_pre)
+					value2_reverse := "0x" + helper.BytesToHex(helper.ReverseBytes(value2_decode))
+					//address,_:=helper.UInt160FromString(value2_reverse)
+
+					if h160.T(value2_reverse).Valid() {
+						value2_result = value2_reverse
+					} else {
+						value2, err := base64.StdEncoding.DecodeString(value2_pre)
+						value2_result = string(value2)
+						if err != nil {
+							return nil, err
+						}
+					}
+
+					it_map[string(it_key)] = value2_result
+				} else {
+					it_map[string(it_key)] = item2map["value"].(map[string]interface{})["value"]
+				}
+
+				mapresult = append(mapresult, it_map)
+			}
+
+			value_result = mapresult
+		} else {
+			value_result = it["value"].(map[string]interface{})["value"]
 		}
-		properties[string(key)] = string(value)
+
+		properties[string(key)] = value_result
 	}
 
 	return properties, nil
