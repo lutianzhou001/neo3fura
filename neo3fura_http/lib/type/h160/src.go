@@ -22,6 +22,15 @@ func (me T) Valid() bool {
 	}
 }
 
+func (me T) Valid1() bool {
+	if len(me.Val()) != 42 {
+		return false
+	} else {
+		content := me.Val()[2:len(me.Val())]
+		return re.MatchString(content)
+	}
+}
+
 // Val ...
 func (me T) Val() string {
 	return string(me)
