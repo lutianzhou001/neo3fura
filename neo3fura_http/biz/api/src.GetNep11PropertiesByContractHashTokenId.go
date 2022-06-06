@@ -146,14 +146,15 @@ func (me *T) getNep11PropertiesByContract(asset string, tokenid string) (map[str
 		if value_key == "ByteString" {
 			value_pre := it["value"].(map[string]interface{})["value"].(string)
 
-			value_decode, _ := crypto.Base64Decode(value_pre)
+			value_decode, err := crypto.Base64Decode(value_pre)
+			if err != nil {
+				return nil, err
+			}
 			value_reverse := "0x" + helper.BytesToHex(helper.ReverseBytes(value_decode))
-			//ow,_:=helper.UInt160FromString(value_reverse)
 
-			if h160.T(value_reverse).Valid() {
+			if h160.T(value_reverse).Valid1() {
 				value_result = value_reverse
 			} else {
-
 				value, err := base64.StdEncoding.DecodeString(value_pre)
 				value_result = string(value)
 				if err != nil {
