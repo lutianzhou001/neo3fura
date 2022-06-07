@@ -208,6 +208,7 @@ func (me *T) getNep11PropertiesByContract(asset string, tokenid string) (map[str
 		}
 
 		properties[string(key)] = value_result
+		properties["tokenid"] = tokenid
 	}
 
 	return properties, nil
