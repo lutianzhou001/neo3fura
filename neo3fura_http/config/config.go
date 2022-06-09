@@ -116,4 +116,8 @@ var Apis = []string{
 	"GetNFSImgStatus",
 	"GetNNSNameByAdmin",
 	"GetNNSNameByOwner",
+	"GetBalanceOfByAddress",
+	"GetOpenseaSingleContract",
+	"GetOpenseaSingleCollection",
+	"GetOpenseaOrders",
 }
