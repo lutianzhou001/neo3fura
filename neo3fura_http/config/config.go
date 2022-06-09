@@ -120,4 +120,6 @@ var Apis = []string{
 	"GetOpenseaSingleContract",
 	"GetOpenseaSingleCollection",
 	"GetOpenseaOrders",
+	"GetEventByContractHash",
+	"GetVoteRecordByProjectId",
 }
