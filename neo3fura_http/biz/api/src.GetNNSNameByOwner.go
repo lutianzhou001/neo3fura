@@ -41,8 +41,8 @@ func (me *T) GetNNSNameByOwner(args struct {
 			Pipeline: []bson.M{
 				bson.M{"$match": bson.M{"asset": args.Asset, "address": args.Owner, "balance": bson.M{"$gt": 0}}},
 				bson.M{"$sort": bson.M{"id": 1}},
-				bson.M{"$skip": args.Skip},
-				bson.M{"$limit": args.Limit},
+				//bson.M{"$skip": args.Skip},
+				//bson.M{"$limit": args.Limit},
 				bson.M{"$lookup": bson.M{
 					"from": "Nep11Properties",
 					"let":  bson.M{"asset": "$asset", "tokenid": "$tokenid"},
@@ -99,14 +99,31 @@ func (me *T) GetNNSNameByOwner(args struct {
 	}
 
 	r1 = mapsort.MapSort2(r1, "expiration") //升序
-	if err != nil {
-		return err
-	}
-	r, err := json.Marshal(r1)
-	if err != nil {
-		return err
+
+	if args.Limit > 0 {
+		pagedName := make([]map[string]interface{}, 0)
+		for i, item := range r1 {
+			if int64(i) < args.Skip {
+				continue
+			} else if int64(i) > args.Skip+args.Limit-1 {
+				continue
+			} else {
+				pagedName = append(pagedName, item)
+			}
+		}
+		r, err := json.Marshal(pagedName)
+		if err != nil {
+			return err
+		}
+		*ret = json.RawMessage(r)
+
+	} else {
+		r, err := json.Marshal(r1)
+		if err != nil {
+			return err
+		}
+		*ret = json.RawMessage(r)
 	}
 
-	*ret = json.RawMessage(r)
 	return nil
 }

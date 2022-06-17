@@ -52,8 +52,8 @@ func (me *T) GetNNSNameByAdmin(args struct {
 	pipe := []bson.M{}
 	pipe = append(pipe, bson.M{"$match": bson.M{"asset": args.Asset}})
 	pipe = append(pipe, bson.M{"$match": bson.M{"$and": arr}})
-	pipe = append(pipe, bson.M{"$skip": args.Skip})
-	pipe = append(pipe, bson.M{"$limit": args.Limit})
+	//pipe = append(pipe, bson.M{"$skip": args.Skip})
+	//pipe = append(pipe, bson.M{"$limit": args.Limit})
 
 	var r1, err = me.Client.QueryAggregate(
 		struct {
@@ -116,14 +116,30 @@ func (me *T) GetNNSNameByAdmin(args struct {
 
 	r1 = mapsort.MapSort2(r1, "expiration")
 
-	if err != nil {
-		return err
-	}
-	r, err := json.Marshal(r1)
-	if err != nil {
-		return err
+	if args.Limit > 0 {
+		pagedName := make([]map[string]interface{}, 0)
+		for i, item := range r1 {
+			if int64(i) < args.Skip {
+				continue
+			} else if int64(i) > args.Skip+args.Limit-1 {
+				continue
+			} else {
+				pagedName = append(pagedName, item)
+			}
+		}
+		r, err := json.Marshal(pagedName)
+		if err != nil {
+			return err
+		}
+		*ret = json.RawMessage(r)
+
+	} else {
+		r, err := json.Marshal(r1)
+		if err != nil {
+			return err
+		}
+		*ret = json.RawMessage(r)
 	}
 
-	*ret = json.RawMessage(r)
 	return nil
 }
