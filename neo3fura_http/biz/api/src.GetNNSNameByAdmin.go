@@ -5,8 +5,10 @@ import (
 	"github.com/joeqian10/neo3-gogogo/crypto"
 	"github.com/joeqian10/neo3-gogogo/helper"
 	"go.mongodb.org/mongo-driver/bson"
+	"neo3fura_http/lib/mapsort"
 	"neo3fura_http/lib/type/h160"
 	"neo3fura_http/var/stderr"
+	"strconv"
 	"strings"
 )
 
@@ -91,7 +93,11 @@ func (me *T) GetNNSNameByAdmin(args struct {
 					}
 					expiration, ok3 := data["expiration"]
 					if ok3 {
-						item["expiration"] = expiration
+						time, err := strconv.ParseInt(expiration.(string), 10, 64)
+						if err != nil {
+							return err
+						}
+						item["expiration"] = time
 					}
 
 				} else {
@@ -108,7 +114,8 @@ func (me *T) GetNNSNameByAdmin(args struct {
 		delete(item, "tokenid")
 	}
 
-	//
+	r1 = mapsort.MapSort2(r1, "expiration")
+
 	if err != nil {
 		return err
 	}

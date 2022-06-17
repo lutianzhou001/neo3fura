@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"neo3fura_http/lib/mapsort"
 	"neo3fura_http/lib/type/h160"
 	"neo3fura_http/var/stderr"
+	"strconv"
 )
 
 func (me *T) GetNNSNameByOwner(args struct {
@@ -79,7 +81,11 @@ func (me *T) GetNNSNameByOwner(args struct {
 					}
 					expiration, ok3 := data["expiration"]
 					if ok3 {
-						item["expiration"] = expiration
+						time, err := strconv.ParseInt(expiration.(string), 10, 64)
+						if err != nil {
+							return err
+						}
+						item["expiration"] = time
 					}
 				} else {
 					return err2
@@ -92,7 +98,7 @@ func (me *T) GetNNSNameByOwner(args struct {
 
 	}
 
-	//
+	r1 = mapsort.MapSort2(r1, "expiration") //升序
 	if err != nil {
 		return err
 	}
