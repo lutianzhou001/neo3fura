@@ -38,7 +38,6 @@ func (me *T) GetNFTRecordByAddress(args struct {
 		if args.SecondaryMarket.Valid() == false {
 			return stderr.ErrInvalidArgs
 		} else {
-			//f["market"] = args.MarketHash.Val()
 			//白名单
 			raw1 := make(map[string]interface{})
 			err1 := me.GetMarketWhiteList(struct {
@@ -324,6 +323,81 @@ func (me *T) GetNFTRecordByAddress(args struct {
 				} else {
 					return err31
 				}
+			} else if item["eventname"].(string) == "Offer" {
+				extendData3 := item["extendData"].(string)
+				var dat map[string]interface{}
+				if err31 := json.Unmarshal([]byte(extendData3), &dat); err31 == nil {
+					bidAmount := dat["offerAmount"].(string)
+					offerAsset := dat["offerAsset"]
+					rr["auctionAsset"] = offerAsset
+					rr["auctionAmount"] = bidAmount
+					user1 := item["user"]
+
+					//查看offer 当前状态
+					offer_nonce := item["nonce"]
+					offer, _ := me.Client.QueryOne(struct {
+						Collection string
+						Index      string
+						Sort       bson.M
+						Filter     bson.M
+						Query      []string
+					}{
+						Collection: "MarketNotification",
+						Index:      "getOfferSate",
+						Sort:       bson.M{},
+						Filter: bson.M{
+							"nonce":   offer_nonce,
+							"asset":   item["asset"],
+							"tokenid": item["tokenid"],
+							"$or": []interface{}{
+								bson.M{"eventname": "CompleteOffer"},
+								bson.M{"eventname": "CancelOffer"},
+							}},
+						Query: []string{},
+					}, ret)
+
+					if len(offer) > 0 {
+						offer_event := offer["eventname"]
+						if offer_event == "CompleteOffer" {
+							rr["state"] = NFTevent.Offer_Accept.Val() //出价被卖家接受
+							rr["from"] = user1
+							rr["to"] = offer["user"]
+						} else if offer_event == "CancelOffer" {
+							rr["state"] = NFTevent.Offer_Cancle.Val() //出价被买家取消
+							rr["from"] = ""
+							rr["to"] = user1
+						}
+					} else {
+						rr["state"] = NFTevent.Offer.Val() //拍卖:领取（买家）
+						rr["from"] = user1
+						rr["to"] = ""
+
+					}
+
+				} else {
+					return err31
+				}
+
+			} else if item["eventname"].(string) == "CompleteOffer" {
+				extendData3 := item["extendData"].(string)
+				var dat map[string]interface{}
+				if err31 := json.Unmarshal([]byte(extendData3), &dat); err31 == nil {
+					bidAmount := dat["offerAmount"].(string)
+
+					auctionAsset := dat["offerAsset"]
+					user1 := item["user"]
+					rr["auctionAsset"] = auctionAsset
+					rr["auctionAmount"] = bidAmount
+					rr["from"] = user1
+					rr["to"] = dat["offerer"]
+					rr["state"] = NFTevent.Offer_Complete.Val() // 直买直卖 购买(买家)
+
+				} else if item["eventname"].(string) == "CompleteOffer" {
+
+				} else {
+					return err31
+				}
+
 			}
 			result = append(result, rr)
 		}
