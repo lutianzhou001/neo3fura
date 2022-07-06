@@ -232,12 +232,12 @@ func (me *T) GetNFTOwnedByAddress(args struct {
 				bson.M{"owner": args.Address.Val()}, //	未上架  owner
 				bson.M{"$and": []interface{}{ //上架 售卖中、过期（无人出价）auctor
 					bson.M{"auctor": args.Address.Val()},
-					bson.M{"bidAmount": 0},
+					bson.M{"deadline": bson.M{"$gte": currentTime}},
 				}},
 				bson.M{"$and": []interface{}{ //未领取   竞价成功bidder
 					bson.M{"bidder": args.Address.Val()},
 					bson.M{"bidAmount": bson.M{"$gt": 0}},
-					bson.M{"deadline": bson.M{"$lte": 0}},
+					bson.M{"deadline": bson.M{"$lte": currentTime}},
 				}},
 			}}},
 			bson.M{"$lookup": bson.M{
