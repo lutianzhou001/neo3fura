@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"neo3fura_http/lib/mapsort"
 	"neo3fura_http/lib/type/OfferState"
 	_ "neo3fura_http/lib/type/OfferState"
@@ -30,6 +31,18 @@ func (me *T) GetOffersByAddress(args struct {
 	if args.OfferState.Val() == OfferState.Valid.Val() { //拍卖中  accont >0 && auctionType =2 &&  owner=market && runtime <deadline
 		pipeline = []bson.M{
 			bson.M{"$match": bson.M{"user": args.Address, "eventname": "Offer"}},
+			bson.M{"$lookup": bson.M{
+				"from": "Nep11Properties",
+				"let":  bson.M{"asset": "$asset", "tokenid": "$tokenid"},
+				"pipeline": []bson.M{
+					bson.M{"$match": bson.M{"$expr": bson.M{"$and": []interface{}{
+						bson.M{"$eq": []interface{}{"$tokenid", "$$tokenid"}},
+						bson.M{"$eq": []interface{}{"$asset", "$$asset"}},
+					}}}},
+					bson.M{"$project": bson.M{"asset": 1, "tokenid": 1, "properties": 1}},
+				},
+				"as": "properties"},
+			},
 		}
 	} else if args.OfferState.Val() == OfferState.Received.Val() {
 		pipeline = []bson.M{
@@ -37,6 +50,18 @@ func (me *T) GetOffersByAddress(args struct {
 				bson.M{"extendData": bson.M{"$regex": "originOwner\":\"" + args.Address}},
 				bson.M{"extendData": bson.M{"$regex": "originOwner\": \"" + args.Address}},
 			}}},
+			bson.M{"$lookup": bson.M{
+				"from": "Nep11Properties",
+				"let":  bson.M{"asset": "$asset", "tokenid": "$tokenid"},
+				"pipeline": []bson.M{
+					bson.M{"$match": bson.M{"$expr": bson.M{"$and": []interface{}{
+						bson.M{"$eq": []interface{}{"$tokenid", "$$tokenid"}},
+						bson.M{"$eq": []interface{}{"$asset", "$$asset"}},
+					}}}},
+					bson.M{"$project": bson.M{"asset": 1, "tokenid": 1, "properties": 1}},
+				},
+				"as": "properties"},
+			},
 		}
 	} else {
 		pipeline = []bson.M{
@@ -45,6 +70,18 @@ func (me *T) GetOffersByAddress(args struct {
 				bson.M{"extendData": bson.M{"$regex": "originOwner\": \"" + args.Address}},
 				bson.M{"user": args.Address},
 			}}},
+			bson.M{"$lookup": bson.M{
+				"from": "Nep11Properties",
+				"let":  bson.M{"asset": "$asset", "tokenid": "$tokenid"},
+				"pipeline": []bson.M{
+					bson.M{"$match": bson.M{"$expr": bson.M{"$and": []interface{}{
+						bson.M{"$eq": []interface{}{"$tokenid", "$$tokenid"}},
+						bson.M{"$eq": []interface{}{"$asset", "$$asset"}},
+					}}}},
+					bson.M{"$project": bson.M{"properties": 1}},
+				},
+				"as": "properties"},
+			},
 		}
 	}
 
@@ -64,6 +101,9 @@ func (me *T) GetOffersByAddress(args struct {
 			Pipeline:   pipeline,
 			Query:      []string{},
 		}, ret)
+	if err != nil {
+		return err
+	}
 
 	result := make([]map[string]interface{}, 0)
 	for _, item := range r1 {
@@ -87,10 +127,6 @@ func (me *T) GetOffersByAddress(args struct {
 					}
 					item["deadline"] = deadline
 
-					if deadline > currentTime {
-						result = append(result, item)
-					}
-
 				} else {
 					return err2
 				}
@@ -98,7 +134,41 @@ func (me *T) GetOffersByAddress(args struct {
 			}
 		}
 
+		nftproperties := item["properties"]
+		if nftproperties != nil && nftproperties != "" {
+			pp := nftproperties.(primitive.A)
+			if len(pp) > 0 {
+				it := pp[0].(map[string]interface{})
+				extendData := it["properties"].(string)
+				if extendData != "" {
+					properties := make(map[string]interface{})
+					var data map[string]interface{}
+					if err1 := json.Unmarshal([]byte(extendData), &data); err1 == nil {
+						image, ok := data["image"]
+						if ok {
+							properties["image"] = image
+							item["image"] = image
+						} else {
+							item["image"] = ""
+						}
+
+					} else {
+						return err
+					}
+
+				} else {
+					item["image"] = ""
+				}
+
+			}
+
+		}
+
+		if item["deadline"].(int64) > currentTime {
+			result = append(result, item)
+		}
 		delete(item, "extendData")
+		delete(item, "properties")
 	}
 
 	if args.OfferState.Val() == OfferState.Received.Val() {
