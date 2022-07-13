@@ -107,6 +107,36 @@ func (me *T) GetOffersByAddress(args struct {
 
 	result := make([]map[string]interface{}, 0)
 	for _, item := range r1 {
+
+		//查看offer 当前状态
+		offer_nonce := item["nonce"]
+		offer, _ := me.Client.QueryOne(struct {
+			Collection string
+			Index      string
+			Sort       bson.M
+			Filter     bson.M
+			Query      []string
+		}{
+			Collection: "MarketNotification",
+			Index:      "getOfferSate",
+			Sort:       bson.M{},
+			Filter: bson.M{
+				"nonce":   offer_nonce,
+				"asset":   item["asset"],
+				"tokenid": item["tokenid"],
+				//"eventname":"CancelOffer",
+				"$or": []interface{}{
+					bson.M{"eventname": "CompleteOffer"},
+					bson.M{"eventname": "CancelOffer"},
+				},
+			},
+			Query: []string{},
+		}, ret)
+
+		if len(offer) > 0 {
+			continue
+		}
+
 		if item["extendData"] != nil {
 			extendData := item["extendData"].(string)
 			if extendData != "" {
