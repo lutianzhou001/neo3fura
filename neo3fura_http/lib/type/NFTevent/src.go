@@ -32,7 +32,7 @@ const (
 
 	//求购
 	Offer        T = "offer"        //正常求购
-	Offer_Cancle T = "offer_cancle" //出价被买家取消
+	Offer_Cancel T = "offer_cancel" //出价被买家取消
 	Offer_Accept T = "offer_accept" //出价被卖家接受
 
 	Offer_Complete T = "offer_Complete" //卖家接受出价

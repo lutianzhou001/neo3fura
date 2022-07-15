@@ -363,7 +363,7 @@ func (me *T) GetNFTRecordByAddress(args struct {
 							rr["from"] = user1
 							rr["to"] = offer["user"]
 						} else if offer_event == "CancelOffer" {
-							rr["state"] = NFTevent.Offer_Cancle.Val() //出价被买家取消
+							rr["state"] = NFTevent.Offer_Cancel.Val() //出价被买家取消
 							rr["from"] = ""
 							rr["to"] = user1
 						}
