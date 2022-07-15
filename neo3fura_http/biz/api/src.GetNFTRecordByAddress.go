@@ -390,9 +390,24 @@ func (me *T) GetNFTRecordByAddress(args struct {
 					rr["auctionAmount"] = bidAmount
 					rr["from"] = user1
 					rr["to"] = dat["offerer"]
-					rr["state"] = NFTevent.Offer_Complete.Val() // 直买直卖 购买(买家)
+					rr["state"] = NFTevent.Offer_Complete.Val()
 
-				} else if item["eventname"].(string) == "CompleteOffer" {
+				} else {
+					return err31
+				}
+
+			} else if item["eventname"].(string) == "CancelOffer" {
+				extendData3 := item["extendData"].(string)
+				var dat map[string]interface{}
+				if err31 := json.Unmarshal([]byte(extendData3), &dat); err31 == nil {
+					bidAmount := dat["offerAmount"].(string)
+					auctionAsset := dat["offerAsset"]
+					user1 := item["user"]
+					rr["auctionAsset"] = auctionAsset
+					rr["auctionAmount"] = bidAmount
+					rr["from"] = ""
+					rr["to"] = user1
+					rr["state"] = NFTevent.Offer_Cancel.Val()
 
 				} else {
 					return err31
