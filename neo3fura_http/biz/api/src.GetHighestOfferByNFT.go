@@ -151,7 +151,7 @@ func (me *T) GetHighestOfferByNFT(args struct {
 
 	offerCount := len(result)
 
-	skip := 2
+	skip := 10
 
 	page := offerCount/skip + 1
 	if offerCount%skip == 0 {
