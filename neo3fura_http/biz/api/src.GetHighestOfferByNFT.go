@@ -151,7 +151,7 @@ func (me *T) GetHighestOfferByNFT(args struct {
 
 	offerCount := len(result)
 
-	skip := 2
+	skip := 5
 
 	page := offerCount/skip + 1
 	if offerCount%skip == 0 {
@@ -185,15 +185,15 @@ func (me *T) GetHighestOfferByNFT(args struct {
 			oa := new(big.Int).SetInt64(offerAmount)
 
 			if !(re[m].Cmp(oa) == -1) {
-				hightestOffer = result[i]
+				hightestOffer = result[i*skip+m]
 				hightestOffer["guarantee"] = re[m]
 				flag = false
-				continue
+				break
 			}
 		}
 
 		if !flag {
-			continue
+			break
 		}
 	}
 
