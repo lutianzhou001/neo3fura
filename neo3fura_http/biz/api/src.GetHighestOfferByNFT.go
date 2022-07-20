@@ -2,10 +2,6 @@ package api
 
 import (
 	"encoding/json"
-	"github.com/joeqian10/neo3-gogogo/crypto"
-	"github.com/joeqian10/neo3-gogogo/helper"
-	"github.com/joeqian10/neo3-gogogo/rpc"
-	"github.com/joeqian10/neo3-gogogo/sc"
 	"go.mongodb.org/mongo-driver/bson"
 	"math"
 	"math/big"
@@ -208,49 +204,4 @@ func (me *T) GetHighestOfferByNFT(args struct {
 	*ret = json.RawMessage(r)
 	return nil
 
-}
-
-func GetSavings(scriptHash h160.T, operation string, address []string, assetStr string) ([]*big.Int, error) {
-
-	testNetEndPoint := "http://seed1t5.neo.org:20332"
-	client := rpc.NewClient(testNetEndPoint)
-
-	sb := sc.NewScriptBuilder()
-	sh, err := helper.UInt160FromString(scriptHash.Val())
-	if err != nil {
-		return nil, err
-	}
-
-	for _, item := range address {
-		print(item)
-		user, err := helper.UInt160FromString(item)
-		if err != nil {
-			return nil, err
-		}
-		asset, err := helper.UInt160FromString(assetStr)
-		if err != nil {
-			return nil, err
-		}
-		var arg = []interface{}{user, asset}
-		sb.EmitDynamicCall(sh, operation, arg)
-	}
-	script, err := sb.ToArray()
-	if err != nil {
-		return nil, err
-	}
-
-	response := client.InvokeScript(crypto.Base64Encode(script), nil)
-	stack_len := len(response.Result.Stack)
-
-	var result []*big.Int
-	for i := 0; i < stack_len; i++ {
-		stack := response.Result.Stack[i]
-		p, err := stack.ToParameter()
-		if err != nil {
-			return nil, err
-		}
-		result = append(result, p.Value.(*big.Int))
-	}
-
-	return result, nil
 }
