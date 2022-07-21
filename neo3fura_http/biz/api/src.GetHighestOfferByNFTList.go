@@ -175,7 +175,7 @@ func (me *T) GetHighestOfferByNFTList(args struct {
 						} else {
 							offer["usdAmount"] = 0
 						}
-						offer["usdAmount"] = price
+						//offer["usdAmount"] = price
 
 						result = append(result, offer)
 					}

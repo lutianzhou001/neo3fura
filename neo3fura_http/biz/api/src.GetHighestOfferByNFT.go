@@ -128,10 +128,11 @@ func (me *T) GetHighestOfferByNFT(args struct {
 						de := math.Pow(10, float64(decimal))
 						usdAuctionAmount := new(big.Float).Quo(ffprice, big.NewFloat(float64(de)))
 						offer["usdAmount"] = usdAuctionAmount
+
 					} else {
 						offer["usdAmount"] = 0
 					}
-					offer["usdAmount"] = price
+					//offer["usdAmount"] = price
 
 					result = append(result, offer)
 				}
