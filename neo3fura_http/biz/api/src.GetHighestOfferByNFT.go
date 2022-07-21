@@ -2,7 +2,6 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"math"
 	"math/big"
@@ -129,8 +128,6 @@ func (me *T) GetHighestOfferByNFT(args struct {
 						de := math.Pow(10, float64(decimal))
 						usdAuctionAmount := new(big.Float).Quo(ffprice, big.NewFloat(float64(de)))
 						offer["usdAmount"] = usdAuctionAmount
-
-						fmt.Println(bfprice, ffprice, usdAuctionAmount, decimal, de, big.NewFloat(float64(de)))
 
 					} else {
 						offer["usdAmount"] = 0
