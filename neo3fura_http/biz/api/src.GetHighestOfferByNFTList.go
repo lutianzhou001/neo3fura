@@ -255,7 +255,7 @@ func (me *T) GetHighestOfferByNFTList(args struct {
 
 func GetSavings(scriptHash h160.T, operation string, address []string, assetStr string) ([]*big.Int, error) {
 
-	testNetEndPoint := "http://seed1t5.neo.org:20332"
+	testNetEndPoint := "http://seed2t5.neo.org:20332"
 	client := rpc.NewClient(testNetEndPoint)
 
 	sb := sc.NewScriptBuilder()
