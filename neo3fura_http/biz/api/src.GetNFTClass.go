@@ -10,6 +10,7 @@ import (
 	"neo3fura_http/lib/type/strval"
 	"neo3fura_http/var/stderr"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -38,25 +39,29 @@ func (me *T) GetNFTClass(args struct {
 			} else {
 				_tokenid, _ := base64.StdEncoding.DecodeString(i[1].Val())
 				tokenid := string(_tokenid)
-				var number = 1
-				var str = ""
-				var numberstr []string
-				if len(tokenid) == 17 {
-					series := tokenid[13:14]
-					num := tokenid[15:17]
-					numberstr = append(numberstr, num)
-					number, _ = strconv.Atoi(num)
-					str = "MetaPanacea #" + series + "-"
-				} else if len(tokenid) == 18 {
-					series := tokenid[13:15]
-					num := tokenid[16:18]
-					numberstr = append(numberstr, num)
-					number, _ = strconv.Atoi(num)
-					str = "MetaPanacea #" + series + "-"
 
-				} else {
-					return stderr.ErrInvalidArgs
-				}
+				category := strings.Split(tokenid, "#")
+				str := category[0]
+				var number = 1
+				num := category[1]
+				number, _ = strconv.Atoi(num)
+				str = str + "#"
+
+				//if len(tokenid) == 17 {
+				//	series := tokenid[13:14]
+				//	num := tokenid[15:17]
+				//	numberstr = append(numberstr, num)
+				//	number, _ = strconv.Atoi(num)
+				//	str = "MetaPanacea #" + series + "-"
+				//} else if len(tokenid) == 18 {
+				//	series := tokenid[13:15]
+				//	num := tokenid[16:18]
+				//	numberstr = append(numberstr, num)
+				//	number, _ = strconv.Atoi(num)
+				//	str = "MetaPanacea #" + series + "-"
+				//
+				//}
+
 				var tokenidList []interface{}
 				for j := 1; j <= number; j++ {
 					var s string
@@ -73,6 +78,7 @@ func (me *T) GetNFTClass(args struct {
 			}
 		}
 
+		//fmt.Println("tokenList: ",tokenidClassList)
 		for _, i := range tokenidClassList {
 			//classSort[]
 			b := bson.M{}
