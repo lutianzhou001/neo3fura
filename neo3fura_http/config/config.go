@@ -128,4 +128,5 @@ var Apis = []string{
 	"GetVoteRecord",
 	"GetHighestOfferByNFT",
 	"GetHighestOfferByNFTList",
+	"InsertContractSourceCode",
 }
