@@ -200,7 +200,8 @@ func (me *T) GetNFTClass(args struct {
 				item["properties"] = ""
 			}
 			item["image"] = raw3["image"]
-			item["name"] = raw3["name"]
+			name := strings.Split(raw3["name"].(string), "#")
+			item["name"] = strings.TrimSpace(name[0])
 			item["number"] = raw3["number"]
 			item["properties"] = raw3["properties"]
 			p := raw3["properties"].(map[string]interface{})
