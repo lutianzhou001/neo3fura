@@ -10,11 +10,13 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"math"
 	"math/big"
+	log2 "neo3fura_http/lib/log"
 	"neo3fura_http/lib/mapsort"
 	"neo3fura_http/lib/type/h160"
 	"neo3fura_http/lib/type/strval"
 	"neo3fura_http/lib/utils"
 	"neo3fura_http/var/stderr"
+	"os"
 	"strconv"
 	"time"
 )
@@ -255,7 +257,20 @@ func (me *T) GetHighestOfferByNFTList(args struct {
 
 func GetSavings(scriptHash h160.T, operation string, address []string, assetStr string) ([]*big.Int, error) {
 
-	testNetEndPoint := "http://seed2t5.neo.org:20332"
+	rt := os.ExpandEnv("${RUNTIME}")
+	testNetEndPoint := "http://seed2.neo.org:10332"
+	switch rt {
+
+	case "test":
+		testNetEndPoint = "http://seed2t4.neo.org:20332"
+	case "test2":
+		testNetEndPoint = "http://seed2t5.neo.org:20332"
+	case "staging":
+		testNetEndPoint = "http://seed2.neo.org:10332"
+	default:
+		log2.Fatalf("runtime environment mismatch")
+	}
+
 	client := rpc.NewClient(testNetEndPoint)
 
 	sb := sc.NewScriptBuilder()
