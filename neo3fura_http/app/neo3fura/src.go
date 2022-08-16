@@ -224,6 +224,7 @@ func initializeMongoOnlineClient(cfg Config, ctx context.Context) (*mongo.Client
 	default:
 		log2.Fatalf("runtime environment mismatch")
 	}
+
 	clientOptions.SetMaxPoolSize(50)
 	co, err := mongo.Connect(ctx, clientOptions)
 	if err != nil {

@@ -36,6 +36,18 @@ const (
 	Offer_Accept T = "offer_accept" //出价被卖家接受
 
 	Offer_Complete T = "offer_Complete" //卖家接受出价
+
+	//Asset event
+	//Sales
+	Sale          T = "sale"
+	Bid           T = "sale"
+	CompleteOffer T = "sale"
+	//Listing
+	List         T = "list"
+	List_Expired T = "list_expired"
+	//offers
+	Offers        T = "offer"
+	Offer_Expired T = "offer_expired"
 )
 
 // Valid ...
