@@ -14,7 +14,7 @@ import (
 func (me *T) GetNFTActivityByAsset(args struct {
 	Asset  h160.T
 	Market h160.T
-	Sort   string
+	State  string
 	Limit  int64
 	Skip   int64
 	Filter map[string]interface{}
@@ -28,7 +28,7 @@ func (me *T) GetNFTActivityByAsset(args struct {
 	}
 
 	var pipeline []bson.M
-	if args.Sort == "sales" {
+	if args.State == "sales" {
 		pipeline = []bson.M{
 			bson.M{"$match": bson.M{"asset": args.Asset, "market": args.Market, "eventname": bson.M{"$in": []interface{}{"Claim", "CompleteOffer"}}}},
 			bson.M{"$lookup": bson.M{
@@ -45,7 +45,7 @@ func (me *T) GetNFTActivityByAsset(args struct {
 			},
 			bson.M{"$sort": bson.M{"timestamp": -1}},
 		}
-	} else if args.Sort == "listings" {
+	} else if args.State == "listings" {
 		pipeline = []bson.M{
 			bson.M{"$match": bson.M{"asset": args.Asset, "market": args.Market, "eventname": "Auction"}},
 			bson.M{"$lookup": bson.M{
@@ -64,7 +64,7 @@ func (me *T) GetNFTActivityByAsset(args struct {
 			bson.M{"$limit": args.Limit},
 			bson.M{"$skip": args.Skip},
 		}
-	} else if args.Sort == "offers" {
+	} else if args.State == "offers" {
 		pipeline = []bson.M{
 			bson.M{"$match": bson.M{"asset": args.Asset, "market": args.Market, "eventname": "Offer"}},
 			bson.M{"$lookup": bson.M{
