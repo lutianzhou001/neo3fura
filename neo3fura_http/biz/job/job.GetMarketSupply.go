@@ -46,7 +46,7 @@ func (me T) GetMarketSupply() {
 
 		if len(r1) > 0 {
 			result["asset"] = it
-			result["count"] = r1[0]["count"]
+			result["totalsupply"] = r1[0]["count"]
 		}
 
 		// 存到本地数据库中
