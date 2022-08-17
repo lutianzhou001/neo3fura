@@ -88,7 +88,7 @@ func (me *T) QueryOne(args struct {
 		if err != nil {
 			return nil, stderr.ErrFind
 		}
-		//	err = me.Redis.Set(me.Ctx, hash, hex.EncodeToString(r), 0).Err()
+		err = me.Redis.Set(me.Ctx, hash, hex.EncodeToString(r), 0).Err()
 		if err != nil {
 			return nil, stderr.ErrFind
 		}
