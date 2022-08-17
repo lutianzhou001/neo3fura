@@ -160,6 +160,7 @@ func main() {
 
 		c1 := cron.New()
 		c2 := cron.New()
+		c3 := cron.New()
 
 		err = c1.AddFunc("@daily", func() {
 			log2.Infof("Start daily job")
@@ -175,11 +176,19 @@ func main() {
 			go j.GetBlockInfoList()
 			go j.GetHourlyTransactions()
 		})
+		err = c3.AddFunc("@every 10m", func() {
+			log2.Infof("Start mintnue job")
+			go j.GetMarketSupply()
+			go j.GetMarketTxAmount()
+			go j.GetMarketOwnerCount()
+			go j.GetNFTFloorPrice()
+		})
 		if err != nil {
 			log2.Fatal("add job function error:%s", err)
 		}
 		c1.Start()
 		c2.Start()
+		c3.Start()
 	}
 
 	listen := os.ExpandEnv("0.0.0.0:1926")
