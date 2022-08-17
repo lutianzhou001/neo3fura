@@ -26,13 +26,20 @@ type T struct {
 	Ctx       context.Context
 	RpcCli    *rpc.RpcClient
 	RpcPorts  []string
-	NeoFs string
+	NeoFs     string
 }
 
 type Insert struct {
-	Hash   h160.T
-	Id 				int32
-	UpdateCounter 	int32
+	Hash          h160.T
+	Id            int32
+	UpdateCounter int32
+}
+
+type SourceCode struct {
+	Hash          h160.T
+	Updatecounter int32
+	Filename      string
+	Code          string
 }
 
 func (me *T) QueryOne(args struct {
@@ -176,6 +183,40 @@ func (me *T) SaveJob(args struct {
 }) (bool, error) {
 	collection := me.C_local.Database("job").Collection(args.Collection)
 	_, err := collection.InsertOne(me.Ctx, args.Data)
+	if err != nil {
+		return false, stderr.ErrInsert
+	}
+	return true, nil
+}
+
+func (me *T) UpdateJob(args struct {
+	Collection string
+	Data       bson.M
+	Filter     bson.M
+}) (bool, error) {
+	collection := me.C_local.Database("job").Collection(args.Collection)
+	var result map[string]interface{}
+	err := collection.FindOne(me.Ctx, args.Filter).Decode(&result)
+	var filter bson.M
+	if len(result) > 0 {
+		id := result["_id"].(primitive.ObjectID)
+		filter = bson.M{"_id": id}
+		update := bson.M{"$set": args.Data}
+		opts := options.Update().SetUpsert(true)
+		_, err = collection.UpdateOne(me.Ctx, filter, update, opts)
+		if err != nil {
+			return false, err
+		}
+		fmt.Println("update success")
+	} else {
+		args.Data["asset"] = args.Filter["asset"]
+		_, err := collection.InsertOne(me.Ctx, args.Data)
+		if err != nil {
+			return false, err
+		}
+		fmt.Println("insert success")
+	}
+
 	if err != nil {
 		return false, stderr.ErrInsert
 	}
@@ -329,7 +370,6 @@ func (me *T) QueryDocument(args struct {
 	return convert, nil
 }
 
-
 // 去重查询统计
 func (me *T) GetDistinctCount(args struct {
 	Collection string
@@ -379,14 +419,33 @@ func (me *T) GetDistinctCount(args struct {
 
 }
 
-
 func (me *T) InsertDocument(args struct {
 	Collection string
 	Index      string
 	Insert     *Insert
 }, ret *json.RawMessage) (map[string]interface{}, error) {
 	collection := me.C_online.Database(me.Db_online).Collection(args.Collection)
-	_,err := collection.InsertOne(me.Ctx,&args.Insert)
+	_, err := collection.InsertOne(me.Ctx, &args.Insert)
+	if err != nil {
+		return nil, stderr.ErrInsertDocument
+	}
+	result := make(map[string]interface{})
+	result["msg"] = "Insert document done!"
+	r, err := json.Marshal(result)
+	if err != nil {
+		return nil, stderr.ErrInsertDocument
+	}
+	*ret = json.RawMessage(r)
+	return result, nil
+}
+
+func (me *T) InsertSourceCode(args struct {
+	Collection string
+	Index      string
+	Insert     *SourceCode
+}, ret *json.RawMessage) (map[string]interface{}, error) {
+	collection := me.C_online.Database(me.Db_online).Collection(args.Collection)
+	_, err := collection.InsertOne(me.Ctx, &args.Insert)
 	if err != nil {
 		return nil, stderr.ErrInsertDocument
 	}
