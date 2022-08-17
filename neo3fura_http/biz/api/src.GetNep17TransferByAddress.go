@@ -18,6 +18,7 @@ func (me *T) GetNep17TransferByAddress(args struct {
 	End                 int64
 	Filter              map[string]interface{}
 	ExcludeBonusAndBurn bool
+	Raw                 *[]map[string]interface{}
 }, ret *json.RawMessage) error {
 	if args.Address.Valid() == false {
 		return stderr.ErrInvalidArgs
@@ -143,10 +144,16 @@ func (me *T) GetNep17TransferByAddress(args struct {
 			item["sysfee"] = raw3["sysfee"]
 		}
 	}
+
+	if args.Raw != nil {
+		*args.Raw = r1
+	}
+
 	r2, err := me.FilterArrayAndAppendCount(r1, count, args.Filter)
 	if err != nil {
 		return err
 	}
+
 	r, err := json.Marshal(r2)
 	if err != nil {
 		return err
