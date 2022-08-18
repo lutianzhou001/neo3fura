@@ -348,6 +348,58 @@ func (me *T) QueryAggregate(args struct {
 	return convert, nil
 }
 
+func (me *T) QueryAggregateJob(args struct {
+	Collection string
+	Index      string
+	Sort       bson.M
+	Filter     bson.M
+	Pipeline   []bson.M
+	Query      []string
+}, ret *json.RawMessage) ([]map[string]interface{}, error) {
+
+	var results []map[string]interface{}
+	convert := make([]map[string]interface{}, 0)
+	collection := me.C_local.Database("job").Collection(args.Collection)
+	op := options.AggregateOptions{}
+
+	cursor, err := collection.Aggregate(me.Ctx, args.Pipeline, &op)
+
+	defer func(cursor *mongo.Cursor, ctx context.Context) {
+		err := cursor.Close(ctx)
+		if err != nil {
+			log2.Fatalf("Closing cursor error %v", err)
+		}
+	}(cursor, me.Ctx)
+	if err == mongo.ErrNoDocuments {
+		return nil, stderr.ErrNotFound
+	}
+	if err != nil {
+		return nil, stderr.ErrFind
+	}
+	if err = cursor.All(me.Ctx, &results); err != nil {
+		return nil, stderr.ErrFind
+	}
+
+	for _, item := range results {
+		if len(args.Query) == 0 {
+			convert = append(convert, item)
+		} else {
+			temp := make(map[string]interface{})
+			for _, v := range args.Query {
+				temp[v] = item[v]
+			}
+			convert = append(convert, temp)
+		}
+	}
+
+	r, err := json.Marshal(convert)
+	if err != nil {
+		return nil, stderr.ErrFind
+	}
+	*ret = json.RawMessage(r)
+	return convert, nil
+}
+
 func (me *T) QueryDocument(args struct {
 	Collection string
 	Index      string
