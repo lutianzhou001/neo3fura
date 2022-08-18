@@ -168,6 +168,7 @@ func main() {
 			go j.GetDailyTransactions()
 			go j.GetNewAddresses()
 			go j.GetActiveAddresses()
+			go j.GetMarketDailyVolume() //获取market 前一天的交易数据
 		})
 		err = c2.AddFunc("@hourly", func() {
 			log2.Infof("Start hourly job")
@@ -175,6 +176,7 @@ func main() {
 			go j.GetTransactionList()
 			go j.GetBlockInfoList()
 			go j.GetHourlyTransactions()
+			go j.GetMarketHourlyVolume() //获取market当天的交易数据
 		})
 		err = c3.AddFunc("@every 10m", func() {
 			log2.Infof("Start mintnue job")

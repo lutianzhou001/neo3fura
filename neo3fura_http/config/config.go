@@ -130,4 +130,6 @@ var Apis = []string{
 	"GetHighestOfferByNFTList",
 	"InsertContractSourceCode",
 	"GetNFTActivityByAsset",
+	"GetMarketDailyVolume",
+	"GetMarketDayVolumeByAsset",
 }
