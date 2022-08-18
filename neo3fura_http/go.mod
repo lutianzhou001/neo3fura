@@ -1,6 +1,6 @@
 module neo3fura_http
 
-go 1.15
+go 1.17
 
 require (
 	github.com/fatih/structs v1.1.0
