@@ -141,7 +141,15 @@ func main() {
 	v := &verify.T{
 		Client: client,
 	}
+	go j.GetPopularTokens()
+	go j.GetDailyTransactions()
+	go j.GetNewAddresses()
+	go j.GetActiveAddresses()
 
+	go j.GetHoldersByContractHash()
+	go j.GetTransactionList()
+	go j.GetBlockInfoList()
+	go j.GetHourlyTransactions()
 	// reset qps
 	go func() {
 		for {
@@ -176,8 +184,9 @@ func main() {
 			go j.GetTransactionList()
 			go j.GetBlockInfoList()
 			go j.GetHourlyTransactions()
-			go j.GetMarketHourlyVolume() //获取market当天的交易数据
+			//go j.GetMarketHourlyVolume() //获取market当天的交易数据
 		})
+
 		err = c3.AddFunc("@every 10m", func() {
 			log2.Infof("Start mintnue job")
 			go j.GetMarketSupply()
