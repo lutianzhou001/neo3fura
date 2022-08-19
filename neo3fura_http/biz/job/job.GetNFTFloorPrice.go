@@ -162,7 +162,7 @@ func (me T) GetNep11Asset() ([]string, error) {
 			Query      []string
 		}{
 			Collection: "MarketNotification",
-			Index:      "GetNFTClass",
+			Index:      "GetNep11Asset",
 			Sort:       bson.M{},
 			Filter:     bson.M{},
 			Pipeline:   pipeline,

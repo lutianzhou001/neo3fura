@@ -207,14 +207,12 @@ func (me *T) UpdateJob(args struct {
 		if err != nil {
 			return false, err
 		}
-		fmt.Println("update success")
 	} else {
 		args.Data["asset"] = args.Filter["asset"]
 		_, err := collection.InsertOne(me.Ctx, args.Data)
 		if err != nil {
 			return false, err
 		}
-		fmt.Println("insert success")
 	}
 
 	if err != nil {

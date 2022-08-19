@@ -54,8 +54,8 @@ func (me T) GetMarketDailyVolume() {
 				Filter:     bson.M{},
 				Pipeline: []bson.M{
 					bson.M{"$match": bson.M{"asset": it, "market": secondMarketHash,
-						"eventname":  bson.M{"$in": []interface{}{"Claim", "CompleteOffer"}},
-						"$timestamp": bson.M{"$gte": currentTime - 24*60*60*1000},
+						"eventname": bson.M{"$in": []interface{}{"Claim", "CompleteOffer"}},
+						"timestamp": bson.M{"$gte": currentTime - 24*60*60*1000},
 					}}, //获取前一天的交易
 
 				},
@@ -112,9 +112,14 @@ func (me T) GetMarketDailyVolume() {
 		dv, err := primitive.ParseDecimal128(dayVolume.String())
 		assetResult["dayVolume"] = dv
 
-		p := dayVolume.Quo(dayVolume, big.NewFloat(float64(dayAmount)))
-		ap, err := primitive.ParseDecimal128(p.String())
-		assetResult["avePrice"] = ap
+		if dayAmount == 0 {
+			ap, _ := primitive.ParseDecimal128("0")
+			assetResult["avePrice"] = ap
+		} else {
+			p := dayVolume.Quo(dayVolume, big.NewFloat(float64(dayAmount)))
+			ap, _ := primitive.ParseDecimal128(p.String())
+			assetResult["avePrice"] = ap
+		}
 
 		//存到本地数据库中
 		_, err = me.Client.UpdateJob(struct {

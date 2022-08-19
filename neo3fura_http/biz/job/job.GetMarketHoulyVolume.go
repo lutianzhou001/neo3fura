@@ -2,7 +2,6 @@ package job
 
 import (
 	"encoding/json"
-	"fmt"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -14,7 +13,7 @@ import (
 )
 
 //每小时更新获取当天的交易数据
-func (me T) GetMarketHourlyVolume() {
+func (me T) GetMarketHourlyVolume() error {
 	message := make(json.RawMessage, 0)
 	ret := &message
 	t := time.Now()
@@ -22,6 +21,7 @@ func (me T) GetMarketHourlyVolume() {
 	today := newtime.UnixMilli() //当天0点时间戳
 
 	rt := os.ExpandEnv("${RUNTIME}")
+
 	var secondMarketHash string
 	if rt == "staging" {
 		secondMarketHash = "0xd2e7cf18ee0d9b509fac02457f54b63e47b25e29"
@@ -48,13 +48,13 @@ func (me T) GetMarketHourlyVolume() {
 				Query      []string
 			}{
 				Collection: "MarketNotification",
-				Index:      "someindex",
+				Index:      "GetMarketHourlyVolume",
 				Sort:       bson.M{},
 				Filter:     bson.M{},
 				Pipeline: []bson.M{
 					bson.M{"$match": bson.M{"asset": it, "market": secondMarketHash,
-						"eventname":  bson.M{"$in": []interface{}{"Claim", "CompleteOffer"}},
-						"$timestamp": bson.M{"$gt": today},
+						"eventname": bson.M{"$in": []interface{}{"Claim", "CompleteOffer"}},
+						"timestamp": bson.M{"$gt": today},
 					}}, //获取前一天的交易
 
 				},
@@ -99,7 +99,6 @@ func (me T) GetMarketHourlyVolume() {
 					} else {
 						toAmount, err = TokenConversion(offerAsset, amount, consts.BNEO_Test)
 					}
-					fmt.Println("completeOffer :", toAmount)
 					if err != nil {
 						log2.Fatal("tokenCOnversion err:", err)
 					}
@@ -111,9 +110,16 @@ func (me T) GetMarketHourlyVolume() {
 		dv, err := primitive.ParseDecimal128(dayVolume.String())
 		assetResult["dayVolume"] = dv
 
-		p := dayVolume.Quo(dayVolume, big.NewFloat(float64(dayAmount)))
-		ap, err := primitive.ParseDecimal128(p.String())
-		assetResult["avgPrice"] = ap
+		if dayAmount == 0 {
+
+			ap, _ := primitive.ParseDecimal128("0")
+			assetResult["avgPrice"] = ap
+		} else {
+			p := dayVolume.Quo(dayVolume, big.NewFloat(float64(dayAmount)))
+			ap, _ := primitive.ParseDecimal128(p.String())
+			assetResult["avgPrice"] = ap
+		}
+
 		//存到本地数据库中
 		_, err = me.Client.UpdateJob(struct {
 			Collection string
@@ -125,7 +131,7 @@ func (me T) GetMarketHourlyVolume() {
 		}
 
 	}
-
+	return nil
 }
 
 // 获取当前区块时间
