@@ -69,6 +69,10 @@ func GetPrice(asset string) (float64, error) {
 	if err1 != nil {
 		return 0, stderr.ErrPrice
 	}
+	price, err = strconv.ParseFloat(fmt.Sprintf("%.8f", price), 64)
+	if err != nil {
+		return 0, stderr.ErrPrice
+	}
 	return price, nil
 }
 func GetPrice2(asset string, amount primitive.Decimal128) (*big.Float, error) {

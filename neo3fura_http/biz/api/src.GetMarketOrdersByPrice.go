@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"math"
@@ -110,10 +111,10 @@ func (me *T) GetMarketOrdersByPrice(args struct {
 	//找出价格区间的订单
 	//minindex := FindIndexLeft(r5,"tokenAmount",minAmount)   // ->
 	//maxindex := FindIndexRight(r5,"tokenAmount",maxAmount)    // <-
-
-	minindex := FindIndexLeft(r5, "usdAmount", minPrice.Sub(minPrice, big.NewFloat(1))) // ->
-	maxindex := FindIndexRight(r5, "usdAmount", maxPrice)                               // <-
-
+	fmt.Println(r5[0]["usdAmount"], r5[1]["usdAmount"], r5[2]["usdAmount"])
+	minindex := FindIndexLeft(r5, "usdAmount", minPrice)  // ->
+	maxindex := FindIndexRight(r5, "usdAmount", maxPrice) // <-
+	fmt.Println(minPrice, maxPrice, minindex, maxindex)
 	result := r5[minindex:maxindex]
 
 	r, err := json.Marshal(result)
@@ -150,7 +151,7 @@ func FindIndexLeft(arr []map[string]interface{}, key string, target *big.Float) 
 			return i
 		}
 		if arr[i][key].(*big.Float).Cmp(target) != 1 && target.Cmp(arr[i+1][key].(*big.Float)) == -1 { //target >=(*arr)[i] && target<= (*arr)[i+1]
-			return i + 1
+			return i
 		}
 	}
 	return -1
@@ -169,7 +170,7 @@ func FindIndexRight(arr []map[string]interface{}, key string, target *big.Float)
 		}
 
 		if target.Cmp(arr[i][key].(*big.Float)) == 1 && arr[i+1][key].(*big.Float).Cmp(target) != -1 { //target >(*arr)[i] && target< =(*arr)[i+1]
-			if target.Cmp(arr[i][key].(*big.Float)) == 1 {
+			if target.Cmp(arr[i+1][key].(*big.Float)) == 0 {
 				return i + 2
 			}
 			return i + 1
