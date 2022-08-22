@@ -115,7 +115,7 @@ func (me *T) GetMarketOrdersByPrice(args struct {
 	minindex := FindIndexLeft(r5, "usdAmount", minPrice)  // ->
 	maxindex := FindIndexRight(r5, "usdAmount", maxPrice) // <-
 	fmt.Println(minPrice, maxPrice, minindex, maxindex)
-	result := r5[minindex:maxindex]
+	result := r5[minindex+1 : maxindex]
 
 	r, err := json.Marshal(result)
 	if err != nil {
@@ -145,12 +145,15 @@ func GetAsset2Price(amount *big.Int, assetDecimal int64, unitprice float64) *big
 func FindIndexLeft(arr []map[string]interface{}, key string, target *big.Float) int {
 	for i := 0; i < len(arr); i++ {
 		if target.Cmp(arr[0][key].(*big.Float)) != 1 {
-			return 0
+			return -1
 		}
 		if i == len(arr)-1 {
-			return i
+			return i - 1
 		}
 		if arr[i][key].(*big.Float).Cmp(target) != 1 && target.Cmp(arr[i+1][key].(*big.Float)) == -1 { //target >=(*arr)[i] && target<= (*arr)[i+1]
+			if target.Cmp(arr[i][key].(*big.Float)) == 0 {
+				return i - 1
+			}
 			return i
 		}
 	}
