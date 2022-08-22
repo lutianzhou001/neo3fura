@@ -132,4 +132,7 @@ var Apis = []string{
 	"GetNFTActivityByAsset",
 	"GetMarketDailyVolume",
 	"GetMarketDayVolumeByAsset",
+	"GetMarketFloorPriceByAsset",
+	"GetMarketCheapOrdersByAsset",
+	"GetMarketOrdersByPrice",
 }
