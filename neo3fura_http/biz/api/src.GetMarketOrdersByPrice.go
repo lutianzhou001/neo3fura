@@ -111,11 +111,19 @@ func (me *T) GetMarketOrdersByPrice(args struct {
 	//找出价格区间的订单
 	//minindex := FindIndexLeft(r5,"tokenAmount",minAmount)   // ->
 	//maxindex := FindIndexRight(r5,"tokenAmount",maxAmount)    // <-
-	fmt.Println(r5[0]["usdAmount"], r5[1]["usdAmount"], r5[2]["usdAmount"])
-	minindex := FindIndexLeft(r5, "usdAmount", minPrice)  // ->
-	maxindex := FindIndexRight(r5, "usdAmount", maxPrice) // <-
-	fmt.Println(minPrice, maxPrice, minindex, maxindex)
-	result := r5[minindex+1 : maxindex]
+
+	result := make([]map[string]interface{}, 0)
+	if len(r5) > 0 {
+		min := r5[0]["usdAmount"].(*big.Float)
+		max := r5[len(r5)-1]["usdAmount"].(*big.Float)
+		if max.Cmp(minPrice) != -1 && min.Cmp(max) != 1 {
+			minindex := FindIndexLeft(r5, "usdAmount", minPrice)  // ->
+			maxindex := FindIndexRight(r5, "usdAmount", maxPrice) // <-
+			fmt.Println(minPrice, maxPrice, minindex, maxindex)
+			result = r5[minindex+1 : maxindex]
+		}
+
+	}
 
 	r, err := json.Marshal(result)
 	if err != nil {
