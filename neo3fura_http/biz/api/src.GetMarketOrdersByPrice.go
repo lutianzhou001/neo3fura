@@ -2,7 +2,6 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"math"
@@ -25,7 +24,7 @@ func (me *T) GetMarketOrdersByPrice(args struct {
 }, ret *json.RawMessage) error {
 
 	isbig := args.MinAmount.Cmp(args.MaxAmount)
-	fmt.Println(isbig, !args.AssetHash.Valid(), !args.Token.Valid(), isbig == 1, !args.MarketHash.Valid())
+
 	if !args.AssetHash.Valid() || !args.Token.Valid() || isbig == 1 || !args.MarketHash.Valid() {
 		return stderr.ErrInvalidArgs
 	}
@@ -69,9 +68,7 @@ func (me *T) GetMarketOrdersByPrice(args struct {
 	}
 
 	tokenDecimal := dd[args.Token.Val()]
-	ma := args.MinAmount.String()
-	mm := args.MaxAmount.String()
-	fmt.Println(ma, mm)
+
 	minPrice := GetAsset2Price(args.MinAmount, tokenDecimal, tokenPrice)
 	maxPrice := GetAsset2Price(args.MaxAmount, tokenDecimal, tokenPrice)
 
@@ -81,8 +78,8 @@ func (me *T) GetMarketOrdersByPrice(args struct {
 		if err2 != nil {
 			return err2
 		}
-		amount, _ := new(big.Float).SetString(auctionAmount.String())
-		item["tokenAmount"] = amount //价格转换
+		//amount, _ := new(big.Float).SetString(auctionAmount.String())
+		//item["tokenAmount"] = amount //价格转换
 
 		decimal := dd[auctionAsset]           //获取精度
 		price, err3 := GetPrice(auctionAsset) //  获取价格
@@ -113,9 +110,9 @@ func (me *T) GetMarketOrdersByPrice(args struct {
 	//找出价格区间的订单
 	//minindex := FindIndexLeft(r5,"tokenAmount",minAmount)   // ->
 	//maxindex := FindIndexRight(r5,"tokenAmount",maxAmount)    // <-
-	minindex := FindIndexLeft(r5, "usdAmount", minPrice)  // ->
-	maxindex := FindIndexRight(r5, "usdAmount", maxPrice) // <-
-	fmt.Println(minindex)
+
+	minindex := FindIndexLeft(r5, "usdAmount", minPrice.Sub(minPrice, big.NewFloat(1))) // ->
+	maxindex := FindIndexRight(r5, "usdAmount", maxPrice)                               // <-
 
 	result := r5[minindex:maxindex]
 
@@ -129,8 +126,6 @@ func (me *T) GetMarketOrdersByPrice(args struct {
 }
 
 func GetAsset2Price(amount *big.Int, assetDecimal int64, unitprice float64) *big.Float {
-	aa := amount.String()
-	fmt.Println(aa)
 	bfAmount := new(big.Float).SetInt(amount)
 	flag := amount.Cmp(big.NewInt(0))
 	if flag == 1 {
@@ -138,11 +133,7 @@ func GetAsset2Price(amount *big.Int, assetDecimal int64, unitprice float64) *big
 		ffprice := big.NewFloat(1).Mul(bfprice, bfAmount)
 		de := math.Pow(10, float64(assetDecimal))
 		usdAuctionAmount := new(big.Float).Quo(ffprice, big.NewFloat(float64(de)))
-		bfAmount1 := bfAmount.String()
-		bfprice1 := bfprice.String()
-		ffprice1 := ffprice.String()
-		ss := usdAuctionAmount.String()
-		fmt.Println(bfprice1, bfAmount1, ffprice1, ss)
+
 		return usdAuctionAmount
 	} else {
 		return big.NewFloat(0)
@@ -186,43 +177,4 @@ func FindIndexRight(arr []map[string]interface{}, key string, target *big.Float)
 	}
 	return -1
 
-}
-
-func binaryFind(arr *[10]int, leftIndex int, rightIndex int, target int) {
-
-	// 处理边界
-	if target < (*arr)[0] { //(-,-)
-		fmt.Println(-1)
-		return
-	} else if target >= (*arr)[len(arr)-1] { //[len-1,-)
-
-		fmt.Println(len(arr) - 1)
-		return
-	} else if target >= (*arr)[0] && target < (*arr)[1] { //[0,1)
-		fmt.Println(0)
-		return
-	} else if target >= (*arr)[1] && target < (*arr)[2] { //[0,1)
-		fmt.Println(1)
-		return
-	}
-
-	// 退出递归的条件
-	if leftIndex > rightIndex {
-		fmt.Println("找不到")
-		return
-	}
-
-	// 递归条件
-	// 先找到中间下标，折半
-	mid := (leftIndex + rightIndex) / 2
-	if (*arr)[mid] > target && (*arr)[mid]-1 > target {
-		// findVal 在左边 leftIndex - (mid - 1)
-		binaryFind(arr, leftIndex, mid-1, target)
-	} else if (*arr)[mid] < target && (*arr)[mid+1] < target {
-		// findVal 在右边 (mid + 1) - rightIndex
-		binaryFind(arr, mid+1, rightIndex, target)
-	} else {
-		// 找到了
-		fmt.Printf("找到了，下标为%v", mid)
-	}
 }
