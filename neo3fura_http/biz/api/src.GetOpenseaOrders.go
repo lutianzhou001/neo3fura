@@ -106,7 +106,7 @@ func (me *T) GetOpenseaOrders(args struct {
 
 	var requestGetURLNoParams = "https://api.opensea.io/wyvern/v1/orders?" + params
 	//fmt.Println(requestGetURLNoParams1)
-	//var requestGetURLNoParams = "https://api.opensea.io/wyvern/v1/orders?bundled=false&include_bundled=false&side=1&limit=20&offset=0&order_by=created_date&order_direction=desc"
+	//consts requestGetURLNoParams = "https://api.opensea.io/wyvern/v1/orders?bundled=false&include_bundled=false&side=1&limit=20&offset=0&order_by=created_date&order_direction=desc"
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", requestGetURLNoParams, nil)
 	if err != nil {
