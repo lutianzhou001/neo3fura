@@ -86,9 +86,9 @@ func (me T) GetNFTFloorPrice() {
 				ffprice := big.NewFloat(1).Mul(bfprice, bfauctionAmount)
 				de := math.Pow(10, float64(decimal))
 				usdAuctionAmount := new(big.Float).Quo(ffprice, big.NewFloat(float64(de)))
-				item["usdAmount"] = usdAuctionAmount.String()
+				item["usdAmount"] = usdAuctionAmount
 			} else {
-				item["usdAmount"] = "0"
+				item["usdAmount"] = big.NewFloat(0)
 			}
 
 		}
