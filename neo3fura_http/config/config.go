@@ -135,4 +135,5 @@ var Apis = []string{
 	"GetMarketFloorPriceByAsset",
 	"GetMarketCheapOrdersByAsset",
 	"GetMarketOrdersByPrice",
+	"GetUserInfoTwitter",
 }
