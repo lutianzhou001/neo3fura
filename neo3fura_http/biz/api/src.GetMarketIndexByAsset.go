@@ -57,26 +57,26 @@ func GetPrice(asset string) (float64, error) {
 	resp, err := client.Do(req)
 	if err != nil {
 		log2.Fatal("request price err :", err)
-		return 0, stderr.ErrPrice
+		return 0, err
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 
 	if err != nil {
 		log2.Fatal("readall price err :", err)
-		return 0, stderr.ErrPrice
+		return 0, err
 	}
 	response := string(body)
 	re := response[1 : len(response)-1]
 	price, err1 := strconv.ParseFloat(re, 64)
 	if err1 != nil {
 		log2.Fatal("price parsefloat err :", err)
-		return 0, stderr.ErrPrice
+		return 0, err
 	}
 	price, err = strconv.ParseFloat(fmt.Sprintf("%.8f", price), 64)
 	if err != nil {
 		log2.Fatal("price parsefloat decimal err :", err)
-		return 0, stderr.ErrPrice
+		return 0, err
 	}
 	return price, nil
 }
