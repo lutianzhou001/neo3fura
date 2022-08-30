@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"math"
 	"math/big"
+	log2 "neo3fura_http/lib/log"
 	"neo3fura_http/lib/type/h160"
 	"neo3fura_http/var/stderr"
 	"net/http"
@@ -55,22 +56,26 @@ func GetPrice(asset string) (float64, error) {
 	req.Header.Set("Content-Type", "application/json")
 	resp, err := client.Do(req)
 	if err != nil {
+		log2.Fatal("request price err :", err)
 		return 0, stderr.ErrPrice
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 
 	if err != nil {
+		log2.Fatal("readall price err :", err)
 		return 0, stderr.ErrPrice
 	}
 	response := string(body)
 	re := response[1 : len(response)-1]
 	price, err1 := strconv.ParseFloat(re, 64)
 	if err1 != nil {
+		log2.Fatal("price parsefloat err :", err)
 		return 0, stderr.ErrPrice
 	}
 	price, err = strconv.ParseFloat(fmt.Sprintf("%.8f", price), 64)
 	if err != nil {
+		log2.Fatal("price parsefloat decimal err :", err)
 		return 0, stderr.ErrPrice
 	}
 	return price, nil
