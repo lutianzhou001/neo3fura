@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"math"
 	"neo3fura_http/lib/type/NFTevent"
 	"neo3fura_http/lib/type/h160"
 	"neo3fura_http/var/stderr"
@@ -61,8 +62,6 @@ func (me *T) GetNFTActivityByAsset(args struct {
 				"as": "properties"},
 			},
 			bson.M{"$sort": bson.M{"timestamp": -1}},
-			bson.M{"$limit": args.Limit},
-			bson.M{"$skip": args.Skip},
 		}
 	} else if args.State == "offers" {
 		pipeline = []bson.M{
@@ -80,8 +79,6 @@ func (me *T) GetNFTActivityByAsset(args struct {
 				"as": "properties"},
 			},
 			bson.M{"$sort": bson.M{"timestamp": -1}},
-			bson.M{"$limit": args.Limit},
-			bson.M{"$skip": args.Skip},
 		}
 	} else {
 		pipeline = []bson.M{
@@ -99,8 +96,6 @@ func (me *T) GetNFTActivityByAsset(args struct {
 				"as": "properties"},
 			},
 			bson.M{"$sort": bson.M{"timestamp": -1}},
-			bson.M{"$limit": args.Limit},
-			bson.M{"$skip": args.Skip},
 		}
 	}
 
@@ -237,7 +232,7 @@ func (me *T) GetNFTActivityByAsset(args struct {
 			} else {
 				return err
 			}
-			result = append(result, r2)
+
 		} else if eventname == "Offer" {
 			extendData := item["extendData"].(string)
 			var data map[string]interface{}
@@ -269,7 +264,23 @@ func (me *T) GetNFTActivityByAsset(args struct {
 	if err != nil {
 		return err
 	}
-	r2, err := me.FilterArrayAndAppendCount(result, num, args.Filter)
+
+	if args.Limit == 0 {
+		args.Limit = int64(math.Inf(1))
+	}
+
+	pagedNFT := make([]map[string]interface{}, 0)
+	for i, item := range result {
+		if int64(i) < args.Skip {
+			continue
+		} else if int64(i) > args.Skip+args.Limit-1 {
+			continue
+		} else {
+			pagedNFT = append(pagedNFT, item)
+		}
+	}
+
+	r2, err := me.FilterArrayAndAppendCount(pagedNFT, num, args.Filter)
 	if err != nil {
 		return err
 	}

@@ -459,8 +459,6 @@ func (me *T) GetNFTRecordByAddress(args struct {
 		Sort:       bson.M{},
 		Filter:     filter,
 		Query:      []string{},
-		Limit:      args.Limit,
-		Skip:       args.Skip,
 	}, ret)
 	if err != nil {
 		return err
