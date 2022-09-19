@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -143,9 +144,14 @@ func (me *T) GetNFTActivityByAsset(args struct {
 				} else {
 					r2["name"] = ""
 				}
-				image, ok1 := data["image"]
+				thumbnail, ok1 := data["thumbnail"]
 				if ok1 {
-					r2["image"] = image
+					//r1["image"] = thumbnail
+					tb, err2 := base64.URLEncoding.DecodeString(thumbnail.(string))
+					if err2 != nil {
+						return err2
+					}
+					r2["image"] = string(tb[:])
 				} else {
 					r2["image"] = ""
 				}
