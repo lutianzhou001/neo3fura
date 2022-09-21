@@ -133,7 +133,7 @@ func (me *T) GetNFTActivityByAsset(args struct {
 		r2["nonce"] = item["nonce"]
 		r2["image"] = item["image"]
 		r2["name"] = item["name"]
-
+		r2["txid"] = item["txid"]
 		properties := item["properties"].(primitive.A)[0].(map[string]interface{})
 		if properties["properties"] != nil {
 			var data map[string]interface{}
