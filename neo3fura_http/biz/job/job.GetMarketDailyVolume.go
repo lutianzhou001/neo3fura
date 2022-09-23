@@ -111,7 +111,7 @@ func (me T) GetMarketDailyVolume() {
 
 		dv, err := primitive.ParseDecimal128(dayVolume.String())
 		assetResult["dayVolume"] = dv
-
+		assetResult["dayAmount"] = dayAmount
 		if dayAmount == 0 {
 			ap, _ := primitive.ParseDecimal128("0")
 			assetResult["avePrice"] = ap
