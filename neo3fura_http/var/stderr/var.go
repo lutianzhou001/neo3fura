@@ -37,3 +37,5 @@ var ErrData = jsonrpc2.NewError(-32001, "data conversion error")
 var ErrWhiteList = jsonrpc2.NewError(-32001, "whiteList is null")
 
 var ErrInsertDocument = jsonrpc2.NewError(-32001, "insert document error")
+
+var ErrExistsDocument = jsonrpc2.NewError(-32001, "asset already exists")
