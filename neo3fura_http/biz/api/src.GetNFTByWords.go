@@ -151,6 +151,8 @@ func (me *T) GetNFTByWords(args struct {
 			if len(pp) > 0 {
 				it := pp[0].(map[string]interface{})
 				extendData := it["properties"].(string)
+				asset := it["asset"].(string)
+				tokenid := it["tokenid"].(string)
 				if extendData != "" {
 					properties := make(map[string]interface{})
 					var data map[string]interface{}
@@ -162,25 +164,38 @@ func (me *T) GetNFTByWords(args struct {
 						} else {
 							item["image"] = ""
 						}
-						name, ok1 := data["name"]
-						if ok1 {
-							item["name"] = name
-							strArray := strings.Split(name.(string), "#")
-							if len(strArray) >= 2 {
-								number := strArray[1]
-								n, err22 := strconv.ParseInt(number, 10, 64)
-								if err22 != nil {
-									item["number"] = int64(-1)
-								}
-								item["number"] = n
-								properties["number"] = n
-							} else {
+
+						tokenuri, ok := data["tokenURI"]
+						if ok {
+							ppjson, err := GetImgFromTokenURL(tokenurl(tokenuri.(string)), asset, tokenid)
+							if err != nil {
+								return err
+							}
+							for key, value := range ppjson {
+								item[key] = value
+								properties[key] = value
+							}
+						}
+						if item["name"] == "" {
+							name, ok1 := data["name"]
+							if ok1 {
+								item["name"] = name
+							}
+						}
+
+						strArray := strings.Split(item["name"].(string), "#")
+						if len(strArray) >= 2 {
+							number := strArray[1]
+							n, err22 := strconv.ParseInt(number, 10, 64)
+							if err22 != nil {
 								item["number"] = int64(-1)
 							}
-
+							item["number"] = n
+							properties["number"] = n
 						} else {
-							item["name"] = ""
+							item["number"] = int64(-1)
 						}
+
 						series, ok2 := data["series"]
 						if ok2 {
 							properties["series"] = series

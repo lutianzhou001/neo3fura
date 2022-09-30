@@ -78,14 +78,29 @@ func (me *T) GetNNSNameByAdmin(args struct {
 
 	for _, item := range r1 {
 		//获取nft 属性
+		asset := item["asset"].(string)
+		tokenid := item["tokenid"].(string)
 		if item["properties"] != nil {
 			extendData := item["properties"].(string)
 			if extendData != "" {
 				var data map[string]interface{}
 				if err2 := json.Unmarshal([]byte(extendData), &data); err2 == nil {
-					name, ok := data["name"]
+
+					tokenuri, ok := data["tokenURI"]
 					if ok {
-						item["name"] = name
+						ppjson, err := GetImgFromTokenURL(tokenurl(tokenuri.(string)), asset, tokenid)
+						if err != nil {
+							return err
+						}
+						for key, value := range ppjson {
+							item[key] = value
+						}
+					}
+					if item["name"] == "" {
+						name, ok := data["name"]
+						if ok {
+							item["name"] = name
+						}
 					}
 					admin, ok2 := data["admin"]
 					if ok2 {
