@@ -1,15 +1,23 @@
 package api
 
 import (
+	"bufio"
 	"encoding/json"
+	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"io"
+	"io/ioutil"
+	"log"
 	"neo3fura_http/lib/mapsort"
 	"neo3fura_http/lib/type/OfferState"
 	_ "neo3fura_http/lib/type/OfferState"
 	"neo3fura_http/lib/type/h160"
 	"neo3fura_http/lib/type/strval"
 	"neo3fura_http/var/stderr"
+	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
 	"time"
 )
@@ -170,6 +178,8 @@ func (me *T) GetOffersByAddress(args struct {
 			if len(pp) > 0 {
 				it := pp[0].(map[string]interface{})
 				extendData := it["properties"].(string)
+				asset := it["asset"].(string)
+				tokenid := it["tokenid"].(string)
 				if extendData != "" {
 					properties := make(map[string]interface{})
 					var data map[string]interface{}
@@ -180,6 +190,16 @@ func (me *T) GetOffersByAddress(args struct {
 							item["image"] = image
 						} else {
 							item["image"] = ""
+						}
+						tokenurl, ok := data["tokenURI"]
+						if ok {
+							if image == "" {
+								image, err = GetImgFromTokenURL(tokenurl.(string), asset, tokenid)
+								item["image"] = image
+								if err != nil {
+									return err
+								}
+							}
 						}
 
 					} else {
@@ -231,4 +251,91 @@ func (me *T) GetOffersByAddress(args struct {
 
 	*ret = json.RawMessage(r)
 	return nil
+}
+
+func GetImgFromTokenURL(tokenurl string, asset string, tokenid string) (map[string]interface{}, error) {
+	//检查该tokenurl 文件是否本地存在
+	path := "./tokenURL/" + asset + "/" + tokenid
+	isExit, _ := PathExists(path)
+	jsonData := make(map[string]interface{})
+	var body []byte
+	if isExit { //从本地读数据
+		jsonFile, err := os.Open(path)
+		if err != nil {
+			fmt.Println("error opening json file")
+			return nil, err
+		}
+		defer jsonFile.Close()
+
+		body, err = ioutil.ReadAll(jsonFile)
+		if err != nil {
+			fmt.Println("error reading json file")
+			return nil, err
+		}
+
+	} else { //读取数据并保存到本地
+		currentPath, err := os.Getwd()
+		fmt.Println(currentPath)
+		filepath := CreateDateDir(currentPath+"/tokenURI/", asset)
+		response, err := http.Get(tokenurl)
+		if err != nil {
+			log.Println("http get error: ", err)
+			return nil, err
+		}
+		defer response.Body.Close()
+		out, err := os.Create(filepath + "/" + tokenid)
+		if err != nil {
+			panic(err)
+		}
+		wt := bufio.NewWriter(out)
+		defer out.Close()
+		n, err := io.Copy(wt, response.Body)
+		fmt.Println("write", n)
+		if err != nil {
+			panic(err)
+		}
+		wt.Flush()
+		body, err = ioutil.ReadAll(response.Body)
+		if err != nil {
+			log.Println("ioutil read error: ", err)
+		}
+	}
+
+	err := json.Unmarshal([]byte(string(body)), &jsonData)
+	if err != nil {
+		log.Println("imag from json error :", err, tokenurl)
+		return nil, err
+	}
+
+	return jsonData, nil
+}
+
+func CreateDateDir(basepath string, folderName string) string {
+
+	folderPath := filepath.Join(basepath, folderName)
+	if _, err := os.Stat(folderPath); os.IsNotExist(err) {
+		err := os.MkdirAll(folderPath, 0777)
+		if err != nil {
+			fmt.Println("Create dir error: %v", err)
+		}
+		err = os.Chmod(folderPath, 0777)
+		if err != nil {
+			fmt.Println("Chmod error: %v", err)
+		}
+	}
+	return folderPath
+}
+
+func PathExists(path string) (bool, error) {
+	_, err := os.Stat(path)
+	//当为空文件或文件夹存在
+	if err == nil {
+		return true, nil
+	}
+	//os.IsNotExist(err)为true，文件或文件夹不存在
+	if os.IsNotExist(err) {
+		return false, nil
+	}
+	//其它类型，不确定是否存在
+	return false, err
 }
