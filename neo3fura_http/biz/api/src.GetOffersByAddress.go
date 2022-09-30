@@ -191,13 +191,16 @@ func (me *T) GetOffersByAddress(args struct {
 						} else {
 							item["image"] = ""
 						}
-						tokenurl, ok := data["tokenURI"]
+						tokenuri, ok := data["tokenURI"]
 						if ok {
 							if image == "" {
-								image, err = GetImgFromTokenURL(tokenurl.(string), asset, tokenid)
-								item["image"] = image
+								ppjson, err := GetImgFromTokenURL(tokenurl(tokenuri.(string)), asset, tokenid)
 								if err != nil {
 									return err
+								}
+								for key, value := range ppjson {
+									item[key] = value
+									properties[key] = value
 								}
 							}
 						}
@@ -255,56 +258,62 @@ func (me *T) GetOffersByAddress(args struct {
 
 func GetImgFromTokenURL(tokenurl string, asset string, tokenid string) (map[string]interface{}, error) {
 	//检查该tokenurl 文件是否本地存在
-	path := "./tokenURL/" + asset + "/" + tokenid
+	currentPath, err := os.Getwd()
+	if err != nil {
+		return nil, err
+	}
+	tokenid = "Ag=="
+	path := currentPath + "/tokenURI/" + asset + "/" + tokenid
 	isExit, _ := PathExists(path)
 	jsonData := make(map[string]interface{})
-	var body []byte
-	if isExit { //从本地读数据
-		jsonFile, err := os.Open(path)
-		if err != nil {
-			fmt.Println("error opening json file")
-			return nil, err
-		}
-		defer jsonFile.Close()
 
-		body, err = ioutil.ReadAll(jsonFile)
-		if err != nil {
-			fmt.Println("error reading json file")
-			return nil, err
-		}
-
-	} else { //读取数据并保存到本地
-		currentPath, err := os.Getwd()
-		fmt.Println(currentPath)
+	if !isExit { //读取数据并保存到本地
 		filepath := CreateDateDir(currentPath+"/tokenURI/", asset)
 		response, err := http.Get(tokenurl)
 		if err != nil {
 			log.Println("http get error: ", err)
 			return nil, err
 		}
-		defer response.Body.Close()
+
+		raw := response.Body
+		defer raw.Close()
+
 		out, err := os.Create(filepath + "/" + tokenid)
 		if err != nil {
 			panic(err)
 		}
+
 		wt := bufio.NewWriter(out)
 		defer out.Close()
+
 		n, err := io.Copy(wt, response.Body)
 		fmt.Println("write", n)
 		if err != nil {
 			panic(err)
 		}
 		wt.Flush()
-		body, err = ioutil.ReadAll(response.Body)
-		if err != nil {
-			log.Println("ioutil read error: ", err)
-		}
-	}
 
-	err := json.Unmarshal([]byte(string(body)), &jsonData)
+	}
+	//从文件读数据
+	jsonFile, err := os.Open(path)
 	if err != nil {
-		log.Println("imag from json error :", err, tokenurl)
+		fmt.Println("error opening json file")
 		return nil, err
+	}
+	defer jsonFile.Close()
+
+	body, err := ioutil.ReadAll(jsonFile)
+	if err != nil {
+		fmt.Println("error reading json file")
+		return nil, err
+	}
+	if len(body) > 0 {
+		err := json.Unmarshal([]byte(string(body)), &jsonData)
+		if err != nil {
+			log.Println("imag from json error :", err, tokenurl)
+			return nil, err
+		}
+
 	}
 
 	return jsonData, nil

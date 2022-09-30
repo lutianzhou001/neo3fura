@@ -375,33 +375,35 @@ func (me *T) GetNFTMarket(args struct {
 						}
 						tokenuri, ok := data["tokenURI"]
 						if ok {
-							ppjson, err := GetImgFromTokenURL(tokenuri.(string), asset, tokenid)
+							ppjson, err := GetImgFromTokenURL(tokenurl(tokenuri.(string)), asset, tokenid)
 							if err != nil {
 								return err
 							}
 							for key, value := range ppjson {
 								item[key] = value
+								properties[key] = value
 							}
 						}
-						name, ok1 := data["name"]
-						if ok1 {
-							item["name"] = name
-							strArray := strings.Split(name.(string), "#")
-							if len(strArray) >= 2 {
-								number := strArray[1]
-								n, err22 := strconv.ParseInt(number, 10, 64)
-								if err22 != nil {
-									item["number"] = int64(-1)
-								}
-								item["number"] = n
-								properties["number"] = n
-							} else {
+						if item["name"] == "" {
+							name, ok1 := data["name"]
+							if ok1 {
+								item["name"] = name
+							}
+						}
+
+						strArray := strings.Split(item["name"].(string), "#")
+						if len(strArray) >= 2 {
+							number := strArray[1]
+							n, err22 := strconv.ParseInt(number, 10, 64)
+							if err22 != nil {
 								item["number"] = int64(-1)
 							}
-
+							item["number"] = n
+							properties["number"] = n
 						} else {
-							item["name"] = ""
+							item["number"] = int64(-1)
 						}
+
 						series, ok2 := data["series"]
 						if ok2 {
 							properties["series"] = series
@@ -538,4 +540,14 @@ func (me *T) GetNFTMarket(args struct {
 	}
 	*ret = json.RawMessage(r)
 	return nil
+}
+
+func tokenurl(url string) string {
+
+	str := url[:4]
+	if str == "ipfs" {
+		return "https://" + url
+	}
+
+	return url
 }

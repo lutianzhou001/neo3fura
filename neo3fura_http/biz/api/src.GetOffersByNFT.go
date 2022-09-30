@@ -115,17 +115,30 @@ func (me *T) GetOffersByNFT(args struct {
 			pp := nftproperties.(primitive.A)
 			if len(pp) > 0 {
 				it := pp[0].(map[string]interface{})
-				extendData := it["properties"].(string)
-				if extendData != "" {
+				extendData1 := it["properties"].(string)
+				asset := it["asset"].(string)
+				tokenid := it["tokenid"].(string)
+				if extendData1 != "" {
 					properties := make(map[string]interface{})
 					var data map[string]interface{}
-					if err1 := json.Unmarshal([]byte(extendData), &data); err1 == nil {
+					if err1 := json.Unmarshal([]byte(extendData1), &data); err1 == nil {
 						image, ok := data["image"]
 						if ok {
 							properties["image"] = image
 							item["image"] = image
 						} else {
 							item["image"] = ""
+						}
+						tokenuri, ok := data["tokenURI"]
+						if ok {
+							ppjson, err := GetImgFromTokenURL(tokenurl(tokenuri.(string)), asset, tokenid)
+							if err != nil {
+								return err
+							}
+							for key, value := range ppjson {
+								item[key] = value
+								properties[key] = value
+							}
 						}
 
 					} else {

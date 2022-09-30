@@ -567,7 +567,8 @@ func getNFTProperties(tokenId strval.T, contractHash h160.T, me *T, ret *json.Ra
 	if err != nil {
 		return err
 	}
-
+	asset := r1["asset"].(string)
+	tokenid := r1["tokenid"].(string)
 	extendData := r1["properties"].(string)
 	if extendData != "" {
 		properties := make(map[string]interface{})
@@ -580,25 +581,41 @@ func getNFTProperties(tokenId strval.T, contractHash h160.T, me *T, ret *json.Ra
 			} else {
 				r1["image"] = ""
 			}
-			name, ok1 := data["name"]
-			if ok1 {
-				r1["name"] = name
-				strArray := strings.Split(name.(string), "#")
-				if len(strArray) >= 2 {
-					number := strArray[1]
-					n, err2 := strconv.ParseInt(number, 10, 64)
-					if err2 != nil {
-						r1["number"] = int64(-1)
-					}
-					r1["number"] = n
-					properties["number"] = n
+
+			tokenuri, ok := data["tokenURI"]
+			if ok {
+				ppjson, err := GetImgFromTokenURL(tokenurl(tokenuri.(string)), asset, tokenid)
+				if err != nil {
+					return err
+				}
+				for key, value := range ppjson {
+					r1[key] = value
+					properties[key] = value
+				}
+			}
+
+			if r1["name"] == "" || r1["name"] == nil {
+				name, ok1 := data["name"]
+				if ok1 {
+					r1["name"] = name
+
 				} else {
+					r1["name"] = ""
+				}
+			}
+			strArray := strings.Split(r1["name"].(string), "#")
+			if len(strArray) >= 2 {
+				number := strArray[1]
+				n, err2 := strconv.ParseInt(number, 10, 64)
+				if err2 != nil {
 					r1["number"] = int64(-1)
 				}
-
+				r1["number"] = n
+				properties["number"] = n
 			} else {
-				r1["name"] = ""
+				r1["number"] = int64(-1)
 			}
+
 			series, ok2 := data["series"]
 			if ok2 {
 				properties["series"] = series
