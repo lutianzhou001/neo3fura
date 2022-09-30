@@ -136,4 +136,6 @@ var Apis = []string{
 	"GetMarketCheapOrdersByAsset",
 	"GetMarketOrdersByPrice",
 	"GetUserInfoTwitter",
+	"GetCompareVerify",
+	"InsertContractSourceCodefromBak",
 }
