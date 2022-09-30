@@ -373,9 +373,9 @@ func (me *T) GetNFTMarket(args struct {
 						} else {
 							item["image"] = ""
 						}
-						tokenurl, ok := data["tokenURI"]
+						tokenuri, ok := data["tokenURI"]
 						if ok {
-							ppjson, err := GetImgFromTokenURL(tokenurl.(string), asset, tokenid)
+							ppjson, err := GetImgFromTokenURL(tokenuri.(string), asset, tokenid)
 							if err != nil {
 								return err
 							}
