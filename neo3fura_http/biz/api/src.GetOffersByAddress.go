@@ -314,6 +314,22 @@ func GetImgFromTokenURL(tokenurl string, asset string, tokenid string) (map[stri
 			return nil, err
 		}
 
+		image, ok := jsonData["image"]
+		if ok {
+			jsonData["image"] = ipfsImhUrl(image.(string))
+		}
+
+		attributes, ok := jsonData["attributes"]
+
+		if ok {
+			attribute := attributes.([]interface{})
+			for _, item := range attribute {
+				it := item.(map[string]interface{})
+				jsonData[it["trait_type"].(string)] = it["value"]
+			}
+			delete(jsonData, "attributes")
+		}
+
 	}
 
 	return jsonData, nil
