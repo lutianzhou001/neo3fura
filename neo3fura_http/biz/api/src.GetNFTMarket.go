@@ -384,7 +384,8 @@ func (me *T) GetNFTMarket(args struct {
 								properties[key] = value
 							}
 						}
-						if item["name"] == "" {
+
+						if item["name"] == "" || item["name"] == nil {
 							name, ok1 := data["name"]
 							if ok1 {
 								item["name"] = name
@@ -547,6 +548,18 @@ func tokenurl(url string) string {
 	str := url[:4]
 	if str == "ipfs" {
 		return "https://" + url
+	}
+
+	return url
+}
+
+func ipfsImhUrl(url string) string {
+
+	str := url[:4]
+	if str == "ipfs" {
+		str1 := strings.Replace(url, ":", "", 1)
+		image := "https://ipfs.io/" + str1
+		return image
 	}
 
 	return url

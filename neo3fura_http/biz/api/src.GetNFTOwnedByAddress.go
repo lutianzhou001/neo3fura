@@ -430,7 +430,7 @@ func (me *T) GetNFTOwnedByAddress(args struct {
 								properties[key] = value
 							}
 						}
-						if item["name"] == "" {
+						if item["name"] == "" || item["name"] == nil {
 							name, ok1 := data["name"]
 							if ok1 {
 								item["name"] = name

@@ -161,7 +161,7 @@ func (me *T) GetNFTActivityByAsset(args struct {
 						r2[key] = value
 					}
 				}
-				if r2["name"] == "" {
+				if r2["name"] == "" || r2["name"] == nil {
 					name, ok := data["name"]
 					if ok {
 						r2["name"] = name
