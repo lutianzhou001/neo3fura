@@ -622,7 +622,7 @@ func getNFTProperties(tokenId strval.T, contractHash h160.T, me *T, ret *json.Ra
 				if err2 != nil {
 					properties["series"] = series
 				}
-				properties["series"] = decodeSeries
+				properties["series"] = string(decodeSeries)
 			}
 			supply, ok3 := data["supply"]
 			if ok3 {
@@ -630,7 +630,7 @@ func getNFTProperties(tokenId strval.T, contractHash h160.T, me *T, ret *json.Ra
 				if err2 != nil {
 					properties["supply"] = supply
 				}
-				properties["supply"] = decodeSupply
+				properties["supply"] = string(decodeSupply)
 			}
 			number, ok4 := data["number"]
 			if ok4 {
