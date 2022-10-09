@@ -262,11 +262,9 @@ func GetImgFromTokenURL(tokenurl string, asset string, tokenid string) (map[stri
 	if err != nil {
 		return nil, err
 	}
-	tokenid = "Ag=="
 	path := currentPath + "/tokenURI/" + asset + "/" + tokenid
 	isExit, _ := PathExists(path)
 	jsonData := make(map[string]interface{})
-
 	if !isExit { //读取数据并保存到本地
 		filepath := CreateDateDir(currentPath+"/tokenURI/", asset)
 		response, err := http.Get(tokenurl)
@@ -314,10 +312,10 @@ func GetImgFromTokenURL(tokenurl string, asset string, tokenid string) (map[stri
 			return nil, err
 		}
 
-		image, ok := jsonData["image"]
-		if ok {
-			jsonData["image"] = ipfsImhUrl(image.(string))
-		}
+		//image, ok := jsonData["image"]
+		//if ok {
+		//	jsonData["image"] = ipfsImhUrl(image.(string))
+		//}
 
 		attributes, ok := jsonData["attributes"]
 

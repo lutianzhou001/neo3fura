@@ -96,7 +96,7 @@ func (me *T) GetNNSNameByAdmin(args struct {
 							item[key] = value
 						}
 					}
-					if item["name"] == "" {
+					if item["name"] == "" || item["name"] == nil {
 						name, ok := data["name"]
 						if ok {
 							item["name"] = name
