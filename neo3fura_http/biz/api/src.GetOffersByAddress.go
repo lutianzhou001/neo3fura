@@ -327,6 +327,8 @@ func GetImgFromTokenURL(tokenurl string, asset string, tokenid string) (map[stri
 			}
 			delete(jsonData, "attributes")
 		}
+		delete(jsonData, "name")
+		delete(jsonData, "number")
 
 	}
 
