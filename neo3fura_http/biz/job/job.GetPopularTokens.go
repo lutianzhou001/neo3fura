@@ -3,7 +3,7 @@ package job
 import (
 	"encoding/json"
 	"go.mongodb.org/mongo-driver/bson"
-	"sort"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func (me T) GetPopularTokens() error {
@@ -21,45 +21,78 @@ func (me T) GetPopularTokens() error {
 	if err != nil {
 		return err
 	}
-	r1, _, err := me.Client.QueryAll(struct {
+	//分组查询
+	pipeline := []bson.M{
+		bson.M{"$match": bson.M{"timestamp": bson.M{"$gt": r0["timestamp"].(int64) - 3*3600*24*1000}}},
+		bson.M{"$lookup": bson.M{
+			"from": "Asset",
+			"let":  bson.M{"hash": "$contract"},
+			"pipeline": []bson.M{
+				bson.M{"$match": bson.M{"$expr": bson.M{"$eq": []interface{}{"$hash", "$$hash"}}}},
+				bson.M{"$project": bson.M{"type": 1, "_id": -1}},
+			},
+			"as": "type"},
+		},
+		bson.M{"$group": bson.M{"_id": "$contract", "contract": bson.M{"$last": "$contract"}, "type": bson.M{"$last": "$type"}, "count": bson.M{"$sum": 1}}},
+		bson.M{"$sort": bson.M{"count": -1}},
+	}
+	r1, err := me.Client.QueryAggregate(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
 		Filter     bson.M
+		Pipeline   []bson.M
 		Query      []string
-		Limit      int64
-		Skip       int64
 	}{
 		Collection: "Notification",
 		Index:      "GetPopularTokens",
 		Sort:       bson.M{},
-		Filter:     bson.M{"timestamp": bson.M{"$gt": r0["timestamp"].(int64) - 3600*24*1000}},
+		Filter:     bson.M{},
+		Pipeline:   pipeline,
 		Query:      []string{},
 	}, ret)
+
+	//r1, _, err := me.Client.QueryAll(struct {
+	//	Collection string
+	//	Index      string
+	//	Sort       bson.M
+	//	Filter     bson.M
+	//	Query      []string
+	//	Limit      int64
+	//	Skip       int64
+	//}{
+	//	Collection: "Notification",
+	//	Index:      "GetPopularTokens",
+	//	Sort:       bson.M{},
+	//	Filter:     bson.M{"timestamp": bson.M{"$gt": r0["timestamp"].(int64) - 3600*24*1000}},
+	//	Query:      []string{},
+	//}, ret)
+
 	if err != nil {
 		return err
 	}
-	r2 := make(map[string]int)
-	for _, item := range r1 {
-		r2[item["contract"].(string)] = r2[item["contract"].(string)] + 1
-	}
-	type kv struct {
-		Key   string
-		Value int
-	}
-	var kvs []kv
-	for k, v := range r2 {
-		kvs = append(kvs, kv{k, v})
-	}
-	sort.Slice(kvs, func(i, j int) bool {
-		return kvs[i].Value > kvs[j].Value
-	})
+	arr := MapArrGroup(r1)
+
+	nep11Arr := arr["NEP11"]
+	nep17Arr := arr["NEP17"]
 	var values []string
-	for i, kv := range kvs {
-		if i < 10 {
-			values = append(values, kv.Key)
+	if len(nep17Arr) > 0 {
+		for i, item := range nep17Arr {
+			if i < 5 {
+				contract := item["contract"].(string)
+				values = append(values, contract)
+			}
 		}
 	}
+	if len(nep11Arr) > 0 {
+		for i, item := range nep11Arr {
+			if i < 5 {
+				contract := item["contract"].(string)
+				values = append(values, contract)
+			}
+		}
+	}
+
 	data := bson.M{"Populars": values}
 	_, err = me.Client.SaveJob(struct {
 		Collection string
@@ -69,4 +102,27 @@ func (me T) GetPopularTokens() error {
 		return err
 	}
 	return nil
+}
+
+// 根据Asset 的type 分类
+func MapArrGroup(infos []map[string]interface{}) map[string][]map[string]interface{} {
+	res := make(map[string][]map[string]interface{})
+	nep11 := make([]map[string]interface{}, 0)
+	nep17 := make([]map[string]interface{}, 0)
+	for _, item := range infos {
+		neptype := item["type"].(primitive.A)
+		if len(neptype) > 0 {
+			t := neptype[0].(map[string]interface{})
+			if t["type"].(string) == "NEP11" {
+				nep11 = append(nep11, item)
+			} else if t["type"].(string) == "NEP17" {
+				nep17 = append(nep17, item)
+			}
+		}
+
+	}
+	res["NEP11"] = nep11
+	res["NEP17"] = nep17
+
+	return res
 }

@@ -279,6 +279,7 @@ func GetImgFromTokenURL(tokenurl string, asset string, tokenid string) (map[stri
 		out, err := os.Create(filepath + "/" + tokenid)
 		if err != nil {
 			panic(err)
+			return nil, err
 		}
 
 		wt := bufio.NewWriter(out)
@@ -287,7 +288,7 @@ func GetImgFromTokenURL(tokenurl string, asset string, tokenid string) (map[stri
 		n, err := io.Copy(wt, response.Body)
 		fmt.Println("write", n)
 		if err != nil {
-			panic(err)
+			return nil, err
 		}
 		wt.Flush()
 
@@ -305,6 +306,7 @@ func GetImgFromTokenURL(tokenurl string, asset string, tokenid string) (map[stri
 		fmt.Println("error reading json file")
 		return nil, err
 	}
+
 	if len(body) > 0 {
 		err := json.Unmarshal([]byte(string(body)), &jsonData)
 		if err != nil {
@@ -327,7 +329,6 @@ func GetImgFromTokenURL(tokenurl string, asset string, tokenid string) (map[stri
 			}
 			delete(jsonData, "attributes")
 		}
-		delete(jsonData, "name")
 		delete(jsonData, "number")
 
 	}
