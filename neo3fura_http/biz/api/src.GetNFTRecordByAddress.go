@@ -618,11 +618,19 @@ func getNFTProperties(tokenId strval.T, contractHash h160.T, me *T, ret *json.Ra
 
 			series, ok2 := data["series"]
 			if ok2 {
-				properties["series"] = series
+				decodeSeries, err2 := base64.URLEncoding.DecodeString(series.(string))
+				if err2 != nil {
+					properties["series"] = series
+				}
+				properties["series"] = decodeSeries
 			}
 			supply, ok3 := data["supply"]
 			if ok3 {
-				properties["supply"] = supply
+				decodeSupply, err2 := base64.URLEncoding.DecodeString(supply.(string))
+				if err2 != nil {
+					properties["supply"] = supply
+				}
+				properties["supply"] = decodeSupply
 			}
 			number, ok4 := data["number"]
 			if ok4 {
