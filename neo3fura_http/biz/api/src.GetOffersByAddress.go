@@ -192,9 +192,11 @@ func (me *T) GetOffersByAddress(args struct {
 							item["image"] = ""
 						}
 						tokenuri, ok := data["tokenURI"]
+						fmt.Println(tokenuri, ok, image)
 						if ok {
-							if image == "" {
+							if image == "" || image == nil {
 								ppjson, err := GetImgFromTokenURL(tokenurl(tokenuri.(string)), asset, tokenid)
+								fmt.Println(ppjson)
 								if err != nil {
 									return err
 								}
