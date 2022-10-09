@@ -547,7 +547,9 @@ func tokenurl(url string) string {
 
 	str := url[:4]
 	if str == "ipfs" {
-		return "https://" + url
+		gateway := "https://cloudflare-ipfs.com"
+		httpurl := strings.Replace(url, "ipfs.io", gateway, 1)
+		return httpurl
 	}
 
 	return url

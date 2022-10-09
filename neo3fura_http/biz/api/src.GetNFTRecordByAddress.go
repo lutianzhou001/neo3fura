@@ -585,12 +585,16 @@ func getNFTProperties(tokenId strval.T, contractHash h160.T, me *T, ret *json.Ra
 			tokenuri, ok := data["tokenURI"]
 			if ok {
 				ppjson, err := GetImgFromTokenURL(tokenurl(tokenuri.(string)), asset, tokenid)
+
 				if err != nil {
 					return err
 				}
 				for key, value := range ppjson {
 					r1[key] = value
-					properties[key] = value
+					if key != "name" {
+						properties[key] = value
+					}
+
 				}
 			}
 
