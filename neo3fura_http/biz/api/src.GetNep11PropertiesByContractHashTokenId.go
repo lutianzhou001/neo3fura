@@ -209,6 +209,19 @@ func (me *T) getNep11PropertiesByContract(asset string, tokenid string) (map[str
 
 		properties[string(key)] = value_result
 		properties["tokenid"] = tokenid
+
+		//tokenurl 属性特殊处理
+		if string(key) == "tokenURI" {
+			tokenURI := value_result
+			ppjson, err := GetImgFromTokenURL(tokenurl(tokenURI.(string)), asset, tokenid)
+			if err != nil {
+				return nil, err
+			}
+			for jsonkey, value := range ppjson {
+				properties[jsonkey] = value
+			}
+		}
+
 	}
 
 	return properties, nil
