@@ -204,15 +204,13 @@ func (me *T) GetOffersByAddress(args struct {
 							//item["image"] = string(tb[:])
 							item["thumbnail"] = ImagUrl(asset, string(tb[:]), "thumbnail")
 						} else {
-							if image != nil || image != "" {
+							if image != nil && image != "" {
 								item["thumbnail"] = ImagUrl(asset, image.(string), "thumbnail")
 							}
 						}
-
 						tokenuri, ok := data["tokenURI"]
-						fmt.Println(tokenuri, ok, image)
 						if ok {
-							if image == "" || image == nil {
+							if image != "" && image != nil {
 								ppjson, err := GetImgFromTokenURL(tokenurl(tokenuri.(string)), asset, tokenid)
 								fmt.Println(ppjson)
 								if err != nil {
