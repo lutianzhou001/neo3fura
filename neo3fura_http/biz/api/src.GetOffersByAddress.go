@@ -9,6 +9,7 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	log2 "neo3fura_http/lib/log"
 	"neo3fura_http/lib/mapsort"
 	"neo3fura_http/lib/type/OfferState"
 	_ "neo3fura_http/lib/type/OfferState"
@@ -19,6 +20,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -187,7 +189,8 @@ func (me *T) GetOffersByAddress(args struct {
 						image, ok := data["image"]
 						if ok {
 							properties["image"] = image
-							item["image"] = image
+							//item["image"] = image
+							item["image"] = ImagUrl(asset, image.(string), "images")
 						} else {
 							item["image"] = ""
 						}
@@ -203,6 +206,11 @@ func (me *T) GetOffersByAddress(args struct {
 								for key, value := range ppjson {
 									item[key] = value
 									properties[key] = value
+									if key == "image" {
+										img := value.(string)
+										item["thumbnail"] = ImagUrl(asset, img, "thumbnail")
+										item["image"] = ImagUrl(asset, img, "images")
+									}
 								}
 							}
 						}
@@ -316,11 +324,6 @@ func GetImgFromTokenURL(tokenurl string, asset string, tokenid string) (map[stri
 			return nil, err
 		}
 
-		//image, ok := jsonData["image"]
-		//if ok {
-		//	jsonData["image"] = ipfsImhUrl(image.(string))
-		//}
-
 		attributes, ok := jsonData["attributes"]
 
 		if ok {
@@ -336,6 +339,39 @@ func GetImgFromTokenURL(tokenurl string, asset string, tokenid string) (map[stri
 	}
 
 	return jsonData, nil
+}
+func Imgname(asset string, url string) string {
+
+	rt := os.ExpandEnv("${RUNTIME}")
+	imgname := strings.ReplaceAll(url, "/", "")
+	const test = "0xaecbad96ccc77c8b147a52e45723a6b5886454e0"
+	const main = "0xaecbad96ccc77c8b147a52e45723a6b5886454e0"
+	split := strings.Split(url, ".")
+	suf := split[len(split)-1]
+	pre := "ipfs://bafybeiapiufkjejfj2mdvjyigrga5vt3o2sd6xf35372tnptiah7kygm7m/1.gif"
+	if rt == "staging" && asset == main && suf == "gif" {
+		imgname = strings.ReplaceAll(pre, "/", "")
+	} else if rt == "test2" && asset == test && suf == "gif" {
+		imgname = strings.ReplaceAll(pre, "/", "")
+	}
+
+	return imgname
+}
+func ImagUrl(asset string, imgurl string, pre string) string {
+	rt := os.ExpandEnv("${RUNTIME}")
+	name := Imgname(asset, imgurl)
+	url := ""
+	switch rt {
+	case "test":
+		url = "https://img.megaoasis.io/testnet/" + pre + "/" + asset + "/" + name
+	case "test2":
+		url = "https://img.megaoasis.io/testnet/" + pre + "/" + asset + "/" + name
+	case "staging":
+		url = "https://img.megaoasis.io/main/" + pre + "/" + asset + "/" + name
+	default:
+		log2.Fatalf("runtime environment mismatch")
+	}
+	return url
 }
 
 func CreateDateDir(basepath string, folderName string) string {

@@ -147,6 +147,7 @@ func (me *T) GetNFTActivityByAsset(args struct {
 						return err2
 					}
 					r2["image"] = string(tb[:])
+					r2["image"] = ImagUrl(item["asset"].(string), string(tb[:]), "thumbnail")
 				} else {
 					r2["image"] = ""
 				}
@@ -159,6 +160,11 @@ func (me *T) GetNFTActivityByAsset(args struct {
 					}
 					for key, value := range ppjson {
 						r2[key] = value
+						if key == "image" {
+							img := value.(string)
+							r2["thumbnail"] = ImagUrl(item["asset"].(string), img, "thumbnail")
+							r2["image"] = ImagUrl(item["asset"].(string), img, "images")
+						}
 					}
 				}
 				if r2["name"] == "" || r2["name"] == nil {

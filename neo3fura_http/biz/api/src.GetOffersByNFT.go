@@ -125,7 +125,8 @@ func (me *T) GetOffersByNFT(args struct {
 						image, ok := data["image"]
 						if ok {
 							properties["image"] = image
-							item["image"] = image
+							//item["image"] = image
+							item["image"] = ImagUrl(asset, image.(string), "images")
 						} else {
 							item["image"] = ""
 						}
@@ -138,6 +139,11 @@ func (me *T) GetOffersByNFT(args struct {
 							for key, value := range ppjson {
 								item[key] = value
 								properties[key] = value
+								if key == "image" {
+									img := value.(string)
+									item["thumbnail"] = ImagUrl(asset, img, "thumbnail")
+									item["image"] = ImagUrl(asset, img, "images")
+								}
 							}
 						}
 

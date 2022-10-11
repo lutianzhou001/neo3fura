@@ -138,4 +138,6 @@ var Apis = []string{
 	"GetUserInfoTwitter",
 	"GetCompareVerify",
 	"InsertContractSourceCodefromBak",
+	"GetPopularToken",
+	"SetPopularTokenWhitelist",
 }
