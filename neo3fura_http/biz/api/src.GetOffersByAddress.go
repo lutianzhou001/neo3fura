@@ -204,7 +204,9 @@ func (me *T) GetOffersByAddress(args struct {
 							//item["image"] = string(tb[:])
 							item["thumbnail"] = ImagUrl(asset, string(tb[:]), "thumbnail")
 						} else {
-							item["thumbnail"] = ImagUrl(asset, image.(string), "thumbnail")
+							if image != nil || image != "" {
+								item["thumbnail"] = ImagUrl(asset, image.(string), "thumbnail")
+							}
 						}
 
 						tokenuri, ok := data["tokenURI"]

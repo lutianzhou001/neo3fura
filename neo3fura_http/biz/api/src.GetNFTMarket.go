@@ -442,7 +442,10 @@ func (me *T) GetNFTMarket(args struct {
 							//item["image"] = string(tb[:])
 							item["thumbnail"] = ImagUrl(asset, string(tb[:]), "thumbnail")
 						} else {
-							item["thumbnail"] = ImagUrl(asset, item["image"].(string), "thumbnail")
+							if item["image"] != nil && item["image"] != "" {
+								item["thumbnail"] = ImagUrl(asset, item["image"].(string), "thumbnail")
+							}
+
 						}
 
 					} else {

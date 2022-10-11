@@ -94,6 +94,11 @@ func (me *T) GetNNSNameByAdmin(args struct {
 						}
 						for key, value := range ppjson {
 							item[key] = value
+							if key == "image" {
+								img := value.(string)
+								item["thumbnail"] = ImagUrl(asset, img, "thumbnail")
+								item["image"] = ImagUrl(asset, img, "images")
+							}
 						}
 					}
 					if item["name"] == "" || item["name"] == nil {
@@ -101,6 +106,7 @@ func (me *T) GetNNSNameByAdmin(args struct {
 						if ok {
 							item["name"] = name
 						}
+
 					}
 					admin, ok2 := data["admin"]
 					if ok2 {
