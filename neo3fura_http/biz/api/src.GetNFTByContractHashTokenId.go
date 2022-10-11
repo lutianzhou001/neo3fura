@@ -148,16 +148,19 @@ func (me *T) GetNFTByContractHashTokenId(args struct {
 		var raw3 map[string]interface{}
 		err2 := getNFTProperties(strval.T(tokenId), args.ContractHash, me, ret, args.Filter, &raw3)
 		if err2 != nil {
+			item["thumbnail"] = ""
 			item["image"] = ""
 			item["name"] = ""
 			item["number"] = int64(-1)
 			item["properties"] = ""
 		}
-		image := raw3["image"].(string)
-		item["image"] = ImagUrl(args.ContractHash.Val(), image, "images")
+
+		item["image"] = raw3["image"]
 		item["name"] = raw3["name"]
 		item["number"] = raw3["number"]
 		item["properties"] = raw3["properties"]
+		item["thumbnail"] = raw3["thumbnail"]
+
 	}
 
 	r5, err := me.FilterArrayAndAppendCount(rr1, count, args.Filter)

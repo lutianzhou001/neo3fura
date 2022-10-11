@@ -105,6 +105,7 @@ func (me *T) GetNFTRecordByContractHashTokenId(args struct {
 		}
 
 		rr["image"] = raw3["image"]
+		rr["thumbnail"] = raw3["thumbnail"]
 		rr["name"] = raw3["name"]
 		rr["number"] = raw3["number"]
 		rr["properties"] = raw3["properties"]

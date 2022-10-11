@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -130,6 +131,19 @@ func (me *T) GetOffersByNFT(args struct {
 						} else {
 							item["image"] = ""
 						}
+
+						thumbnail, ok := data["thumbnail"]
+						if ok {
+							tb, err22 := base64.URLEncoding.DecodeString(thumbnail.(string))
+							if err22 != nil {
+								return err22
+							}
+							//item["image"] = string(tb[:])
+							item["thumbnail"] = ImagUrl(asset, string(tb[:]), "thumbnail")
+						} else {
+							item["thumbnail"] = ImagUrl(asset, image.(string), "thumbnail")
+						}
+
 						tokenuri, ok := data["tokenURI"]
 						if ok {
 							ppjson, err := GetImgFromTokenURL(tokenurl(tokenuri.(string)), asset, tokenid)
