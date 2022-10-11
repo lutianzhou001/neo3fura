@@ -2,6 +2,7 @@ package api
 
 import (
 	"bufio"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
@@ -194,6 +195,18 @@ func (me *T) GetOffersByAddress(args struct {
 						} else {
 							item["image"] = ""
 						}
+						thumbnail, ok := data["thumbnail"]
+						if ok {
+							tb, err22 := base64.URLEncoding.DecodeString(thumbnail.(string))
+							if err22 != nil {
+								return err22
+							}
+							//item["image"] = string(tb[:])
+							item["thumbnail"] = ImagUrl(asset, string(tb[:]), "thumbnail")
+						} else {
+							item["thumbnail"] = ImagUrl(asset, image.(string), "thumbnail")
+						}
+
 						tokenuri, ok := data["tokenURI"]
 						fmt.Println(tokenuri, ok, image)
 						if ok {

@@ -116,6 +116,7 @@ func (me *T) GetNFTRecordByAddress(args struct {
 		}
 
 		rr["image"] = raw2["image"]
+		rr["thumbnail"] = raw2["thumbnail"]
 		rr["name"] = raw2["name"]
 		rr["number"] = raw2["number"]
 		rr["properties"] = raw2["properties"]
@@ -662,8 +663,10 @@ func getNFTProperties(tokenId strval.T, contractHash h160.T, me *T, ret *json.Ra
 				if err2 != nil {
 					return err2
 				}
-				r1["image"] = string(tb[:])
-				r1["image"] = ImagUrl(asset, string(tb[:]), "thumbnail")
+				//r1["image"] = string(tb[:])
+				r1["thumbnail"] = ImagUrl(asset, string(tb[:]), "thumbnail")
+			} else {
+				r1["thumbnail"] = ImagUrl(asset, string(r1["image"].(string)), "thumbnail")
 			}
 
 		} else {

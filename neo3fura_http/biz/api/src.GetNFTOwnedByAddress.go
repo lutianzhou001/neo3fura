@@ -484,7 +484,9 @@ func (me *T) GetNFTOwnedByAddress(args struct {
 								return err22
 							}
 							//item["image"] = string(tb[:])
-							item["image"] = ImagUrl(asset, string(tb[:]), "thumbnail")
+							item["thumbnail"] = ImagUrl(asset, string(tb[:]), "thumbnail")
+						} else {
+							item["thumbnail"] = ImagUrl(asset, image.(string), "thumbnail")
 						}
 
 					} else {

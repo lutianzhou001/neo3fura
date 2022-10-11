@@ -205,6 +205,7 @@ func (me *T) GetNFTClass(args struct {
 			item["number"] = raw3["number"]
 			item["properties"] = raw3["properties"]
 			p := raw3["properties"].(map[string]interface{})
+			item["thumbnail"] = raw3["thumbnail"]
 
 			supply, err2 := base64.URLEncoding.DecodeString(p["supply"].(string))
 

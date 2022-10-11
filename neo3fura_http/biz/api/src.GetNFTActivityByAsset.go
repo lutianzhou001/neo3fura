@@ -139,6 +139,13 @@ func (me *T) GetNFTActivityByAsset(args struct {
 			var data map[string]interface{}
 			if err := json.Unmarshal([]byte(properties["properties"].(string)), &data); err == nil {
 
+				image, ok := data["image"]
+				if ok {
+					r2["image"] = ImagUrl(item["asset"].(string), image.(string), "images")
+				} else {
+					r2["image"] = ""
+				}
+
 				thumbnail, ok1 := data["thumbnail"]
 				if ok1 {
 					//r1["image"] = thumbnail
@@ -146,10 +153,9 @@ func (me *T) GetNFTActivityByAsset(args struct {
 					if err2 != nil {
 						return err2
 					}
-					r2["image"] = string(tb[:])
-					r2["image"] = ImagUrl(item["asset"].(string), string(tb[:]), "thumbnail")
+					r2["thumbnail"] = ImagUrl(item["asset"].(string), string(tb[:]), "thumbnail")
 				} else {
-					r2["image"] = ""
+					r2["thumbnail"] = ImagUrl(item["asset"].(string), r2["image"].(string), "thumbnail")
 				}
 
 				tokenuri, ok := data["tokenURI"]
@@ -180,6 +186,8 @@ func (me *T) GetNFTActivityByAsset(args struct {
 		} else {
 			r2["image"] = ""
 			r2["name"] = ""
+			r2["thumbnail"] = ""
+
 		}
 
 		eventname := item["eventname"].(string)
