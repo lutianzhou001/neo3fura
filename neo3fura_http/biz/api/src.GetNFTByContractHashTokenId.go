@@ -153,7 +153,8 @@ func (me *T) GetNFTByContractHashTokenId(args struct {
 			item["number"] = int64(-1)
 			item["properties"] = ""
 		}
-		item["image"] = raw3["image"]
+		image := raw3["image"].(string)
+		item["image"] = ImagUrl(args.ContractHash.Val(), image, "images")
 		item["name"] = raw3["name"]
 		item["number"] = raw3["number"]
 		item["properties"] = raw3["properties"]
