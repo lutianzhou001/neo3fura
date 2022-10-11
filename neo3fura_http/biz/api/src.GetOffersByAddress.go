@@ -210,20 +210,18 @@ func (me *T) GetOffersByAddress(args struct {
 						}
 						tokenuri, ok := data["tokenURI"]
 						if ok {
-							if image != "" && image != nil {
-								ppjson, err := GetImgFromTokenURL(tokenurl(tokenuri.(string)), asset, tokenid)
-								fmt.Println(ppjson)
-								if err != nil {
-									return err
-								}
-								for key, value := range ppjson {
-									item[key] = value
-									properties[key] = value
-									if key == "image" {
-										img := value.(string)
-										item["thumbnail"] = ImagUrl(asset, img, "thumbnail")
-										item["image"] = ImagUrl(asset, img, "images")
-									}
+							ppjson, err := GetImgFromTokenURL(tokenurl(tokenuri.(string)), asset, tokenid)
+							fmt.Println(ppjson)
+							if err != nil {
+								return err
+							}
+							for key, value := range ppjson {
+								item[key] = value
+								properties[key] = value
+								if key == "image" {
+									img := value.(string)
+									item["thumbnail"] = ImagUrl(asset, img, "thumbnail")
+									item["image"] = ImagUrl(asset, img, "images")
 								}
 							}
 						}
