@@ -286,7 +286,19 @@ func GetImgFromTokenURL(tokenurl string, asset string, tokenid string) (map[stri
 	if err != nil {
 		return nil, err
 	}
-	path := currentPath + "/tokenURI/" + asset + "/" + tokenid
+	//
+	rt := os.ExpandEnv("${RUNTIME}")
+	var env string
+	switch rt {
+	case "test":
+		env = "magnet"
+	case "staging":
+		env = "main"
+	default:
+		log2.Fatalf("runtime environment mismatch")
+	}
+
+	path := currentPath + "/tokenURI/" + "/" + env + "/" + asset + "/" + tokenid
 	isExit, _ := PathExists(path)
 	fmt.Println(path, isExit)
 	jsonData := make(map[string]interface{})
