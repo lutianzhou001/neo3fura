@@ -140,4 +140,5 @@ var Apis = []string{
 	"InsertContractSourceCodefromBak",
 	"GetPopularToken",
 	"SetPopularTokenWhitelist",
+	"TokenUriRename",
 }
