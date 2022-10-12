@@ -142,6 +142,7 @@ func main() {
 		Client: client,
 	}
 
+	// reset qps
 	go func() {
 		for {
 			monitor.Http_request_qps.Set(0)
@@ -183,7 +184,8 @@ func main() {
 			go j.GetMarketSupply()
 			go j.GetMarketTxAmount()
 			go j.GetMarketOwnerCount()
-			go j.GetNFTFloorPrice()
+			//go j.GetNFTFloorPrice()
+			go j.GetNFTIndex()
 		})
 		if err != nil {
 			log2.Fatal("add job function error:%s", err)
