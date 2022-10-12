@@ -7,6 +7,7 @@ import (
 	"math"
 	"math/big"
 	"neo3fura_http/var/stderr"
+	"strconv"
 	"time"
 
 	log2 "neo3fura_http/lib/log"
@@ -159,8 +160,18 @@ func (me *T) GetMarketDailyVolume(args struct {
 		if err != nil {
 			return err
 		}
-		fmt.Println(r0)
-		createtime := r0["createtime"].(int64)
+		var createtime int64
+		ct := r0["createtime"]
+		switch ct.(type) {
+		case float64:
+			time := ct.(float64)
+			createtime = int64(time)
+		case int64:
+			createtime = ct.(int64)
+		case string:
+			createtime, _ = strconv.ParseInt(ct.(string), 10, 64)
+		}
+
 		tt := time.UnixMilli(createtime)
 		newtime := time.Date(tt.Year(), tt.Month(), tt.Day(), 0, 0, 0, 0, tt.Location())
 		createtime0 := newtime.UnixMilli() //当天0点时间戳
