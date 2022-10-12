@@ -667,7 +667,7 @@ func getNFTProperties(tokenId strval.T, contractHash h160.T, me *T, ret *json.Ra
 				r1["thumbnail"] = ImagUrl(asset, string(tb[:]), "thumbnail")
 			} else {
 				if image != nil && image != "" {
-					r1["thumbnail"] = ImagUrl(asset, string(r1["image"].(string)), "thumbnail")
+					r1["thumbnail"] = ImagUrl(asset, image.(string), "thumbnail")
 				}
 			}
 

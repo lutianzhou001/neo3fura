@@ -235,7 +235,7 @@ func (me *T) GetNFTByWords(args struct {
 							item["thumbnail"] = ImagUrl(asset, string(tb[:]), "thumbnail")
 						} else {
 							if item["image"] != nil && item["image"] != "" {
-								item["thumbnail"] = ImagUrl(asset, item["image"].(string), "thumbnail")
+								item["thumbnail"] = ImagUrl(asset, image.(string), "thumbnail")
 							}
 
 						}
