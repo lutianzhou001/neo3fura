@@ -381,7 +381,7 @@ func ImagUrl(asset string, imgurl string, pre string) string {
 	case "test2":
 		url = "https://img.megaoasis.io/testnet/" + pre + "/" + asset + "/" + name
 	case "staging":
-		url = "https://img.megaoasis.io/main/" + pre + "/" + asset + "/" + name
+		url = "https://img.megaoasis.io/" + pre + "/" + asset + "/" + name
 	default:
 		log2.Fatalf("runtime environment mismatch")
 	}
