@@ -183,8 +183,7 @@ func main() {
 			go j.GetMarketSupply()
 			go j.GetMarketTxAmount()
 			go j.GetMarketOwnerCount()
-			//go j.GetNFTFloorPrice()
-			go j.GetNFTIndex()
+			go j.GetNFTFloorPrice()
 		})
 		if err != nil {
 			log2.Fatal("add job function error:%s", err)
