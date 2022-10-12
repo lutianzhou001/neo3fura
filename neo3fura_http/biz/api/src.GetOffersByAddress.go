@@ -359,7 +359,7 @@ func Imgname(asset string, url string) string {
 	rt := os.ExpandEnv("${RUNTIME}")
 	imgname := strings.ReplaceAll(url, "/", "")
 	const test = "0xaecbad96ccc77c8b147a52e45723a6b5886454e0"
-	const main = "0xaecbad96ccc77c8b147a52e45723a6b5886454e0"
+	const main = "0x9f344fe24c963d70f5dcf0cfdeb536dc9c0acb3a"
 	split := strings.Split(url, ".")
 	suf := split[len(split)-1]
 	pre := "ipfs://bafybeiapiufkjejfj2mdvjyigrga5vt3o2sd6xf35372tnptiah7kygm7m/1.gif"
