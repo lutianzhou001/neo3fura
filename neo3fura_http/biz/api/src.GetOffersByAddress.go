@@ -2,7 +2,9 @@ package api
 
 import (
 	"bufio"
+	"bytes"
 	"encoding/base64"
+	"encoding/binary"
 	"encoding/json"
 	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
@@ -287,8 +289,16 @@ func GetImgFromTokenURL(tokenurl string, asset string, tokenid string) (map[stri
 		return nil, err
 	}
 	//
-
-	path := currentPath + "/tokenURI/" + asset + "/" + tokenid
+	num, _ := base64.StdEncoding.DecodeString(tokenid)
+	if err != nil {
+		return nil, err
+	}
+	fname, err := bytesToIntS(num)
+	if err != nil {
+		return nil, err
+	}
+	filename := string(fname) + ".json"
+	path := currentPath + "/tokenURI/" + asset + "/" + filename
 	isExit, _ := PathExists(path)
 	fmt.Println(path, isExit)
 	jsonData := make(map[string]interface{})
@@ -303,7 +313,7 @@ func GetImgFromTokenURL(tokenurl string, asset string, tokenid string) (map[stri
 		raw := response.Body
 		defer raw.Close()
 
-		out, err := os.Create(filepath + "/" + tokenid)
+		out, err := os.Create(filepath + "/" + filename)
 		if err != nil {
 			panic(err)
 			return nil, err
@@ -419,4 +429,27 @@ func PathExists(path string) (bool, error) {
 	}
 	//其它类型，不确定是否存在
 	return false, err
+}
+
+func bytesToIntS(b []byte) (int, error) {
+	if len(b) == 3 {
+		b = append([]byte{0}, b...)
+	}
+	bytesBuffer := bytes.NewBuffer(b)
+	switch len(b) {
+	case 1:
+		var tmp int8
+		err := binary.Read(bytesBuffer, binary.LittleEndian, &tmp)
+		return int(tmp), err
+	case 2:
+		var tmp int16
+		err := binary.Read(bytesBuffer, binary.LittleEndian, &tmp)
+		return int(tmp), err
+	case 4:
+		var tmp int32
+		err := binary.Read(bytesBuffer, binary.LittleEndian, &tmp)
+		return int(tmp), err
+	default:
+		return 0, fmt.Errorf("%s", "BytesToInt bytes lenth is invaild!")
+	}
 }

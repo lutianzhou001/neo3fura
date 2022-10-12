@@ -142,7 +142,6 @@ func main() {
 		Client: client,
 	}
 
-	// reset qps
 	go func() {
 		for {
 			monitor.Http_request_qps.Set(0)
