@@ -288,6 +288,7 @@ func GetImgFromTokenURL(tokenurl string, asset string, tokenid string) (map[stri
 	}
 	path := currentPath + "/tokenURI/" + asset + "/" + tokenid
 	isExit, _ := PathExists(path)
+	fmt.Println(path, isExit)
 	jsonData := make(map[string]interface{})
 	if !isExit { //读取数据并保存到本地
 		filepath := CreateDateDir(currentPath+"/tokenURI/", asset)
