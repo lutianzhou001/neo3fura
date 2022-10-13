@@ -486,14 +486,15 @@ func (me *T) GetNFTOwnedByAddress(args struct {
 							//item["image"] = string(tb[:])
 							item["thumbnail"] = ImagUrl(asset, string(tb[:]), "thumbnail")
 						} else {
-							if image != nil && image != "" {
-								if image == nil {
-									item["thumbnail"] = item["image"]
-								} else {
-									item["thumbnail"] = ImagUrl(asset, image.(string), "thumbnail")
+							if item["thumbnail"] == nil {
+								if image != nil && image != "" {
+									if image == nil {
+										item["thumbnail"] = item["image"]
+									} else {
+										item["thumbnail"] = ImagUrl(asset, image.(string), "thumbnail")
+									}
 								}
 							}
-
 						}
 
 					} else {

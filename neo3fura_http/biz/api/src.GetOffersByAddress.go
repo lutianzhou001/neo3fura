@@ -206,11 +206,13 @@ func (me *T) GetOffersByAddress(args struct {
 							//item["image"] = string(tb[:])
 							item["thumbnail"] = ImagUrl(asset, string(tb[:]), "thumbnail")
 						} else {
-							if image != nil && image != "" {
-								if image == nil {
-									item["thumbnail"] = item["image"]
-								} else {
-									item["thumbnail"] = ImagUrl(asset, image.(string), "thumbnail")
+							if item["thumbnail"] == nil {
+								if image != nil && image != "" {
+									if image == nil {
+										item["thumbnail"] = item["image"]
+									} else {
+										item["thumbnail"] = ImagUrl(asset, image.(string), "thumbnail")
+									}
 								}
 							}
 						}
@@ -300,7 +302,6 @@ func GetImgFromTokenURL(tokenurl string, asset string, tokenid string) (map[stri
 	filename := strconv.FormatInt(int64(fname), 10) + ".json"
 	path := currentPath + "/tokenURI/" + asset + "/" + filename
 	isExit, _ := PathExists(path)
-	fmt.Println(path, isExit)
 	jsonData := make(map[string]interface{})
 	if !isExit { //读取数据并保存到本地
 		filepath := CreateDateDir(currentPath+"/tokenURI/", asset)

@@ -87,10 +87,12 @@ func (me *T) GetAssetInfoByContractHash(args struct {
 	}
 
 	r1["ispopular"] = false
-	populars := r2["Populars"].(primitive.A)
-	for _, v := range populars {
-		if r1["hash"] == v {
-			r1["ispopular"] = true
+	if r2["Populars"] != nil {
+		populars := r2["Populars"].(primitive.A)
+		for _, v := range populars {
+			if r1["hash"] == v {
+				r1["ispopular"] = true
+			}
 		}
 	}
 
