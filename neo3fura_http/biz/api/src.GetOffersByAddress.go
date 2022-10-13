@@ -297,7 +297,7 @@ func GetImgFromTokenURL(tokenurl string, asset string, tokenid string) (map[stri
 	if err != nil {
 		return nil, err
 	}
-	filename := string(fname) + ".json"
+	filename := strconv.FormatInt(int64(fname), 10) + ".json"
 	path := currentPath + "/tokenURI/" + asset + "/" + filename
 	isExit, _ := PathExists(path)
 	fmt.Println(path, isExit)
