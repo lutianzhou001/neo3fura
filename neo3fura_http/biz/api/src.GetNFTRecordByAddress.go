@@ -474,7 +474,8 @@ func (me *T) GetNFTRecordByAddress(args struct {
 		if item["to"] != nil && item["to"] != "" {
 			to = item["to"].(string)
 		}
-
+		fmt.Println("TESTERROR:", item)
+		fmt.Println("TESTERROR:", from != args.SecondaryMarket.Val() && to != args.SecondaryMarket.Val() && from != args.PrimaryMarket.Val() && to != args.PrimaryMarket.Val())
 		if from != args.SecondaryMarket.Val() && to != args.SecondaryMarket.Val() && from != args.PrimaryMarket.Val() && to != args.PrimaryMarket.Val() {
 			rr := make(map[string]interface{})
 
@@ -500,7 +501,7 @@ func (me *T) GetNFTRecordByAddress(args struct {
 				rr["number"] = int64(-1)
 				rr["properties"] = ""
 			}
-
+			fmt.Println("TESTERROR:", raw3)
 			rr["image"] = raw3["image"]
 			rr["name"] = raw3["name"]
 			rr["number"] = raw3["number"]
