@@ -352,8 +352,8 @@ func InitLog(logLevel int, a ...interface{}) {
 
 //func InitErrorCaseLogger(logLevel int, a ...interface{}) {
 //	writers := []io.Writer{}
-//	var logFile *os.File
-//	var err error
+//	consts logFile *os.File
+//	consts err error
 //	if len(a) == 0 {
 //		writers = append(writers, ioutil.Discard)
 //	} else {
