@@ -88,10 +88,10 @@ func (me *T) QueryOne(args struct {
 		if err != nil {
 			return nil, stderr.ErrFind
 		}
-		err = me.Redis.Set(me.Ctx, hash, hex.EncodeToString(r), 0).Err()
-		if err != nil {
-			return nil, stderr.ErrFind
-		}
+		//err = me.Redis.Set(me.Ctx, hash, hex.EncodeToString(r), 0).Err()
+		//if err != nil {
+		//	return nil, stderr.ErrFind
+		//}
 		*ret = json.RawMessage(r)
 		return convert, nil
 	} else {
@@ -183,6 +183,19 @@ func (me *T) SaveJob(args struct {
 }) (bool, error) {
 	collection := me.C_local.Database("job").Collection(args.Collection)
 	_, err := collection.InsertOne(me.Ctx, args.Data)
+	if err != nil {
+		return false, stderr.ErrInsert
+	}
+	return true, nil
+}
+
+func (me *T) SaveManyJob(args struct {
+	Collection string
+	Data       []interface{}
+}) (bool, error) {
+	collection := me.C_local.Database("job").Collection(args.Collection)
+	//opts := options.InsertMany().SetOrdered(false)
+	_, err := collection.InsertMany(me.Ctx, args.Data)
 	if err != nil {
 		return false, stderr.ErrInsert
 	}

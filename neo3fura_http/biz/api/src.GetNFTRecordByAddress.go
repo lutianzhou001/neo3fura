@@ -559,7 +559,7 @@ func (me *T) GetNFTRecordByAddress(args struct {
 func getNFTProperties(tokenId strval.T, contractHash h160.T, me *T, ret *json.RawMessage, filter map[string]interface{}, Raw *map[string]interface{}) error {
 
 	r4 := make([]map[string]interface{}, 0)
-
+	fmt.Println("query nft properites....")
 	r1, err := me.Client.QueryOne(struct {
 		Collection string
 		Index      string
