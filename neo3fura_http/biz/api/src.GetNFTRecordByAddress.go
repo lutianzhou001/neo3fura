@@ -108,8 +108,6 @@ func (me *T) GetNFTRecordByAddress(args struct {
 		//获取Nft的属性
 		var raw2 map[string]interface{}
 		err2 := getNFTProperties(strval.T(tokenid), h160.T(asset), me, ret, args.Filter, &raw2)
-		fmt.Println("error", raw2)
-		log2.Infof("error", raw2)
 		if err2 != nil {
 			rr["image"] = ""
 			rr["name"] = ""
@@ -556,164 +554,10 @@ func (me *T) GetNFTRecordByAddress(args struct {
 	*ret = json.RawMessage(r)
 	return nil
 }
+
 func getNFTProperties(tokenId strval.T, contractHash h160.T, me *T, ret *json.RawMessage, filter map[string]interface{}, Raw *map[string]interface{}) error {
 
 	r4 := make([]map[string]interface{}, 0)
-	fmt.Println("query nft properites....")
-	r1, err := me.Client.QueryOne(struct {
-		Collection string
-		Index      string
-		Sort       bson.M
-		Filter     bson.M
-		Query      []string
-	}{
-		Collection: "Nep11Properties",
-		Index:      "getNFTProperties",
-		Sort:       bson.M{},
-		Filter:     bson.M{"asset": contractHash.Val(), "tokenid": tokenId},
-		Query:      []string{},
-	}, ret)
-	if err != nil {
-		return err
-	}
-	fmt.Println("error: ", r1)
-	asset := r1["asset"].(string)
-	tokenid := r1["tokenid"].(string)
-	extendData := r1["properties"].(string)
-	log2.Infof("error: ", r1)
-	fmt.Println("TESTERROR: ", extendData)
-	if extendData != "" {
-		properties := make(map[string]interface{})
-		var data map[string]interface{}
-		if err1 := json.Unmarshal([]byte(extendData), &data); err1 == nil {
-			image, ok := data["image"]
-			if ok {
-				properties["image"] = image
-				//r1["image"] = image
-				r1["image"] = ImagUrl(asset, image.(string), "images")
-			} else {
-				r1["image"] = ""
-			}
-
-			tokenuri, ok := data["tokenURI"]
-			if ok {
-				ppjson, err := GetImgFromTokenURL(tokenurl(tokenuri.(string)), asset, tokenid)
-				fmt.Println(ppjson)
-				if err != nil {
-					return err
-				}
-				for key, value := range ppjson {
-					r1[key] = value
-					if key != "name" {
-						properties[key] = value
-					}
-					if key == "image" {
-						img := value.(string)
-						r1["thumbnail"] = ImagUrl(asset, img, "thumbnail")
-						r1["image"] = ImagUrl(asset, img, "images")
-					}
-
-				}
-			}
-
-			if r1["name"] == "" || r1["name"] == nil {
-				name, ok1 := data["name"]
-				if ok1 {
-					r1["name"] = name
-
-				} else {
-					r1["name"] = ""
-				}
-			}
-			strArray := strings.Split(r1["name"].(string), "#")
-			if len(strArray) >= 2 {
-				number := strArray[1]
-				n, err2 := strconv.ParseInt(number, 10, 64)
-				if err2 != nil {
-					r1["number"] = int64(-1)
-				}
-				r1["number"] = n
-				properties["number"] = n
-			} else {
-				r1["number"] = int64(-1)
-			}
-
-			series, ok2 := data["series"]
-			if ok2 {
-				decodeSeries, err2 := base64.URLEncoding.DecodeString(series.(string))
-				if err2 != nil {
-					properties["series"] = series
-				}
-				properties["series"] = string(decodeSeries)
-			}
-			supply, ok3 := data["supply"]
-			if ok3 {
-				decodeSupply, err2 := base64.URLEncoding.DecodeString(supply.(string))
-				if err2 != nil {
-					properties["supply"] = supply
-				}
-				properties["supply"] = string(decodeSupply)
-			}
-			number, ok4 := data["number"]
-			if ok4 {
-				n, err2 := strconv.ParseInt(number.(string), 10, 64)
-				if err2 != nil {
-					r1["number"] = int64(-1)
-				}
-				properties["number"] = n
-				r1["number"] = n
-			}
-			video, ok5 := data["video"]
-			if ok5 {
-				properties["video"] = video
-			}
-			thumbnail, ok6 := data["thumbnail"]
-			if ok6 {
-				//r1["image"] = thumbnail
-				tb, err2 := base64.URLEncoding.DecodeString(thumbnail.(string))
-				if err2 != nil {
-					return err2
-				}
-				//r1["image"] = string(tb[:])
-				r1["thumbnail"] = ImagUrl(asset, string(tb[:]), "thumbnail")
-			} else {
-				if image != nil && image != "" {
-					if image == nil {
-						r1["thumbnail"] = r1["image"]
-					} else {
-						r1["thumbnail"] = ImagUrl(asset, image.(string), "thumbnail")
-					}
-				}
-			}
-
-		} else {
-			return err
-		}
-
-		r1["properties"] = properties
-	} else {
-		r1["image"] = ""
-		r1["name"] = ""
-		r1["number"] = int64(-1)
-		r1["properties"] = ""
-	}
-
-	filter1, err := me.Filter(r1, filter)
-	if err != nil {
-		return err
-	}
-
-	r4 = append(r4, filter1)
-
-	if Raw != nil {
-		*Raw = r1
-	}
-	return nil
-}
-
-func getNFTProperties1(tokenId strval.T, contractHash h160.T, me *T, ret *json.RawMessage, filter map[string]interface{}, Raw *map[string]interface{}) error {
-
-	r4 := make([]map[string]interface{}, 0)
 
 	r1, err := me.Client.QueryOne(struct {
 		Collection string
@@ -829,11 +673,13 @@ func getNFTProperties1(tokenId strval.T, contractHash h160.T, me *T, ret *json.R
 				//r1["image"] = string(tb[:])
 				r1["thumbnail"] = ImagUrl(asset, string(tb[:]), "thumbnail")
 			} else {
-				if image != nil && image != "" {
-					if image == nil {
-						r1["thumbnail"] = r1["image"]
-					} else {
-						r1["thumbnail"] = ImagUrl(asset, image.(string), "thumbnail")
+				if r1["thumbnail"] == nil {
+					if image != nil && image != "" {
+						if image == nil {
+							r1["thumbnail"] = r1["image"]
+						} else {
+							r1["thumbnail"] = ImagUrl(asset, image.(string), "thumbnail")
+						}
 					}
 				}
 			}

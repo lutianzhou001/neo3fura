@@ -52,22 +52,6 @@ func (me T) GetPopularTokens() error {
 		Query:      []string{},
 	}, ret)
 
-	//r1, _, err := me.Client.QueryAll(struct {
-	//	Collection string
-	//	Index      string
-	//	Sort       bson.M
-	//	Filter     bson.M
-	//	Query      []string
-	//	Limit      int64
-	//	Skip       int64
-	//}{
-	//	Collection: "Notification",
-	//	Index:      "GetPopularTokens",
-	//	Sort:       bson.M{},
-	//	Filter:     bson.M{"timestamp": bson.M{"$gt": r0["timestamp"].(int64) - 3600*24*1000}},
-	//	Query:      []string{},
-	//}, ret)
-
 	if err != nil {
 		return err
 	}

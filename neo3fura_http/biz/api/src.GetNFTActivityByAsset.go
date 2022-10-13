@@ -155,15 +155,15 @@ func (me *T) GetNFTActivityByAsset(args struct {
 					}
 					r2["thumbnail"] = ImagUrl(item["asset"].(string), string(tb[:]), "thumbnail")
 				} else {
-					if r2["image"] != nil && r2["image"] != "" {
-						if image == nil {
-							r2["thumbnail"] = item["image"]
-						} else {
-							r2["thumbnail"] = ImagUrl(item["asset"].(string), image.(string), "thumbnail")
+					if r2["thumbnail"] == nil {
+						if r2["image"] != nil && r2["image"] != "" {
+							if image == nil {
+								r2["thumbnail"] = item["image"]
+							} else {
+								r2["thumbnail"] = ImagUrl(item["asset"].(string), image.(string), "thumbnail")
+							}
 						}
-
 					}
-
 				}
 
 				tokenuri, ok := data["tokenURI"]
