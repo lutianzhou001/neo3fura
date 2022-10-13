@@ -108,6 +108,8 @@ func (me *T) GetNFTRecordByAddress(args struct {
 		//获取Nft的属性
 		var raw2 map[string]interface{}
 		err2 := getNFTProperties(strval.T(tokenid), h160.T(asset), me, ret, args.Filter, &raw2)
+		fmt.Println("error", raw2)
+		log2.Infof("error", raw2)
 		if err2 != nil {
 			rr["image"] = ""
 			rr["name"] = ""
@@ -465,6 +467,7 @@ func (me *T) GetNFTRecordByAddress(args struct {
 	if err != nil {
 		return err
 	}
+
 	for _, item := range r3 {
 		from := ""
 		to := ""
@@ -474,8 +477,9 @@ func (me *T) GetNFTRecordByAddress(args struct {
 		if item["to"] != nil && item["to"] != "" {
 			to = item["to"].(string)
 		}
-		fmt.Println("TESTERROR:", item)
-		fmt.Println("TESTERROR:", from != args.SecondaryMarket.Val() && to != args.SecondaryMarket.Val() && from != args.PrimaryMarket.Val() && to != args.PrimaryMarket.Val())
+
+		log2.Infof("TESTERROR:", item)
+		log2.Infof("TESTERROR:", from != args.SecondaryMarket.Val() && to != args.SecondaryMarket.Val() && from != args.PrimaryMarket.Val() && to != args.PrimaryMarket.Val())
 		if from != args.SecondaryMarket.Val() && to != args.SecondaryMarket.Val() && from != args.PrimaryMarket.Val() && to != args.PrimaryMarket.Val() {
 			rr := make(map[string]interface{})
 
@@ -495,6 +499,8 @@ func (me *T) GetNFTRecordByAddress(args struct {
 			//获取nft的属性
 			var raw3 map[string]interface{}
 			err3 := getNFTProperties(strval.T(tokenid), h160.T(asset), me, ret, args.Filter, &raw3)
+			fmt.Println("error", raw3)
+			log2.Infof("error", raw3)
 			if err3 != nil {
 				rr["image"] = ""
 				rr["name"] = ""
@@ -570,10 +576,11 @@ func getNFTProperties(tokenId strval.T, contractHash h160.T, me *T, ret *json.Ra
 	if err != nil {
 		return err
 	}
-	fmt.Println("TESTERROR: ", r1)
+	fmt.Println("error: ", r1)
 	asset := r1["asset"].(string)
 	tokenid := r1["tokenid"].(string)
 	extendData := r1["properties"].(string)
+	log2.Infof("error: ", r1)
 	fmt.Println("TESTERROR: ", extendData)
 	if extendData != "" {
 		properties := make(map[string]interface{})
@@ -591,7 +598,7 @@ func getNFTProperties(tokenId strval.T, contractHash h160.T, me *T, ret *json.Ra
 			tokenuri, ok := data["tokenURI"]
 			if ok {
 				ppjson, err := GetImgFromTokenURL(tokenurl(tokenuri.(string)), asset, tokenid)
-
+				fmt.Println(ppjson)
 				if err != nil {
 					return err
 				}
