@@ -254,6 +254,10 @@ func (me *T) QueryLastJob(args struct {
 	var result map[string]interface{}
 	opts := options.FindOne().SetSort(bson.M{"_id": -1})
 	err := collection.FindOne(me.Ctx, bson.M{}, opts).Decode(&result)
+	if err == mongo.ErrNoDocuments {
+		return nil, stderr.ErrNotFound
+	}
+
 	if err != nil {
 		return nil, stderr.ErrFind
 	}
