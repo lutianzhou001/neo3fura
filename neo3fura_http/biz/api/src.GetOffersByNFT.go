@@ -117,8 +117,8 @@ func (me *T) GetOffersByNFT(args struct {
 			if len(pp) > 0 {
 				it := pp[0].(map[string]interface{})
 				extendData1 := it["properties"].(string)
-				asset := it["asset"].(string)
-				tokenid := it["tokenid"].(string)
+				asset := item["asset"].(string)
+				tokenid := item["tokenid"].(string)
 				if extendData1 != "" {
 					properties := make(map[string]interface{})
 					var data map[string]interface{}
