@@ -286,6 +286,9 @@ func (me *T) GetOffersByAddress(args struct {
 
 func GetImgFromTokenURL(tokenurl string, asset string, tokenid string) (map[string]interface{}, error) {
 	//检查该tokenurl 文件是否本地存在
+	if tokenurl == "" {
+		return nil, nil
+	}
 	currentPath, err := os.Getwd()
 	if err != nil {
 		return nil, err

@@ -560,12 +560,13 @@ func (me *T) GetNFTMarket(args struct {
 }
 
 func tokenurl(url string) string {
-
-	str := url[:4]
-	if str == "ipfs" {
-		gateway := "https://cloudflare-ipfs.com"
-		httpurl := strings.Replace(url, "ipfs.io", gateway, 1)
-		return httpurl
+	if len(url) > 4 {
+		str := url[:4]
+		if str == "ipfs" {
+			gateway := "https://cloudflare-ipfs.com"
+			httpurl := strings.Replace(url, "ipfs.io", gateway, 1)
+			return httpurl
+		}
 	}
 
 	return url
@@ -573,11 +574,13 @@ func tokenurl(url string) string {
 
 func ipfsImhUrl(url string) string {
 
-	str := url[:4]
-	if str == "ipfs" {
-		str1 := strings.Replace(url, ":", "", 1)
-		image := "https://ipfs.io/" + str1
-		return image
+	if len(url) > 4 {
+		str := url[:4]
+		if str == "ipfs" {
+			str1 := strings.Replace(url, ":", "", 1)
+			image := "https://ipfs.io/" + str1
+			return image
+		}
 	}
 
 	return url
