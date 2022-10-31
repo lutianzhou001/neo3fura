@@ -201,6 +201,7 @@ func (me *T) GetNFTActivityByAsset(args struct {
 		eventname := item["eventname"].(string)
 		if eventname == "Claim" || eventname == "CompleteOffer" {
 			extendData := item["extendData"].(string)
+			nonce := item["nonce"].(int64)
 			var data map[string]interface{}
 			var auctionType = 0
 			if err := json.Unmarshal([]byte(extendData), &data); err == nil {
@@ -213,7 +214,16 @@ func (me *T) GetNFTActivityByAsset(args struct {
 					if err != nil {
 						return err
 					}
-					r2["from"] = item["market"]
+					auctionInfo, err := me.GetAuction(nonce, args.Market.Val())
+					if err != nil {
+						return err
+					}
+					var auctor string
+					if auctionInfo != nil {
+						auctor = auctionInfo["user"].(string)
+					}
+
+					r2["from"] = auctor
 					r2["to"] = item["user"]
 
 					if auctionType == 1 {
@@ -332,4 +342,23 @@ func (me *T) GetNFTActivityByAsset(args struct {
 
 	*ret = json.RawMessage(r)
 	return nil
+}
+
+//获取上架的数据 （）
+func (me T) GetAuction(nonce int64, market string) (map[string]interface{}, error) {
+	message := make(json.RawMessage, 0)
+	ret := &message
+	r0, err := me.Client.QueryOne(
+		struct {
+			Collection string
+			Index      string
+			Sort       bson.M
+			Filter     bson.M
+			Query      []string
+		}{Collection: "MarketNotification", Index: "GetAuction", Filter: bson.M{"eventname": "Auction", "market": market, "nonce": nonce}}, ret)
+	if err != nil {
+		return nil, err
+	}
+
+	return r0, nil
 }
