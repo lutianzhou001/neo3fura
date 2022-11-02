@@ -182,8 +182,8 @@ func (me *T) GetOffersByAddress(args struct {
 			if len(pp) > 0 {
 				it := pp[0].(map[string]interface{})
 				extendData := it["properties"].(string)
-				asset := it["asset"].(string)
-				tokenid := it["tokenid"].(string)
+				asset := item["asset"].(string)
+				tokenid := item["tokenid"].(string)
 				if extendData != "" {
 					properties := make(map[string]interface{})
 					var data map[string]interface{}
@@ -279,18 +279,25 @@ func (me *T) GetOffersByAddress(args struct {
 	}
 	if raw != nil {
 		asset := raw["assetlist"]
-		offerCollection, err := me.Client.QueryAggregate(struct {
-			Collection string
-			Index      string
-			Sort       bson.M
-			Filter     bson.M
-			Pipeline   []bson.M
-			Query      []string
-		}{Collection: "MarketNotification",
-			Index:  "getOfferCollection",
-			Sort:   bson.M{},
-			Filter: bson.M{},
-			Pipeline: []bson.M{
+		pipeline1 := []bson.M{}
+		if args.OfferState.Val() == OfferState.Valid.Val() { //拍卖中  accont >0 && auctionType =2 &&  owner=market && runtime <deadline
+			pipeline1 = []bson.M{
+				bson.M{"$match": bson.M{"user": args.Address, "eventname": "OfferCollection"}},
+				bson.M{"$lookup": bson.M{
+					"from": "Nep11Properties",
+					"let":  bson.M{"asset": "$asset"},
+					"pipeline": []bson.M{
+						bson.M{"$match": bson.M{"$expr": bson.M{"$and": []interface{}{
+							//bson.M{"$eq": []interface{}{"$tokenid", "$$tokenid"}},
+							bson.M{"$eq": []interface{}{"$asset", "$$asset"}},
+						}}}},
+						bson.M{"$project": bson.M{"properties": 1, "asset": 1, "tokenid": 1}},
+					},
+					"as": "properties"},
+				},
+			}
+		} else if args.OfferState.Val() == OfferState.Received.Val() {
+			pipeline1 = []bson.M{
 				bson.M{"$match": bson.M{"eventname": "OfferCollection", "asset": bson.M{"$in": asset}}},
 				bson.M{"$lookup": bson.M{
 					"from": "Nep11Properties",
@@ -304,8 +311,41 @@ func (me *T) GetOffersByAddress(args struct {
 					},
 					"as": "properties"},
 				},
-			},
-			Query: []string{},
+			}
+		} else {
+			pipeline1 = []bson.M{
+				bson.M{"$match": bson.M{"eventname": "OfferCollection", "$or": []interface{}{
+					bson.M{"user": args.Address},
+					bson.M{"asset": bson.M{"$in": asset}},
+				}}},
+				bson.M{"$lookup": bson.M{
+					"from": "Nep11Properties",
+					"let":  bson.M{"asset": "$asset", "tokenid": "$tokenid"},
+					"pipeline": []bson.M{
+						bson.M{"$match": bson.M{"$expr": bson.M{"$and": []interface{}{
+							//bson.M{"$eq": []interface{}{"$tokenid", "$$tokenid"}},
+							bson.M{"$eq": []interface{}{"$asset", "$$asset"}},
+						}}}},
+						bson.M{"$project": bson.M{"properties": 1, "asset": 1, "tokenid": 1}},
+					},
+					"as": "properties"},
+				},
+			}
+		}
+
+		offerCollection, err := me.Client.QueryAggregate(struct {
+			Collection string
+			Index      string
+			Sort       bson.M
+			Filter     bson.M
+			Pipeline   []bson.M
+			Query      []string
+		}{Collection: "MarketNotification",
+			Index:    "getOfferCollection",
+			Sort:     bson.M{},
+			Filter:   bson.M{},
+			Pipeline: pipeline1,
+			Query:    []string{},
 		}, ret)
 		if err != nil {
 			return err
@@ -361,22 +401,23 @@ func (me *T) GetOffersByAddress(args struct {
 								return err
 							}
 							item["deadline"] = deadline
-
+							if deadline < currentTime {
+								break
+							}
 							//properties
 
 							if item["properties"] != nil {
 								properties := item["properties"].(primitive.A)
 								for _, ppit := range properties {
-									copyItem := make(map[string]interface{})
-									copyItem = item
 
+									copyItem := item
 									ppitem := ppit.(map[string]interface{})
 									ppinfo := ppitem["properties"]
 									ppAsset := ppitem["asset"].(string)
 									ppTokenid := ppitem["tokenid"].(string)
 									var ppdata map[string]interface{}
 									copyItem["tokenid"] = ppTokenid
-									copyItem["asset"] = ppAsset
+									//item["asset"] = ppAsset
 									copyItem["properties"] = ppinfo
 
 									//
@@ -414,10 +455,11 @@ func (me *T) GetOffersByAddress(args struct {
 									} else { //未上架
 										copyItem["originOwner"] = owner
 									}
-
+									//筛选
 									if copyItem["originOwner"].(string) != args.Address.Val() {
 										continue
 									}
+
 									//properties
 									if ppinfo != nil {
 										if err1 := json.Unmarshal([]byte(ppinfo.(string)), &ppdata); err1 == nil {
@@ -438,7 +480,7 @@ func (me *T) GetOffersByAddress(args struct {
 												//item["image"] = string(tb[:])
 												copyItem["thumbnail"] = ImagUrl(ppAsset, string(tb[:]), "thumbnail")
 											} else {
-												if item["thumbnail"] == nil {
+												if copyItem["thumbnail"] == nil {
 													if image != nil && image != "" {
 														if image == nil {
 															copyItem["thumbnail"] = item["image"]
@@ -455,7 +497,7 @@ func (me *T) GetOffersByAddress(args struct {
 													return err
 												}
 												for key, value := range ppjson {
-													item[key] = value
+													copyItem[key] = value
 
 													if key == "image" {
 														img := value.(string)
@@ -471,7 +513,13 @@ func (me *T) GetOffersByAddress(args struct {
 
 									delete(copyItem, "extendData")
 									delete(copyItem, "properties")
-									result = append(result, copyItem)
+
+									//re  := new(map[string]interface{})
+									//re = &copyItem
+									//
+									re := make(map[string]interface{})
+									re = CopyMap(re, copyItem)
+									result = append(result, re)
 
 								}
 							}
@@ -694,4 +742,11 @@ func bytesToIntS(b []byte) (int, error) {
 	default:
 		return 0, fmt.Errorf("%s", "BytesToInt bytes lenth is invaild!")
 	}
+}
+
+func CopyMap(dst map[string]interface{}, src map[string]interface{}) map[string]interface{} {
+	for key, it := range src {
+		dst[key] = it
+	}
+	return dst
 }
