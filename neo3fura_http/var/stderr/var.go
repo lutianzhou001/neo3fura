@@ -39,3 +39,9 @@ var ErrWhiteList = jsonrpc2.NewError(-32001, "whiteList is null")
 var ErrInsertDocument = jsonrpc2.NewError(-32001, "insert document error")
 
 var ErrExistsDocument = jsonrpc2.NewError(-32001, "asset already exists")
+
+var ErrNotInMarketWhiteList = jsonrpc2.NewError(-32001, "asset is not in whitelist of market")
+
+var ErrGetHighestOffer = jsonrpc2.NewError(-32001, "get highest offer error")
+
+var ErrGetNFTInfo = jsonrpc2.NewError(-32001, "get NFT info error")
