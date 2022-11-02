@@ -402,7 +402,7 @@ func (me *T) GetOffersByAddress(args struct {
 							}
 							item["deadline"] = deadline
 							if deadline < currentTime {
-								break
+								continue
 							}
 							//properties
 
