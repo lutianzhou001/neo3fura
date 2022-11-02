@@ -141,4 +141,8 @@ var Apis = []string{
 	"GetPopularToken",
 	"SetPopularTokenWhitelist",
 	"TokenUriRename",
+	"GetMarketCollections",
+	"SetMarketCollectionWhitelist",
+	"GetInfoByNFT",
+	"GetMarketAssetOwnedByAddress",
 }
