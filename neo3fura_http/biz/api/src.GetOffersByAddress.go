@@ -456,8 +456,10 @@ func (me *T) GetOffersByAddress(args struct {
 										copyItem["originOwner"] = owner
 									}
 									//筛选
-									if copyItem["originOwner"].(string) != args.Address.Val() {
-										continue
+									if args.OfferState.Val() == OfferState.Received.Val() {
+										if copyItem["originOwner"].(string) != args.Address.Val() {
+											continue
+										}
 									}
 
 									//properties
