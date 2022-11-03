@@ -300,7 +300,7 @@ func (me *T) GetOffersByAddress(args struct {
 			}
 		} else if args.OfferState.Val() == OfferState.Received.Val() {
 			pipeline1 = []bson.M{
-				bson.M{"$match": bson.M{"eventname": "OfferCollection", "asset": bson.M{"$in": asset}}},
+				bson.M{"$match": bson.M{"user": bson.M{"$ne": args.Address.Val()}, "eventname": "OfferCollection", "asset": bson.M{"$in": asset}}},
 				bson.M{"$lookup": bson.M{
 					"from": "Nep11Properties",
 					"let":  bson.M{"asset": "$asset"},
