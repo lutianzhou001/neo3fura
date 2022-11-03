@@ -167,6 +167,9 @@ func (me *T) GetOffersByAddress(args struct {
 					if err != nil {
 						return err
 					}
+					if deadline < currentTime {
+						continue
+					}
 					item["deadline"] = deadline
 
 				} else {
@@ -378,7 +381,20 @@ func (me *T) GetOffersByAddress(args struct {
 				}, ret)
 
 				if len(offer) > 0 {
-					continue
+					offereventname := offer["eventname"].(string)
+					if offereventname == "CancelOfferCollection" {
+						continue
+					} else {
+						extendData := item["extendData"].(string)
+						var data map[string]interface{}
+						if err1 := json.Unmarshal([]byte(extendData), &data); err1 == nil {
+							count := data["count"].(string)
+							if count == "0" {
+								continue
+							}
+
+						}
+					}
 				}
 
 				if item["extendData"] != nil {
