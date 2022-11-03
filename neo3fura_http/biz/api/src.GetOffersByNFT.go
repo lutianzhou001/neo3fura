@@ -8,6 +8,7 @@ import (
 	"neo3fura_http/lib/type/h160"
 	"neo3fura_http/lib/type/strval"
 	"neo3fura_http/var/stderr"
+	"strconv"
 	"time"
 )
 
@@ -99,8 +100,8 @@ func (me *T) GetOffersByNFT(args struct {
 				//"tokenid": item["tokenid"],
 				//"eventname":"CancelOffer",
 				"$or": []interface{}{
-					bson.M{"eventname": "CompleteOffer"},
-					bson.M{"eventname": "CancelOffer"},
+					bson.M{"eventname": "CompleteOfferCollection"},
+					bson.M{"eventname": "CancelOfferCollection"},
 				},
 			}
 		}
@@ -113,29 +114,51 @@ func (me *T) GetOffersByNFT(args struct {
 		}{
 			Collection: "MarketNotification",
 			Index:      "getOfferSate",
-			Sort:       bson.M{},
+			Sort:       bson.M{"timestamp": -1},
 			Filter:     filter,
 			Query:      []string{},
 		}, ret)
 
 		if len(offer) > 0 {
-			continue
+			offereventname := offer["eventname"].(string)
+			if offereventname == "CancelOfferCollection" {
+				continue
+			} else {
+				extendData := item["extendData"].(string)
+				var data map[string]interface{}
+				if err1 := json.Unmarshal([]byte(extendData), &data); err1 == nil {
+					count := data["count"].(string)
+					if count == "0" {
+						continue
+					}
+
+				}
+			}
+
 		}
 
 		extendData := item["extendData"].(string)
 		var dat map[string]interface{}
 		if err1 := json.Unmarshal([]byte(extendData), &dat); err1 == nil {
+
+			item["offerAsset"] = dat["offerAsset"]
+			item["offerAmount"] = dat["offerAmount"]
+			item["deadline"] = dat["deadline"]
+			offerCollectionDDL := dat["deadline"].(string)
+
+			DDL, err := strconv.ParseInt(offerCollectionDDL, 10, 64)
+			if err != nil {
+				return err
+			}
+			if DDL < currentTime {
+				continue
+			}
+
 			if eventname == "Offer" {
 				item["originOwner"] = dat["originOwner"]
-				item["offerAsset"] = dat["offerAsset"]
-				item["offerAmount"] = dat["offerAmount"]
-				item["deadline"] = dat["deadline"]
 			} else if eventname == "OfferCollection" {
 				//item["originOwner"] = dat["originOwner"]
 
-				item["offerAsset"] = dat["offerAsset"]
-				item["offerAmount"] = dat["offerAmount"]
-				item["deadline"] = dat["deadline"]
 				item["tokenid"] = args.TokenId
 
 				marketInfo, err := me.Client.QueryOne(struct {
