@@ -13,10 +13,12 @@ const (
 	NotListed T = "notlisted"
 	Unclaimed T = "unclaimed"
 	Expired   T = "expired"
-	//一级市场
-	Mint    T = "mint"
-	Listed  T = "listed"
-	Selling T = "selling"
+	//Collection
+	BuyNow     T = "Buy Now"       //优先级 1
+	CurrentBid T = "Current Bid"   //优先级 1
+	LastSold   T = "Last Sold"     //优先级 2
+	Offer      T = "Highest Offer" //优先级 2
+
 )
 
 // Valid ...
