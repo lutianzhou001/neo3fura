@@ -232,9 +232,16 @@ func (me *T) GetNFTList(args struct {
 						dst["currentBidAmount"] = rawResult["currentBidAmount"]
 						dst["offerAsset"] = rawResult["offerAsset"]
 						dst["offerAmount"] = rawResult["offerAmount"]
+						if newProperties["image"] == nil {
+							continue
+						}
+						dst["image"] = ImagUrl(newProperties["asset"].(string), newProperties["image"].(string), "images")
+						if newProperties["thumbnail"] != nil {
+							dst["thumbnail"] = ImagUrl(newProperties["asset"].(string), newProperties["thumbnail"].(string), "thumbnail")
+						} else {
+							dst["thumbnail"] = ImagUrl(newProperties["asset"].(string), newProperties["image"].(string), "thumbnail")
+						}
 
-						dst["image"] = newProperties["image"]
-						dst["thumbnail"] = newProperties["thumbnail"]
 						dst["number"] = newProperties["number"]
 						dst["properties"] = newProperties
 						dst["class"] = newProperties["class"]
