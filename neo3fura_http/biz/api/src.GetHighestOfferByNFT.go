@@ -3,7 +3,6 @@ package api
 import (
 	"encoding/json"
 	"go.mongodb.org/mongo-driver/bson"
-	"math"
 	"math/big"
 	"neo3fura_http/lib/mapsort"
 	"neo3fura_http/lib/type/h160"
@@ -41,8 +40,8 @@ func (me *T) GetHighestOfferByNFT(args struct {
 	}{
 		Collection: "MarketNotification",
 		Index:      "GetHighestOfferByNFT",
-		Sort:       bson.M{},
-		Filter:     bson.M{"asset": args.Asset.Val(), "tokenid": args.TokenId.Val(), "market": args.MarketHash, "eventname": "Offer"},
+		Sort:       bson.M{"nonce": -1},
+		Filter:     bson.M{"asset": args.Asset.Val(), "tokenid": args.TokenId.Val(), "market": args.MarketHash, "eventname": bson.M{"$in": []interface{}{"Offer", "OfferCollection"}}},
 		Query:      []string{},
 		Limit:      args.Limit,
 		Skip:       args.Skip,
@@ -64,7 +63,6 @@ func (me *T) GetHighestOfferByNFT(args struct {
 			if err != nil {
 				return err
 			}
-
 			if currentTime < deadline {
 				//查看offer 当前状态
 				offer_nonce := item["nonce"]
@@ -92,49 +90,66 @@ func (me *T) GetHighestOfferByNFT(args struct {
 
 				if len(offerstate) > 0 {
 					continue
+
 				} else {
-					offer["user"] = item["user"]
-					offer["asset"] = item["asset"]
-					offer["tokenid"] = item["tokenid"]
-					offer["originOwner"] = dat["originOwner"]
-					offer["offerAsset"] = dat["offerAsset"]
-					offerAmount, err := strconv.ParseInt(dat["offerAmount"].(string), 10, 64)
-					if err != nil {
-						return err
+					extendData := item["extendData"].(string)
+					var data map[string]interface{}
+					if err1 := json.Unmarshal([]byte(extendData), &data); err1 == nil {
+						if data["count"] != nil {
+							count := data["count"].(string)
+							if count == "0" {
+								continue
+							}
+						}
+						//count := data["count"].(string)
+						//if count == "0" {
+						//	continue
+						//}else{
+						offer["user"] = item["user"]
+						offer["asset"] = item["asset"]
+						offer["tokenid"] = item["tokenid"]
+						offer["originOwner"] = dat["originOwner"]
+						offer["offerAsset"] = dat["offerAsset"]
+						offerAmount, err := strconv.ParseInt(dat["offerAmount"].(string), 10, 64)
+						if err != nil {
+							return err
+						}
+						offer["offerAmount"] = offerAmount
+						offer["deadline"] = deadline
+
+						// 获取对应usd的价格
+						//dd, _ := OpenAssetHashFile()
+						//decimal := dd[offer["offerAsset"].(string)]
+						//price, err := GetPrice(offer["offerAsset"].(string))
+						////price,err :=GetPrice("0xd2a4cff31913016155e38e474a2c06d08be276cf")
+						//if err != nil {
+						//	return err
+						//}
+						//
+						//if price == 0 {
+						//	price = 1
+						//}
+						//
+						//bfofferAmount, _ := new(big.Float).SetString(dat["offerAmount"].(string))
+						//
+						//flag := bfofferAmount.Cmp(big.NewFloat(0))
+						//
+						//if flag == 1 {
+						//	bfprice := big.NewFloat(price)
+						//	ffprice := big.NewFloat(1).Mul(bfprice, bfofferAmount)
+						//	de := math.Pow(10, float64(decimal))
+						//	usdAuctionAmount := new(big.Float).Quo(ffprice, big.NewFloat(float64(de)))
+						//	offer["usdAmount"] = usdAuctionAmount
+						//
+						//} else {
+						//	offer["usdAmount"] = 0
+						//}
+						////offer["usdAmount"] = price
+
+						result = append(result, offer)
+
 					}
-					offer["offerAmount"] = offerAmount
-					offer["deadline"] = deadline
 
-					// 获取对应usd的价格
-					dd, _ := OpenAssetHashFile()
-					decimal := dd[offer["offerAsset"].(string)]
-					price, err := GetPrice(offer["offerAsset"].(string))
-					//price,err :=GetPrice("0xd2a4cff31913016155e38e474a2c06d08be276cf")
-					if err != nil {
-						return err
-					}
-
-					if price == 0 {
-						price = 1
-					}
-
-					bfofferAmount, _ := new(big.Float).SetString(dat["offerAmount"].(string))
-
-					flag := bfofferAmount.Cmp(big.NewFloat(0))
-
-					if flag == 1 {
-						bfprice := big.NewFloat(price)
-						ffprice := big.NewFloat(1).Mul(bfprice, bfofferAmount)
-						de := math.Pow(10, float64(decimal))
-						usdAuctionAmount := new(big.Float).Quo(ffprice, big.NewFloat(float64(de)))
-						offer["usdAmount"] = usdAuctionAmount
-
-					} else {
-						offer["usdAmount"] = 0
-					}
-					//offer["usdAmount"] = price
-
-					result = append(result, offer)
 				}
 			}
 		} else {
@@ -194,6 +209,9 @@ func (me *T) GetHighestOfferByNFT(args struct {
 		}
 	}
 
+	if args.Raw != nil {
+		*args.Raw = hightestOffer
+	}
 	r2, err := me.Filter(hightestOffer, args.Filter)
 	if err != nil {
 		return err

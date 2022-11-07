@@ -8,7 +8,6 @@ import (
 	"github.com/joeqian10/neo3-gogogo/sc"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"math"
 	"math/big"
 	log2 "neo3fura_http/lib/log"
 	"neo3fura_http/lib/mapsort"
@@ -151,32 +150,32 @@ func (me *T) GetHighestOfferByNFTList(args struct {
 						offer["offerAmount"] = offerAmount
 						offer["deadline"] = deadline
 
-						// 获取对应usd的价格
-						dd, _ := OpenAssetHashFile()
-						decimal := dd[offer["offerAsset"].(string)]
-						price, err := GetPrice(offer["offerAsset"].(string))
-						//price,err :=GetPrice("0xd2a4cff31913016155e38e474a2c06d08be276cf")
-						if err != nil {
-							return err
-						}
-
-						if price == 0 {
-							price = 1
-						}
-
-						bfofferAmount, _ := new(big.Float).SetString(dat["offerAmount"].(string))
-
-						flag := bfofferAmount.Cmp(big.NewFloat(0))
-
-						if flag == 1 {
-							bfprice := big.NewFloat(price)
-							ffprice := big.NewFloat(1).Mul(bfprice, bfofferAmount)
-							de := math.Pow(10, float64(decimal))
-							usdAuctionAmount := new(big.Float).Quo(ffprice, big.NewFloat(float64(de)))
-							offer["usdAmount"] = usdAuctionAmount
-						} else {
-							offer["usdAmount"] = 0
-						}
+						//// 获取对应usd的价格
+						//dd, _ := OpenAssetHashFile()
+						//decimal := dd[offer["offerAsset"].(string)]
+						//price, err := GetPrice(offer["offerAsset"].(string))
+						////price,err :=GetPrice("0xd2a4cff31913016155e38e474a2c06d08be276cf")
+						//if err != nil {
+						//	return err
+						//}
+						//
+						//if price == 0 {
+						//	price = 1
+						//}
+						//
+						//bfofferAmount, _ := new(big.Float).SetString(dat["offerAmount"].(string))
+						//
+						//flag := bfofferAmount.Cmp(big.NewFloat(0))
+						//
+						//if flag == 1 {
+						//	bfprice := big.NewFloat(price)
+						//	ffprice := big.NewFloat(1).Mul(bfprice, bfofferAmount)
+						//	de := math.Pow(10, float64(decimal))
+						//	usdAuctionAmount := new(big.Float).Quo(ffprice, big.NewFloat(float64(de)))
+						//	offer["usdAmount"] = usdAuctionAmount
+						//} else {
+						//	offer["usdAmount"] = 0
+						//}
 						//offer["usdAmount"] = price
 
 						result = append(result, offer)
@@ -262,7 +261,7 @@ func GetSavings(scriptHash h160.T, operation string, address []string, assetStr 
 	switch rt {
 
 	case "test":
-		testNetEndPoint = "http://seed2t4.neo.org:20332"
+		testNetEndPoint = "http://seed2t5.neo.org:20332"
 	case "test2":
 		testNetEndPoint = "http://seed2t5.neo.org:20332"
 	case "staging":
