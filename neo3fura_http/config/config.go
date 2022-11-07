@@ -148,4 +148,5 @@ var Apis = []string{
 	"GetNFTList",
 	"GetNFTByAssetClass",
 	"GetCollectionsByAsset",
+	"GetCountNFTList",
 }
