@@ -8,9 +8,9 @@ import (
 	"neo3fura_http/var/stderr"
 )
 
-func (me *T) GetNFTByAssetSeries(args struct {
+func (me *T) GetNFTByAssetClass(args struct {
 	Asset  h160.T
-	Series string
+	Class  string
 	Limit  int64
 	Skip   int64
 	Filter map[string]interface{}
@@ -37,9 +37,9 @@ func (me *T) GetNFTByAssetSeries(args struct {
 			Sort:       bson.M{},
 			Filter:     bson.M{},
 			Pipeline: []bson.M{
-				bson.M{"$set": bson.M{"class": bson.M{"$ifNull": []interface{}{"$series", "$tokenid"}}}},
+				bson.M{"$set": bson.M{"class": bson.M{"$ifNull": []interface{}{"$name", "$tokenid"}}}},
 				bson.M{"$set": bson.M{"class": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", "0x50ac1c37690cc2cfc594472833cf57505d5f46de"}}, "then": "$asset", "else": "$class"}}}},
-				bson.M{"$match": bson.M{"class": args.Series}},
+				bson.M{"$match": bson.M{"class": args.Class}},
 				bson.M{"$skip": args.Skip},
 				bson.M{"$limit": args.Limit},
 				//bson.M{"$lookup": bson.M{
@@ -178,9 +178,9 @@ func (me *T) GetNFTByAssetSeries(args struct {
 			Sort:       bson.M{},
 			Filter:     bson.M{},
 			Pipeline: []bson.M{
-				bson.M{"$set": bson.M{"class": bson.M{"$ifNull": []interface{}{"$series", "$tokenid"}}}},
+				bson.M{"$set": bson.M{"class": bson.M{"$ifNull": []interface{}{"$name", "$tokenid"}}}},
 				bson.M{"$set": bson.M{"class": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", "0x50ac1c37690cc2cfc594472833cf57505d5f46de"}}, "then": "$asset", "else": "$class"}}}},
-				bson.M{"$match": bson.M{"class": args.Series}},
+				bson.M{"$match": bson.M{"class": args.Class}},
 			},
 			Query: []string{},
 		}, ret)

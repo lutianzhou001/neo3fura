@@ -146,6 +146,6 @@ var Apis = []string{
 	"GetInfoByNFT",
 	"GetMarketAssetOwnedByAddress",
 	"GetNFTList",
-	"GetNFTByAssetSeries",
+	"GetNFTByAssetClass",
 	"GetCollectionsByAsset",
 }

@@ -123,7 +123,7 @@ func (me *T) GetNFTList(args struct {
 					bson.M{"$eq": []interface{}{"$tokenid", "$$tokenid"}},
 					bson.M{"$eq": []interface{}{"$asset", "$$asset"}},
 				}}}},
-				bson.M{"$set": bson.M{"class": bson.M{"$ifNull": []interface{}{"$series", "$tokenid"}}}},
+				bson.M{"$set": bson.M{"class": bson.M{"$ifNull": []interface{}{"$name", "$tokenid"}}}},
 				bson.M{"$set": bson.M{"class": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", "0x50ac1c37690cc2cfc594472833cf57505d5f46de"}}, "then": "$asset", "else": "$class"}}}},
 			},
 			"as": "properties"},
