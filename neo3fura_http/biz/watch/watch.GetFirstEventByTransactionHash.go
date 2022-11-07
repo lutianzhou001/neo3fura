@@ -59,7 +59,7 @@ func (me *T) GetFirstEventByTransactionHash() error {
 			log2.Fatalf("Query Execution error:%v", err)
 		}
 
-		if r1["vmstate"] != nil {
+		if r1["vmstate"] != nil && r1["vmstate"] != "" {
 			r2["vmstate"] = r1["vmstate"].(string)
 			_, err = me.Client.SaveJob(struct {
 				Collection string
