@@ -19,6 +19,7 @@ import (
 func (me *T) GetNFTList(args struct {
 	SecondaryMarket h160.T //
 	PrimaryMarket   h160.T
+	ContractHash    h160.T
 	NFTState        strval.T //state:aution  sale  notlisted  unclaimed
 	Sort            strval.T //listedTime  price  deadline
 	Order           int64    //-1:降序  +1：升序
@@ -35,6 +36,14 @@ func (me *T) GetNFTList(args struct {
 			return stderr.ErrInvalidArgs
 		}
 	}
+	if len(args.ContractHash) > 0 && args.ContractHash != "" {
+		if args.ContractHash.Valid() == false {
+			return stderr.ErrInvalidArgs
+		}
+		a := bson.M{"$match": bson.M{"asset": args.ContractHash.Val()}}
+		pipeline = append(pipeline, a)
+	}
+
 	if len(args.SecondaryMarket) > 0 && args.SecondaryMarket != "" {
 		if args.NFTState.Val() == NFTstate.Auction.Val() || args.NFTState.Val() == NFTstate.Sale.Val() {
 			if args.SecondaryMarket.Valid() == false {
@@ -166,7 +175,7 @@ func (me *T) GetNFTList(args struct {
 	if err != nil {
 		return err
 	}
-	var count int64
+
 	result := make([]map[string]interface{}, 0)
 	for _, item := range r1 {
 		if item["propertiesArr"] != nil {
@@ -204,7 +213,6 @@ func (me *T) GetNFTList(args struct {
 
 			rawTokenid := rawResult["tokenid"]
 			for _, it := range groupInfo {
-				count += 1
 				newit := it.(map[string]interface{})
 				if rawTokenid == newit["tokenid"] {
 					dst := make(map[string]interface{})
@@ -230,7 +238,7 @@ func (me *T) GetNFTList(args struct {
 						dst["number"] = newProperties["number"]
 						dst["properties"] = newProperties
 						dst["class"] = newProperties["class"]
-
+						dst["count"] = len(groupInfo)
 						state := rawResult["state"]
 						if state == "list" {
 							auctionType := rawResult["auctionType"].(int32)
@@ -264,7 +272,7 @@ func (me *T) GetNFTList(args struct {
 		}
 	}
 
-	r3, err := me.FilterAggragateAndAppendCount(pageResult, count, args.Filter)
+	r3, err := me.FilterAggragateAndAppendCount(pageResult, len(result), args.Filter)
 
 	if err != nil {
 		return err
