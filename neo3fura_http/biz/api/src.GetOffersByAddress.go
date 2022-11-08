@@ -714,9 +714,9 @@ func ImagUrl(asset string, imgurl string, pre string) string {
 	url := ""
 	switch rt {
 	case "test":
-		url = "https://img.megaoasis.io/testnet/" + pre + "/" + asset + "/" + name
+		url = "https://testimg.megaoasis.io/" + pre + "/" + asset + "/" + name
 	case "test2":
-		url = "https://img.megaoasis.io/testnet/" + pre + "/" + asset + "/" + name
+		url = "https://testimg.megaoasis.io/" + pre + "/" + asset + "/" + name
 	case "staging":
 		url = "https://img.megaoasis.io/" + pre + "/" + asset + "/" + name
 	default:
