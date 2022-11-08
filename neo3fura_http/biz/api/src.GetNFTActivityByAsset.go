@@ -32,7 +32,7 @@ func (me *T) GetNFTActivityByAsset(args struct {
 	var pipeline []bson.M
 	if args.State == "sales" {
 		pipeline = []bson.M{
-			bson.M{"$match": bson.M{"asset": args.Asset, "market": args.Market, "eventname": bson.M{"$in": []interface{}{"Claim", "CompleteOffer"}}}},
+			bson.M{"$match": bson.M{"asset": args.Asset, "market": args.Market, "eventname": bson.M{"$in": []interface{}{"Claim", "CompleteOffer", "CompleteOfferCollection"}}}},
 			bson.M{"$lookup": bson.M{
 				"from": "Nep11Properties",
 				"let":  bson.M{"asset": "$asset", "tokenid": "$tokenid"},
@@ -66,7 +66,7 @@ func (me *T) GetNFTActivityByAsset(args struct {
 		}
 	} else if args.State == "offers" {
 		pipeline = []bson.M{
-			bson.M{"$match": bson.M{"asset": args.Asset, "market": args.Market, "eventname": "Offer"}},
+			bson.M{"$match": bson.M{"asset": args.Asset, "market": args.Market, "eventname": bson.M{"$in": []interface{}{"Offer", "OfferCollection"}}}},
 			bson.M{"$lookup": bson.M{
 				"from": "Nep11Properties",
 				"let":  bson.M{"asset": "$asset", "tokenid": "$tokenid"},
@@ -192,14 +192,30 @@ func (me *T) GetNFTActivityByAsset(args struct {
 				return err
 			}
 		} else {
+
+			assetInfo, err := me.Client.QueryOne(struct {
+				Collection string
+				Index      string
+				Sort       bson.M
+				Filter     bson.M
+				Query      []string
+			}{Collection: "Asset",
+				Index:  "GetAssetInfo",
+				Sort:   bson.M{},
+				Filter: bson.M{"hash": item["asset"]},
+				Query:  []string{},
+			}, ret)
+			if err != nil {
+				return err
+			}
 			r2["image"] = ""
-			r2["name"] = ""
+			r2["name"] = assetInfo["tokenname"]
 			r2["thumbnail"] = ""
 
 		}
 
 		eventname := item["eventname"].(string)
-		if eventname == "Claim" || eventname == "CompleteOffer" {
+		if eventname == "Claim" || eventname == "CompleteOffer" || eventname == "CompleteOfferCollection" {
 			extendData := item["extendData"].(string)
 			nonce := item["nonce"].(int64)
 			var data map[string]interface{}
@@ -284,7 +300,7 @@ func (me *T) GetNFTActivityByAsset(args struct {
 				return err
 			}
 
-		} else if eventname == "Offer" {
+		} else if eventname == "Offer" || eventname == "OfferCollection" {
 			extendData := item["extendData"].(string)
 			var data map[string]interface{}
 

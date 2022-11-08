@@ -95,7 +95,8 @@ func (me *T) GetNFTRecordByAddress(args struct {
 		asset := item["asset"].(string)
 		tokenid := item["tokenid"].(string)
 		tokenids = append(tokenids, strval.T(tokenid))
-		rr["event"] = item["eventname"]
+		eventname := item["eventname"].(string)
+		rr["event"] = eventname
 		user := item["user"].(string)
 		rr["user"] = user
 		rr["asset"] = asset
@@ -107,21 +108,43 @@ func (me *T) GetNFTRecordByAddress(args struct {
 
 		//获取Nft的属性
 		var raw2 map[string]interface{}
-		err2 := getNFTProperties(strval.T(tokenid), h160.T(asset), me, ret, args.Filter, &raw2)
-		if err2 != nil {
-			rr["image"] = ""
-			rr["name"] = ""
+		if eventname == "OfferCollection" || eventname == "CancelOfferCollection" {
+			raw, err := me.Client.QueryOne(struct {
+				Collection string
+				Index      string
+				Sort       bson.M
+				Filter     bson.M
+				Query      []string
+			}{Collection: "Asset",
+				Index:  "GetAsset",
+				Sort:   bson.M{},
+				Filter: bson.M{"hash": asset},
+				Query:  []string{},
+			}, ret)
+			if err != nil {
+				return err
+			}
+			rr["image"] = nil
+			rr["thumbnail"] = nil
+			rr["name"] = raw["tokenname"]
 			rr["number"] = int64(-1)
-			rr["properties"] = ""
+			rr["properties"] = nil
+
+		} else {
+			err2 := getNFTProperties(strval.T(tokenid), h160.T(asset), me, ret, args.Filter, &raw2)
+			if err2 != nil {
+				rr["image"] = ""
+				rr["name"] = ""
+				rr["number"] = int64(-1)
+				rr["properties"] = ""
+			}
+			rr["image"] = raw2["image"]
+			rr["thumbnail"] = raw2["thumbnail"]
+			rr["name"] = raw2["name"]
+			rr["number"] = raw2["number"]
+			rr["properties"] = raw2["properties"]
 
 		}
-
-		rr["image"] = raw2["image"]
-		rr["thumbnail"] = raw2["thumbnail"]
-		rr["name"] = raw2["name"]
-		rr["number"] = raw2["number"]
-		rr["properties"] = raw2["properties"]
-
 		//获取此时Nft的状态
 		var raw1 []map[string]interface{}
 		err1 := me.GetNFTByContractHashTokenId(struct {
@@ -423,7 +446,7 @@ func (me *T) GetNFTRecordByAddress(args struct {
 					rr["auctionAsset"] = offerAsset
 					rr["auctionAmount"] = bidAmount
 					user1 := item["user"]
-
+					count := dat["count"].(string)
 					//查看offer 当前状态
 					offer_nonce := item["nonce"]
 					offer, _ := me.Client.QueryOne(struct {
@@ -450,9 +473,11 @@ func (me *T) GetNFTRecordByAddress(args struct {
 					if len(offer) > 0 {
 						offer_event := offer["eventname"]
 						if offer_event == "CompleteOfferCollection" {
-							rr["state"] = NFTevent.Offer_Accept.Val() //出价被卖家接受
-							rr["from"] = user1
-							rr["to"] = offer["user"]
+							if count == "0" {
+								rr["state"] = NFTevent.Offer_Accept.Val() //出价被卖家接受
+								rr["from"] = user1
+								rr["to"] = offer["user"]
+							}
 						} else if offer_event == "CancelOfferCollection" {
 							rr["state"] = NFTevent.Offer_Cancel.Val() //出价被买家取消
 							rr["from"] = ""
