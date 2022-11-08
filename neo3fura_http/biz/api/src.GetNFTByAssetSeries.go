@@ -37,26 +37,14 @@ func (me *T) GetNFTByAssetClass(args struct {
 			Sort:       bson.M{},
 			Filter:     bson.M{},
 			Pipeline: []bson.M{
-				bson.M{"$set": bson.M{"class": bson.M{"$ifNull": []interface{}{"$name", "$tokenid"}}}},
-				bson.M{"$set": bson.M{"class": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", "0x50ac1c37690cc2cfc594472833cf57505d5f46de"}}, "then": "$asset", "else": "$class"}}}},
+				bson.M{"$match": bson.M{"asset": args.Asset}},
+				bson.M{"$set": bson.M{"class": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", "0x50ac1c37690cc2cfc594472833cf57505d5f46de"}}, "then": "$asset",
+					"else": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", "0x6a2893f97401e2b58b757f59d71238d91339856a"}}, "then": "$image",
+						"else": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", "0x9f344fe24c963d70f5dcf0cfdeb536dc9c0acb3a"}}, "then": "$tokenid",
+							"else": "$name"}}}}}}}},
 				bson.M{"$match": bson.M{"class": args.Class}},
 				bson.M{"$skip": args.Skip},
 				bson.M{"$limit": args.Limit},
-				//bson.M{"$lookup": bson.M{
-				//	"from": "MarketNotification",
-				//	"let":  bson.M{"asset": "$asset","tokenid":"$tokenid"},
-				//"pipeline": []bson.M{	//
-				//	bson.M{"$match":bson.M{"eventname":bson.M{"$in":[]interface{}{"Auction","OfferCollection","CompleteOfferCollection","Offer","CompleteOffer","Claim"}}} },
-				//	bson.M{"$match":bson.M{"$expr":bson.M{"$and":[]interface{}{
-				//		bson.M{"$eq": []interface{}{"$asset", "$$asset"}},
-				//		bson.M{"$eq": []interface{}{"$tokenid", "$$tokenid"}},
-				//	}}}},
-				//	bson.M{"$sort":bson.M{"nonce":-1}},
-				//	bson.M{"$group":bson.M{"_id":"$eventname","eventname":bson.M{"$last":"$eventname"},"market":bson.M{"$last":"$market"},"timestamp":bson.M{"$last":"$timestamp"},"extendData":bson.M{"$last":"$extendData"}}},
-				//	bson.M{"$project": bson.M{"eventname":1,"market":1,"extendData":1,"timestamp":1}},
-				//	//bson.M{"$limit":args.Limit},
-				//},
-				//"as": "notification"}},
 			},
 			Query: []string{},
 		}, ret)
@@ -82,23 +70,7 @@ func (me *T) GetNFTByAssetClass(args struct {
 
 		}
 		if item["image"] == nil {
-
-			if item["tokenURI"] != nil {
-				tokenUrl := item["tokenURI"].(string)
-				ppjson, err := GetImgFromTokenURL(tokenurl(tokenUrl), asset, tokenid)
-				if err != nil {
-					return err
-				}
-				for key, value := range ppjson {
-					//item[key] = value
-					if key == "image" {
-						img := value.(string)
-						item["thumbnail"] = ImagUrl(asset, img, "thumbnail")
-						item["image"] = ImagUrl(asset, img, "images")
-					}
-				}
-			} else if item["properties"] != nil {
-				//
+			if item["properties"] != nil { //
 				jsonData := make(map[string]interface{})
 				properties := item["properties"].(string)
 				if properties != "" {
@@ -106,7 +78,6 @@ func (me *T) GetNFTByAssetClass(args struct {
 					if err != nil {
 						return err
 					}
-
 					image, ok := jsonData["image"]
 					if ok {
 						item["image"] = ImagUrl(item["asset"].(string), image.(string), "images")
@@ -134,9 +105,25 @@ func (me *T) GetNFTByAssetClass(args struct {
 					}
 				}
 
-			} else {
-				item["image"] = ""
-				item["thumbnail"] = ""
+			}
+			if item["tokenURI"] != nil {
+				tokenUrl := item["tokenURI"].(string)
+				ppjson, err := GetImgFromTokenURL(tokenurl(tokenUrl), asset, tokenid)
+				if err != nil {
+					return err
+				}
+				for key, value := range ppjson {
+					//item[key] = value
+					if key == "image" {
+						img := value.(string)
+						item["thumbnail"] = ImagUrl(asset, img, "thumbnail")
+						item["image"] = ImagUrl(asset, img, "images")
+					}
+					if key == "name" {
+						item["name"] = value
+					}
+
+				}
 			}
 		}
 
@@ -178,8 +165,10 @@ func (me *T) GetNFTByAssetClass(args struct {
 			Sort:       bson.M{},
 			Filter:     bson.M{},
 			Pipeline: []bson.M{
-				bson.M{"$set": bson.M{"class": bson.M{"$ifNull": []interface{}{"$name", "$tokenid"}}}},
-				bson.M{"$set": bson.M{"class": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", "0x50ac1c37690cc2cfc594472833cf57505d5f46de"}}, "then": "$asset", "else": "$class"}}}},
+				bson.M{"$set": bson.M{"class": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", "0x50ac1c37690cc2cfc594472833cf57505d5f46de"}}, "then": "$asset",
+					"else": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", "0x6a2893f97401e2b58b757f59d71238d91339856a"}}, "then": "$image",
+						"else": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", "0x9f344fe24c963d70f5dcf0cfdeb536dc9c0acb3a"}}, "then": "$tokenid",
+							"else": "$name"}}}}}}}},
 				bson.M{"$match": bson.M{"class": args.Class}},
 			},
 			Query: []string{},

@@ -132,8 +132,11 @@ func (me *T) GetNFTList(args struct {
 					bson.M{"$eq": []interface{}{"$tokenid", "$$tokenid"}},
 					bson.M{"$eq": []interface{}{"$asset", "$$asset"}},
 				}}}},
-				bson.M{"$set": bson.M{"class": bson.M{"$ifNull": []interface{}{"$name", "$tokenid"}}}},
-				bson.M{"$set": bson.M{"class": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", "0x50ac1c37690cc2cfc594472833cf57505d5f46de"}}, "then": "$asset", "else": "$class"}}}},
+				//bson.M{"$set": bson.M{"class": bson.M{"$ifNull": []interface{}{"$name", "$tokenid"}}}},
+				bson.M{"$set": bson.M{"class": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", "0x50ac1c37690cc2cfc594472833cf57505d5f46de"}}, "then": "$asset",
+					"else": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", "0x6a2893f97401e2b58b757f59d71238d91339856a"}}, "then": "$image",
+						"else": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", "0x9f344fe24c963d70f5dcf0cfdeb536dc9c0acb3a"}}, "then": "$tokenid",
+							"else": "$name"}}}}}}}},
 			},
 			"as": "properties"},
 		},
@@ -241,7 +244,7 @@ func (me *T) GetNFTList(args struct {
 						} else {
 							dst["thumbnail"] = ImagUrl(newProperties["asset"].(string), newProperties["image"].(string), "thumbnail")
 						}
-
+						dst["name"] = newProperties["name"]
 						dst["number"] = newProperties["number"]
 						dst["properties"] = newProperties
 						dst["class"] = newProperties["class"]

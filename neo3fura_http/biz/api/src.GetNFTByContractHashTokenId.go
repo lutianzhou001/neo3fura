@@ -2,7 +2,6 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"math"
@@ -147,9 +146,7 @@ func (me *T) GetNFTByContractHashTokenId(args struct {
 		}
 
 		var raw3 map[string]interface{}
-		fmt.Println("TESTERROR", strval.T(tokenId))
 		err2 := getNFTProperties(strval.T(tokenId), args.ContractHash, me, ret, args.Filter, &raw3)
-		fmt.Println("TESTERROR", raw3)
 		if err2 != nil {
 			item["thumbnail"] = ""
 			item["image"] = ""

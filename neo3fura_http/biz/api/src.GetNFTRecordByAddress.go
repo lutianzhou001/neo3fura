@@ -40,17 +40,17 @@ func (me *T) GetNFTRecordByAddress(args struct {
 			return stderr.ErrInvalidArgs
 		} else {
 			//白名单
-			raw1 := make(map[string]interface{})
+			raw := make(map[string]interface{})
 			err1 := me.GetMarketWhiteList(struct {
 				MarketHash h160.T
 				Filter     map[string]interface{}
 				Raw        *map[string]interface{}
-			}{MarketHash: args.SecondaryMarket, Raw: &raw1}, ret) //nonce 分组，并按时间排序
+			}{MarketHash: args.SecondaryMarket, Raw: &raw}, ret) //nonce 分组，并按时间排序
 			if err1 != nil {
 				return err1
 			}
 
-			whiteList := raw1["whiteList"]
+			whiteList := raw["whiteList"]
 			if whiteList == nil || whiteList == "" {
 				return stderr.ErrWhiteList
 			}
@@ -135,7 +135,6 @@ func (me *T) GetNFTRecordByAddress(args struct {
 		}
 		if len(raw1) > 0 {
 			nowNFTState := raw1[0]["state"]
-
 			if item["eventname"].(string) == "Auction" { //2种状态   正常   已过期  (卖家事件)
 
 				extendData1 := item["extendData"].(string)
@@ -415,6 +414,96 @@ func (me *T) GetNFTRecordByAddress(args struct {
 					return err31
 				}
 
+			} else if item["eventname"].(string) == "OfferCollection" {
+				extendData3 := item["extendData"].(string)
+				var dat map[string]interface{}
+				if err31 := json.Unmarshal([]byte(extendData3), &dat); err31 == nil {
+					bidAmount := dat["offerAmount"].(string)
+					offerAsset := dat["offerAsset"]
+					rr["auctionAsset"] = offerAsset
+					rr["auctionAmount"] = bidAmount
+					user1 := item["user"]
+
+					//查看offer 当前状态
+					offer_nonce := item["nonce"]
+					offer, _ := me.Client.QueryOne(struct {
+						Collection string
+						Index      string
+						Sort       bson.M
+						Filter     bson.M
+						Query      []string
+					}{
+						Collection: "MarketNotification",
+						Index:      "getOfferSate",
+						Sort:       bson.M{},
+						Filter: bson.M{
+							"nonce":   offer_nonce,
+							"asset":   item["asset"],
+							"tokenid": item["tokenid"],
+							"$or": []interface{}{
+								bson.M{"eventname": "CompleteOfferCollection"},
+								bson.M{"eventname": "CancelOfferCollection"},
+							}},
+						Query: []string{},
+					}, ret)
+
+					if len(offer) > 0 {
+						offer_event := offer["eventname"]
+						if offer_event == "CompleteOfferCollection" {
+							rr["state"] = NFTevent.Offer_Accept.Val() //出价被卖家接受
+							rr["from"] = user1
+							rr["to"] = offer["user"]
+						} else if offer_event == "CancelOfferCollection" {
+							rr["state"] = NFTevent.Offer_Cancel.Val() //出价被买家取消
+							rr["from"] = ""
+							rr["to"] = user1
+						}
+					} else {
+						rr["state"] = NFTevent.Offer.Val() //拍卖:领取（买家）
+						rr["from"] = user1
+						rr["to"] = ""
+
+					}
+
+				} else {
+					return err31
+				}
+
+			} else if item["eventname"].(string) == "CompleteOfferCollection" {
+				extendData3 := item["extendData"].(string)
+				var dat map[string]interface{}
+				if err31 := json.Unmarshal([]byte(extendData3), &dat); err31 == nil {
+					bidAmount := dat["offerAmount"].(string)
+
+					auctionAsset := dat["offerAsset"]
+					user1 := item["user"]
+					rr["auctionAsset"] = auctionAsset
+					rr["auctionAmount"] = bidAmount
+					rr["from"] = user1
+					rr["to"] = dat["offerer"]
+					rr["state"] = NFTevent.Offer_Complete.Val()
+
+				} else {
+					return err31
+				}
+
+			} else if item["eventname"].(string) == "CancelOfferCollection" {
+				extendData3 := item["extendData"].(string)
+				var dat map[string]interface{}
+				if err31 := json.Unmarshal([]byte(extendData3), &dat); err31 == nil {
+					bidAmount := dat["offerAmount"].(string)
+					auctionAsset := dat["offerAsset"]
+					user1 := item["user"]
+					rr["auctionAsset"] = auctionAsset
+					rr["auctionAmount"] = bidAmount
+					rr["from"] = ""
+					rr["to"] = user1
+					rr["state"] = NFTevent.Offer_Cancel.Val()
+
+				} else {
+					return err31
+				}
+
 			}
 			result = append(result, rr)
 		}
@@ -476,8 +565,6 @@ func (me *T) GetNFTRecordByAddress(args struct {
 			to = item["to"].(string)
 		}
 
-		log2.Infof("TESTERROR:", item)
-		log2.Infof("TESTERROR:", from != args.SecondaryMarket.Val() && to != args.SecondaryMarket.Val() && from != args.PrimaryMarket.Val() && to != args.PrimaryMarket.Val())
 		if from != args.SecondaryMarket.Val() && to != args.SecondaryMarket.Val() && from != args.PrimaryMarket.Val() && to != args.PrimaryMarket.Val() {
 			rr := make(map[string]interface{})
 
@@ -505,7 +592,7 @@ func (me *T) GetNFTRecordByAddress(args struct {
 				rr["number"] = int64(-1)
 				rr["properties"] = ""
 			}
-			fmt.Println("TESTERROR:", raw3)
+
 			rr["image"] = raw3["image"]
 			rr["name"] = raw3["name"]
 			rr["number"] = raw3["number"]
