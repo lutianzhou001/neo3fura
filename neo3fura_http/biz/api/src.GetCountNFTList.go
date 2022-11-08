@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"neo3fura_http/lib/type/Contract"
 	"neo3fura_http/lib/type/NFTstate"
 	"neo3fura_http/lib/type/h160"
 	address "neo3fura_http/var/const"
 	"neo3fura_http/var/stderr"
+	"os"
 	"time"
 )
 
@@ -22,6 +24,26 @@ func (me *T) GetCountNFTList(args struct {
 	currentTime := time.Now().UnixNano() / 1e6
 	pipeline := []bson.M{}
 	pipeline2 := []bson.M{}
+
+	rt := os.ExpandEnv("${RUNTIME}")
+	var nns, genesis, polemen string
+	if rt == "staging" {
+		nns = Contract.Main_NNS.Val()
+		//  metapanacea = Contract.Main_MetaPanacea.Val()
+		genesis = Contract.Main_ILEXGENESIS.Val()
+		polemen = Contract.Main_ILEXPOLEMEN.Val()
+
+	} else if rt == "test2" {
+		nns = Contract.Test_NNS.Val()
+		//	metapanacea = Contract.Test_MetaPanacea.Val()
+		genesis = Contract.Test_ILEXGENESIS.Val()
+		polemen = Contract.Test_ILEXPOLEMEN.Val()
+	} else {
+		nns = Contract.Test_NNS.Val()
+		//	metapanacea = Contract.Test_MetaPanacea.Val()
+		genesis = Contract.Test_ILEXGENESIS.Val()
+		polemen = Contract.Test_ILEXPOLEMEN.Val()
+	}
 
 	if len(args.PrimaryMarket) > 0 && args.PrimaryMarket != "" {
 		if args.PrimaryMarket.Valid() == false {
@@ -102,9 +124,9 @@ func (me *T) GetCountNFTList(args struct {
 					bson.M{"$eq": []interface{}{"$tokenid", "$$tokenid"}},
 					bson.M{"$eq": []interface{}{"$asset", "$$asset"}},
 				}}}},
-				bson.M{"$set": bson.M{"class": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", "0x50ac1c37690cc2cfc594472833cf57505d5f46de"}}, "then": "$asset",
-					"else": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", "0x6a2893f97401e2b58b757f59d71238d91339856a"}}, "then": "$image",
-						"else": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", "0x9f344fe24c963d70f5dcf0cfdeb536dc9c0acb3a"}}, "then": "$tokenid",
+				bson.M{"$set": bson.M{"class": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", nns}}, "then": "$asset",
+					"else": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", genesis}}, "then": "$image",
+						"else": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", polemen}}, "then": "$tokenid",
 							"else": "$name"}}}}}}}},
 			},
 			"as": "properties"},

@@ -4,8 +4,10 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"go.mongodb.org/mongo-driver/bson"
+	"neo3fura_http/lib/type/Contract"
 	"neo3fura_http/lib/type/h160"
 	"neo3fura_http/var/stderr"
+	"os"
 )
 
 func (me *T) GetNFTByAssetClass(args struct {
@@ -23,6 +25,26 @@ func (me *T) GetNFTByAssetClass(args struct {
 		args.Limit = 50
 
 	}
+	rt := os.ExpandEnv("${RUNTIME}")
+	var nns, genesis, polemen string
+	if rt == "staging" {
+		nns = Contract.Main_NNS.Val()
+		//  metapanacea = Contract.Main_MetaPanacea.Val()
+		genesis = Contract.Main_ILEXGENESIS.Val()
+		polemen = Contract.Main_ILEXPOLEMEN.Val()
+
+	} else if rt == "test2" {
+		nns = Contract.Test_NNS.Val()
+		//	metapanacea = Contract.Test_MetaPanacea.Val()
+		genesis = Contract.Test_ILEXGENESIS.Val()
+		polemen = Contract.Test_ILEXPOLEMEN.Val()
+	} else {
+		nns = Contract.Test_NNS.Val()
+		//	metapanacea = Contract.Test_MetaPanacea.Val()
+		genesis = Contract.Test_ILEXGENESIS.Val()
+		polemen = Contract.Test_ILEXPOLEMEN.Val()
+	}
+
 	r1, err := me.Client.QueryAggregate(
 		struct {
 			Collection string
@@ -38,9 +60,9 @@ func (me *T) GetNFTByAssetClass(args struct {
 			Filter:     bson.M{},
 			Pipeline: []bson.M{
 				bson.M{"$match": bson.M{"asset": args.Asset}},
-				bson.M{"$set": bson.M{"class": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", "0x50ac1c37690cc2cfc594472833cf57505d5f46de"}}, "then": "$asset",
-					"else": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", "0x6a2893f97401e2b58b757f59d71238d91339856a"}}, "then": "$image",
-						"else": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", "0x9f344fe24c963d70f5dcf0cfdeb536dc9c0acb3a"}}, "then": "$tokenid",
+				bson.M{"$set": bson.M{"class": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", nns}}, "then": "$asset",
+					"else": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", genesis}}, "then": "$image",
+						"else": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", polemen}}, "then": "$tokenid",
 							"else": "$name"}}}}}}}},
 				bson.M{"$match": bson.M{"class": args.Class}},
 				bson.M{"$skip": args.Skip},
@@ -165,9 +187,9 @@ func (me *T) GetNFTByAssetClass(args struct {
 			Sort:       bson.M{},
 			Filter:     bson.M{},
 			Pipeline: []bson.M{
-				bson.M{"$set": bson.M{"class": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", "0x50ac1c37690cc2cfc594472833cf57505d5f46de"}}, "then": "$asset",
-					"else": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", "0x6a2893f97401e2b58b757f59d71238d91339856a"}}, "then": "$image",
-						"else": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", "0x9f344fe24c963d70f5dcf0cfdeb536dc9c0acb3a"}}, "then": "$tokenid",
+				bson.M{"$set": bson.M{"class": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", nns}}, "then": "$asset",
+					"else": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", genesis}}, "then": "$image",
+						"else": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", polemen}}, "then": "$tokenid",
 							"else": "$name"}}}}}}}},
 				bson.M{"$match": bson.M{"class": args.Class}},
 			},
