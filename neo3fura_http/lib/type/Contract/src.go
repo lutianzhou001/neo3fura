@@ -1,0 +1,43 @@
+package Contract
+
+import (
+	"sort"
+)
+
+// T ...
+type T string
+
+const (
+	Main_MetaPanacea T = "0x19ed09dadac28e6b6a2f76588516ef681aff29b1"
+	Test_MetaPanacea T = "0x4fb2f93b37ff47c0c5d14cfc52087e3ca338bc56"
+	Main_ILEXPOLEMEN T = "0x9f344fe24c963d70f5dcf0cfdeb536dc9c0acb3a"
+	Test_ILEXPOLEMEN T = "0x9f344fe24c963d70f5dcf0cfdeb536dc9c0acb3a"
+	Main_ILEXGENESIS T = "0xc91b4becc7f4052a22e33990ed7696b4b175ec62"
+	Test_ILEXGENESIS T = "0x6a2893f97401e2b58b757f59d71238d91339856a"
+	Main_NNS         T = "0x50ac1c37690cc2cfc594472833cf57505d5f46de"
+	Test_NNS         T = "0x50ac1c37690cc2cfc594472833cf57505d5f46de"
+)
+
+// Valid ...
+func (me T) Valid() bool {
+	return true
+}
+
+// Val ...
+func (me T) Val() string {
+	return string(me)
+}
+
+// Bytes ...
+func (me T) Bytes() []byte {
+	return []byte(me.Val())
+}
+
+func (me T) In(str_array []string) bool {
+	sort.Strings(str_array)
+	index := sort.SearchStrings(str_array, me.Val())
+	if index < len(str_array) && str_array[index] == me.Val() { //需要注意此处的判断，先判断 &&左侧的条件，如果不满足则结束此处判断，不会再进行右侧的判断
+		return true
+	}
+	return false
+}
