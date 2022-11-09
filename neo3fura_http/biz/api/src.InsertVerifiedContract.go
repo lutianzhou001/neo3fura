@@ -24,14 +24,14 @@ func (me *T) InsertVerifiedContract(args struct {
 	var dbOnline string
 	dbname := me.Client.Db_online
 	if dbname == "neofura" {
-		clientOptions = options.Client().ApplyURI("mongodb://Mindy:QMRhLk9m8rqXWC3X9pMJ@20.106.201.244:27019/bakN3")
+		clientOptions = options.Client().ApplyURI("mongodb://qinzilie:1KVhcYXa12XC36nhkwlG@20.106.201.244:27019/bakN3")
 		dbOnline = "bakN3"
 	} else if dbname == "bakN3" {
-		clientOptions = options.Client().ApplyURI("mongodb://Mindy:QMRhLk9m8rqXWC3X9pMJ@20.106.201.244:27018/neofura")
+		clientOptions = options.Client().ApplyURI("mongodb://qinzilie:1KVhcYXa12XC36nhkwlG@20.106.201.244:27018/neofura")
 		dbOnline = "neofura"
 	}
 
-	clientOptions.SetMaxPoolSize(50)
+	//clientOptions.SetMaxPoolSize(50)
 	co, err := mongo.Connect(context.TODO(), clientOptions)
 	if err != nil {
 		log2.Fatalf("mongo connect error:%s", err)
