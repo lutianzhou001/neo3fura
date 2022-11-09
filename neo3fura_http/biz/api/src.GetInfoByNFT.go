@@ -79,33 +79,33 @@ func (me *T) GetInfoByNFT(args struct {
 		if item["market"] == item["owner"] && ddl < currentTime && bidAmount != "0" { // 未领取
 			item["owner"] = item["bidder"]
 		}
-		item["buyNowAsset"] = big.NewInt(0)
-		item["buyNowAmount"] = big.NewInt(0)
-		item["lastSoldAsset"] = big.NewInt(0)
-		item["lastSoldAmount"] = big.NewInt(0)
-		item["currentBidAsset"] = big.NewInt(0)
-		item["currentBidAmount"] = big.NewInt(0)
-		item["offerAsset"] = big.NewInt(0)
-		item["offerAmount"] = big.NewInt(0)
+		item["buyNowAsset"] = ""
+		item["buyNowAmount"] = "0"
+		item["lastSoldAsset"] = ""
+		item["lastSoldAmount"] = "0"
+		item["currentBidAsset"] = ""
+		item["currentBidAmount"] = "0"
+		item["offerAsset"] = ""
+		item["offerAmount"] = "0"
 
 		auctionType := item["auctionType"].(int32)
 		if ddl > currentTime {
 			if auctionType == 1 {
 				item["buyNowAsset"] = item["auctionAsset"]
-				item["buyNowAmount"], _, err = item["auctionAmount"].(primitive.Decimal128).BigInt()
+				item["buyNowAmount"] = item["auctionAmount"]
 			} else if auctionType == 2 {
 				if bidAmount != "0" {
 					item["currentBidAsset"] = item["auctionAsset"]
-					item["currentBidAmount"], _, err = item["bidAmount"].(primitive.Decimal128).BigInt()
+					item["currentBidAmount"] = item["bidAmount"]
 				} else {
 					item["currentBidAsset"] = item["auctionAsset"]
-					item["currentBidAmount"], _, err = item["auctionAmount"].(primitive.Decimal128).BigInt()
+					item["currentBidAmount"] = item["auctionAmount"]
 				}
 			}
 		} else {
 			if auctionType == 2 && bidAmount != "0" {
 				item["lastSoldAsset"] = item["auctionAsset"]
-				item["lastSoldAmount"], _, err = item["bidAmount"].(primitive.Decimal128).BigInt()
+				item["lastSoldAmount"] = item["bidAmount"]
 			}
 		}
 
@@ -123,7 +123,7 @@ func (me *T) GetInfoByNFT(args struct {
 					if eventname == "Claim" {
 						finishTime = eventItem["timestamp"].(int64)
 						item["lastSoldAsset"] = data["auctionAsset"]
-						item["lastSoldAmount"], _, err = item["bidAmount"].(primitive.Decimal128).BigInt()
+						item["lastSoldAmount"] = item["bidAmount"]
 					} else if eventname == "Offer" || eventname == "OfferCollection" {
 						//判断offer 有效期以及是否有足够的保证金
 						deadline := data["deadline"].(string)
@@ -149,7 +149,7 @@ func (me *T) GetInfoByNFT(args struct {
 								amount := big.NewInt(offerAmount)
 								if guarantee.Cmp(amount) == 1 {
 									item["offerAsset"] = highestOffer["offerAsset"]
-									item["offerAmount"] = amount
+									item["offerAmount"] = amount.String()
 								}
 
 							}
@@ -159,11 +159,10 @@ func (me *T) GetInfoByNFT(args struct {
 						if time > finishTime {
 							finishTime = time
 							item["lastSoldAsset"] = data["offerAsset"]
-							amount, err := strconv.ParseInt(data["offerAmount"].(string), 10, 64)
 							if err != nil {
 								return err
 							}
-							item["lastSoldAmount"] = big.NewInt(amount)
+							item["lastSoldAmount"] = data["offerAmount"]
 
 						}
 					}
