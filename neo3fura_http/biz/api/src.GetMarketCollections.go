@@ -82,7 +82,7 @@ func (me *T) GetMarketCollections(args struct {
 						pitem := it.(map[string]interface{})
 						asset := pitem["asset"].(string)
 						tokenid := pitem["tokenid"].(string)
-
+						proMap["name"] = pitem["name"]
 						proMap["asset"] = asset
 						proMap["tokenid"] = tokenid
 						tokenidArr = append(tokenidArr, tokenid)
@@ -100,21 +100,7 @@ func (me *T) GetMarketCollections(args struct {
 						}
 						if proMap["image"] == nil {
 
-							if pitem["tokenURI"] != nil {
-								tokenUrl := pitem["tokenURI"].(string)
-								ppjson, err := GetImgFromTokenURL(tokenurl(tokenUrl), asset, tokenid)
-								if err != nil {
-									return err
-								}
-								for key, value := range ppjson {
-									//item[key] = value
-									if key == "image" {
-										img := value.(string)
-										proMap["thumbnail"] = ImagUrl(asset, img, "thumbnail")
-										proMap["image"] = ImagUrl(asset, img, "images")
-									}
-								}
-							} else if pitem["properties"] != nil {
+							if pitem["properties"] != nil {
 								//
 								jsonData := make(map[string]interface{})
 								properties := pitem["properties"].(string)
@@ -151,6 +137,23 @@ func (me *T) GetMarketCollections(args struct {
 									}
 								}
 
+							} else if pitem["tokenURI"] != nil {
+								tokenUrl := pitem["tokenURI"].(string)
+								ppjson, err := GetImgFromTokenURL(tokenurl(tokenUrl), asset, tokenid)
+								if err != nil {
+									return err
+								}
+								for key, value := range ppjson {
+									//item[key] = value
+									if key == "image" {
+										img := value.(string)
+										proMap["thumbnail"] = ImagUrl(asset, img, "thumbnail")
+										proMap["image"] = ImagUrl(asset, img, "images")
+									}
+									if key == "name" {
+										proMap["name"] = value
+									}
+								}
 							} else {
 								proMap["image"] = ""
 								proMap["thumbnail"] = ""
@@ -182,6 +185,7 @@ func (me *T) GetMarketCollections(args struct {
 				if tokeniditem["asset"] == it["asset"] && tokeniditem["tokenid"] == it["tokenid"] {
 					tokeniditem["image"] = it["image"]
 					tokeniditem["thumbnail"] = it["thumbnail"]
+					tokeniditem["name"] = it["name"]
 				}
 			}
 
