@@ -66,6 +66,30 @@ func (me *T) GetHighestOfferByNFT(args struct {
 			if currentTime < deadline {
 				//查看offer 当前状态
 				offer_nonce := item["nonce"]
+				eventname := item["eventname"]
+				var f bson.M
+				if eventname == "Offer" {
+					f = bson.M{
+						"nonce":   offer_nonce,
+						"asset":   item["asset"],
+						"tokenid": item["tokenid"],
+						"$or": []interface{}{
+							bson.M{"eventname": "CompleteOffer"},
+							bson.M{"eventname": "CancelOffer"},
+						},
+					}
+				} else if eventname == "OfferCollection" {
+					f = bson.M{
+						"nonce":   offer_nonce,
+						"asset":   item["asset"],
+						"tokenid": item["tokenid"],
+						"$or": []interface{}{
+							bson.M{"eventname": "CompleteOfferCollection"},
+							bson.M{"eventname": "CancelOfferCollection"},
+						},
+					}
+				}
+
 				offerstate, _ := me.Client.QueryOne(struct {
 					Collection string
 					Index      string
@@ -76,79 +100,34 @@ func (me *T) GetHighestOfferByNFT(args struct {
 					Collection: "MarketNotification",
 					Index:      "getOfferSate",
 					Sort:       bson.M{},
-					Filter: bson.M{
-						"nonce":   offer_nonce,
-						"asset":   item["asset"],
-						"tokenid": item["tokenid"],
-						"$or": []interface{}{
-							bson.M{"eventname": "CompleteOffer"},
-							bson.M{"eventname": "CancelOffer"},
-						},
-					},
-					Query: []string{},
+					Filter:     f,
+					Query:      []string{},
 				}, ret)
 
 				if len(offerstate) > 0 {
-					continue
+					if eventname == "Offer" {
+						continue
+					} else if eventname == "OfferCollection" {
+						count := dat["count"].(string)
+						if count == "0" {
+							continue
+						}
+					}
 
 				} else {
-					extendData := item["extendData"].(string)
-					var data map[string]interface{}
-					if err1 := json.Unmarshal([]byte(extendData), &data); err1 == nil {
-						if data["count"] != nil {
-							count := data["count"].(string)
-							if count == "0" {
-								continue
-							}
-						}
-						//count := data["count"].(string)
-						//if count == "0" {
-						//	continue
-						//}else{
-						offer["user"] = item["user"]
-						offer["asset"] = item["asset"]
-						offer["tokenid"] = item["tokenid"]
-						offer["originOwner"] = dat["originOwner"]
-						offer["offerAsset"] = dat["offerAsset"]
-						offerAmount, err := strconv.ParseInt(dat["offerAmount"].(string), 10, 64)
-						if err != nil {
-							return err
-						}
-						offer["offerAmount"] = offerAmount
-						offer["deadline"] = deadline
-
-						// 获取对应usd的价格
-						//dd, _ := OpenAssetHashFile()
-						//decimal := dd[offer["offerAsset"].(string)]
-						//price, err := GetPrice(offer["offerAsset"].(string))
-						////price,err :=GetPrice("0xd2a4cff31913016155e38e474a2c06d08be276cf")
-						//if err != nil {
-						//	return err
-						//}
-						//
-						//if price == 0 {
-						//	price = 1
-						//}
-						//
-						//bfofferAmount, _ := new(big.Float).SetString(dat["offerAmount"].(string))
-						//
-						//flag := bfofferAmount.Cmp(big.NewFloat(0))
-						//
-						//if flag == 1 {
-						//	bfprice := big.NewFloat(price)
-						//	ffprice := big.NewFloat(1).Mul(bfprice, bfofferAmount)
-						//	de := math.Pow(10, float64(decimal))
-						//	usdAuctionAmount := new(big.Float).Quo(ffprice, big.NewFloat(float64(de)))
-						//	offer["usdAmount"] = usdAuctionAmount
-						//
-						//} else {
-						//	offer["usdAmount"] = 0
-						//}
-						////offer["usdAmount"] = price
-
-						result = append(result, offer)
-
+					offer["user"] = item["user"]
+					offer["asset"] = item["asset"]
+					offer["tokenid"] = item["tokenid"]
+					offer["originOwner"] = dat["originOwner"]
+					offer["offerAsset"] = dat["offerAsset"]
+					offerAmount, err := strconv.ParseInt(dat["offerAmount"].(string), 10, 64)
+					if err != nil {
+						return err
 					}
+					offer["offerAmount"] = offerAmount
+					offer["deadline"] = deadline
+
+					result = append(result, offer)
 
 				}
 			}

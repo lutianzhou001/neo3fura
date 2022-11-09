@@ -41,9 +41,7 @@ func (me *T) GetHighestOfferByNFTList(args struct {
 		it := make(map[string]interface{})
 		it["asset"] = item.Asset.Val()
 		it["tokenid"] = item.TokenId.Val()
-
 		nftlist = append(nftlist, it)
-
 	}
 	list := utils.GroupByAsset(nftlist)
 
@@ -56,7 +54,7 @@ func (me *T) GetHighestOfferByNFTList(args struct {
 		f := bson.M{"asset": k, "tokenid": bson.M{"$in": v}}
 		or = append(or, f)
 	}
-	filter := bson.M{"market": args.MarketHash, "eventname": "Offer", "$or": or}
+	filter := bson.M{"market": args.MarketHash, "eventname": bson.M{"$in": []interface{}{"Offer", "OfferCollection"}}, "$or": or}
 
 	var r1, err = me.Client.QueryAggregate(
 		struct {
@@ -73,9 +71,21 @@ func (me *T) GetHighestOfferByNFTList(args struct {
 			Filter:     bson.M{},
 			Pipeline: []bson.M{
 				bson.M{"$match": filter},
-
 				bson.M{"$group": bson.M{"_id": bson.M{"asset": "$asset", "tokenid": "$tokenid"}, "info": bson.M{"$push": "$$ROOT"}}},
-				//bson.M{"$count": "count"},
+				//bson.M{"$lookup": bson.M{
+				//	"from": "MarketNotification",
+				//	"let":  bson.M{"asset": "$asset", "tokenid": "$tokenid","nonce":"$nonce"},
+				//	"pipeline": []bson.M{
+				//		bson.M{"$match":bson.M{"eventname":bson.M{"$in":[]interface{}{"CancelOffer","CancelOfferCollection","CompleteOffer","CompleteOfferCollection"}}}},
+				//		bson.M{"$match": bson.M{"$expr": bson.M{"$and": []interface{}{
+				//			bson.M{"$eq": []interface{}{"$tokenid", "$$tokenid"}},
+				//			bson.M{"$eq": []interface{}{"$asset", "$$asset"}},
+				//			bson.M{"$eq": []interface{}{"$nonce", "$$nonce"}},
+				//		}}}},
+				//
+				//	},
+				//	"as": "properties"},
+				//},
 			},
 
 			Query: []string{},
@@ -101,6 +111,7 @@ func (me *T) GetHighestOfferByNFTList(args struct {
 			//获取有效期内的offer
 			item := itemOffer.(map[string]interface{})
 			offer := make(map[string]interface{})
+			eventname := item["eventname"]
 			extendData := item["extendData"].(string)
 			var dat map[string]interface{}
 			if err1 := json.Unmarshal([]byte(extendData), &dat); err1 == nil {
@@ -113,6 +124,28 @@ func (me *T) GetHighestOfferByNFTList(args struct {
 				if currentTime < deadline {
 					//查看offer 当前状态
 					offer_nonce := item["nonce"]
+					var f bson.M
+					if eventname == "Offer" {
+						f = bson.M{
+							"nonce":   offer_nonce,
+							"asset":   item["asset"],
+							"tokenid": item["tokenid"],
+							"$or": []interface{}{
+								bson.M{"eventname": "CompleteOffer"},
+								bson.M{"eventname": "CancelOffer"},
+							},
+						}
+					} else if eventname == "OfferCollection" {
+						f = bson.M{
+							"nonce":   offer_nonce,
+							"asset":   item["asset"],
+							"tokenid": item["tokenid"],
+							"$or": []interface{}{
+								bson.M{"eventname": "CompleteOfferCollection"},
+								bson.M{"eventname": "CancelOfferCollection"},
+							},
+						}
+					}
 					offerstate, _ := me.Client.QueryOne(struct {
 						Collection string
 						Index      string
@@ -123,20 +156,20 @@ func (me *T) GetHighestOfferByNFTList(args struct {
 						Collection: "MarketNotification",
 						Index:      "getOfferSate",
 						Sort:       bson.M{},
-						Filter: bson.M{
-							"nonce":   offer_nonce,
-							"asset":   item["asset"],
-							"tokenid": item["tokenid"],
-							"$or": []interface{}{
-								bson.M{"eventname": "CompleteOffer"},
-								bson.M{"eventname": "CancelOffer"},
-							},
-						},
-						Query: []string{},
+						Filter:     f,
+						Query:      []string{},
 					}, ret)
 
 					if len(offerstate) > 0 {
-						continue
+						if eventname == "Offer" {
+							continue
+						} else if eventname == "OfferCollection" {
+							count := dat["count"].(string)
+							if count == "0" {
+								continue
+							}
+						}
+
 					} else {
 						offer["user"] = item["user"]
 						offer["asset"] = item["asset"]
@@ -149,34 +182,6 @@ func (me *T) GetHighestOfferByNFTList(args struct {
 						}
 						offer["offerAmount"] = offerAmount
 						offer["deadline"] = deadline
-
-						//// 获取对应usd的价格
-						//dd, _ := OpenAssetHashFile()
-						//decimal := dd[offer["offerAsset"].(string)]
-						//price, err := GetPrice(offer["offerAsset"].(string))
-						////price,err :=GetPrice("0xd2a4cff31913016155e38e474a2c06d08be276cf")
-						//if err != nil {
-						//	return err
-						//}
-						//
-						//if price == 0 {
-						//	price = 1
-						//}
-						//
-						//bfofferAmount, _ := new(big.Float).SetString(dat["offerAmount"].(string))
-						//
-						//flag := bfofferAmount.Cmp(big.NewFloat(0))
-						//
-						//if flag == 1 {
-						//	bfprice := big.NewFloat(price)
-						//	ffprice := big.NewFloat(1).Mul(bfprice, bfofferAmount)
-						//	de := math.Pow(10, float64(decimal))
-						//	usdAuctionAmount := new(big.Float).Quo(ffprice, big.NewFloat(float64(de)))
-						//	offer["usdAmount"] = usdAuctionAmount
-						//} else {
-						//	offer["usdAmount"] = 0
-						//}
-						//offer["usdAmount"] = price
 
 						result = append(result, offer)
 					}
@@ -244,6 +249,9 @@ func (me *T) GetHighestOfferByNFTList(args struct {
 	r2, err := me.Filter(hightestOfferList, args.Filter)
 	if err != nil {
 		return err
+	}
+	if args.Raw != nil {
+		*args.Raw = r2
 	}
 	r, err := json.Marshal(r2)
 	if err != nil {

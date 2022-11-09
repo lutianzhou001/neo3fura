@@ -5,7 +5,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"math"
-	"neo3fura_http/lib/mapsort"
 	"neo3fura_http/lib/type/Contract"
 	"neo3fura_http/lib/type/NFTstate"
 	"neo3fura_http/lib/type/h160"
@@ -17,6 +16,11 @@ import (
 	"strings"
 	"time"
 )
+
+type NFT struct {
+	Asset   h160.T
+	TokenId strval.T
+}
 
 func (me *T) GetNFTList(args struct {
 	SecondaryMarket h160.T //
@@ -162,6 +166,7 @@ func (me *T) GetNFTList(args struct {
 			},
 			"as": "properties"},
 		},
+
 		bson.M{"$group": bson.M{"_id": bson.M{"asset": "$asset", "class": "$properties.class"}, "asset": bson.M{"$last": "$asset"}, "tokenid": bson.M{"$last": "$tokenid"}, "deadline": bson.M{"$last": "$deadline"}, "auctionAmount": bson.M{"$last": "$auctionAmount"}, "timestamp": bson.M{"$last": "$timestamp"}, "propertiesArr": bson.M{"$push": "$$ROOT"}}},
 		bson.M{"$project": bson.M{"deadlineCond": deadlineCond, "auctionAmountCond": auctionAmountCond, "_id": 1, "properties": 1, "asset": 1, "tokenid": 1, "propertiesArr": 1, "auctionAmount": 1, "deadline": 1, "timestamp": 1}},
 
@@ -205,84 +210,61 @@ func (me *T) GetNFTList(args struct {
 	for _, item := range r1 {
 		if item["propertiesArr"] != nil {
 			groupInfo := item["propertiesArr"].(primitive.A)
-			var asset = item["asset"].(string)
+			//	var asset = item["asset"].(string)
 			var tokenidArr []string
 			for _, pitem := range groupInfo {
 				it := pitem.(map[string]interface{})
 				tokenid := it["tokenid"].(string)
 				tokenidArr = append(tokenidArr, tokenid)
 			}
-			raw := make(map[string]interface{})
-			err := me.GetInfoByNFT(struct {
-				Asset   h160.T
-				Tokenid []string
-				Filter  map[string]interface{}
-				Raw     *map[string]interface{}
-			}{Asset: h160.T(asset), Tokenid: tokenidArr, Raw: &raw}, ret)
-			if err != nil {
-				return stderr.ErrGetNFTInfo
-			}
+			//raw := make(map[string]interface{})
+
 			//rawResult := raw["result"].([]map[string]interface{})[0]
 
-			newRaw := raw["result"].([]map[string]interface{})
+			//	newRaw := raw["result"].([]map[string]interface{})
+			//
+			//	if args.NFTState.Val() == NFTstate.Sale.Val() {
+			//		mapsort.MapSort9(newRaw, "buyNowAmount")
+			//	} else if args.NFTState.Val() == NFTstate.Sale.Val() {
+			//		mapsort.MapSort9(newRaw, "currentBidAmount")
+			//	} else {
+			//		mapsort.MapSort9(newRaw, "lastSoldAmount")
+			//	}
+			//
+			//	rawResult := newRaw[0]
 
-			if args.NFTState.Val() == NFTstate.Sale.Val() {
-				mapsort.MapSort9(newRaw, "buyNowAmount")
-			} else if args.NFTState.Val() == NFTstate.Sale.Val() {
-				mapsort.MapSort9(newRaw, "currentBidAmount")
-			} else {
-				mapsort.MapSort9(newRaw, "lastSoldAmount")
-			}
-
-			rawResult := newRaw[0]
-
-			rawTokenid := rawResult["tokenid"]
+			//	rawTokenid := rawResult["tokenid"]
 			for _, it := range groupInfo {
 				newit := it.(map[string]interface{})
-				if rawTokenid == newit["tokenid"] {
-					dst := make(map[string]interface{})
-					dst = CopyMap(dst, newit)
-					if dst["properties"] != nil {
-						properties := dst["properties"].(primitive.A)
-						pp := properties[0].(map[string]interface{})
-						newProperties, err1 := ReSetProperties(pp)
-						if err1 != nil {
-							continue
-						}
-						dst["buyNowAsset"] = rawResult["buyNowAsset"]
-						dst["buyNowAmount"] = rawResult["buyNowAmount"]
-						dst["lastSoldAsset"] = rawResult["lastSoldAsset"]
-						dst["lastSoldAmount"] = rawResult["lastSoldAmount"]
-						dst["currentBidAsset"] = rawResult["currentBidAsset"]
-						dst["currentBidAmount"] = rawResult["currentBidAmount"]
-						dst["offerAsset"] = rawResult["offerAsset"]
-						dst["offerAmount"] = rawResult["offerAmount"]
-						if newProperties["image"] == nil {
-							continue
-						}
-						dst["image"] = ImagUrl(newProperties["asset"].(string), newProperties["image"].(string), "images")
-						if newProperties["thumbnail"] != nil {
-							dst["thumbnail"] = ImagUrl(newProperties["asset"].(string), newProperties["thumbnail"].(string), "thumbnail")
-						} else {
-							dst["thumbnail"] = ImagUrl(newProperties["asset"].(string), newProperties["image"].(string), "thumbnail")
-						}
-						dst["name"] = newProperties["name"]
-						dst["number"] = newProperties["number"]
-						dst["properties"] = newProperties
-						dst["class"] = newProperties["class"]
-						dst["count"] = len(groupInfo)
-						state := rawResult["state"]
-						if state == "list" {
-							auctionType := rawResult["auctionType"].(int32)
-							if auctionType == 1 {
-								dst["state"] = NFTstate.Sale.Val()
-							} else {
-								dst["state"] = NFTstate.Auction.Val()
-							}
-						}
-						result = append(result, dst)
+				//	if rawTokenid == newit["tokenid"] {
+				dst := make(map[string]interface{})
+				dst = CopyMap(dst, newit)
+				if dst["properties"] != nil {
+					properties := dst["properties"].(primitive.A)
+					pp := properties[0].(map[string]interface{})
+					newProperties, err1 := ReSetProperties(pp)
+					if err1 != nil {
+						continue
 					}
+
+					if newProperties["image"] == nil {
+						continue
+					}
+					dst["image"] = ImagUrl(newProperties["asset"].(string), newProperties["image"].(string), "images")
+					if newProperties["thumbnail"] != nil {
+						dst["thumbnail"] = ImagUrl(newProperties["asset"].(string), newProperties["thumbnail"].(string), "thumbnail")
+					} else {
+						dst["thumbnail"] = ImagUrl(newProperties["asset"].(string), newProperties["image"].(string), "thumbnail")
+					}
+					dst["name"] = newProperties["name"]
+					dst["number"] = newProperties["number"]
+					//dst["properties"] = newProperties
+					dst["class"] = newProperties["class"]
+					dst["count"] = len(groupInfo)
+
+					result = append(result, dst)
 				}
+				//	}
 			}
 		}
 
@@ -302,6 +284,77 @@ func (me *T) GetNFTList(args struct {
 		} else {
 			pageResult = append(pageResult, item)
 		}
+	}
+
+	//获取offer 价格
+	var nftlist = make([]struct {
+		Asset   h160.T
+		TokenId strval.T
+	}, 0)
+
+	for _, it := range pageResult {
+		asset := h160.T(it["asset"].(string))
+		tokenid := strval.T(it["tokenid"].(string))
+		nftlist = append(nftlist, struct {
+			Asset   h160.T
+			TokenId strval.T
+		}{Asset: asset, TokenId: tokenid})
+	}
+
+	raw := make(map[string]interface{})
+	//err = me.GetHighestOfferByNFTList(struct {
+	//	NFT []struct {
+	//		Asset   h160.T
+	//		TokenId strval.T
+	//	}
+	//	MarketHash h160.T
+	//	Limit      int64
+	//	Skip       int64
+	//	Filter     map[string]interface{}
+	//	Raw        *map[string]interface{}
+	//}{  NFT: nftlist,
+	//	MarketHash: args.SecondaryMarket,
+	//	Raw: &raw},ret)
+	//if err !=nil{
+	//	return err
+	//}
+
+	//for _,it := range pageResult{
+	//	asset :=it["asset"].(string)
+	//	tokenid := it["tokenid"].(string)
+	//	key:=asset+tokenid
+	//	value := raw[key]
+	//	fmt.Println(value)
+	//	delete(it, "properties")
+	//}
+
+	err = me.GetInfoByNFTList(struct {
+		NFT []struct {
+			Asset   h160.T
+			TokenId strval.T
+		}
+		Filter map[string]interface{}
+		Raw    *map[string]interface{}
+	}{NFT: nftlist, Raw: &raw}, ret)
+
+	for _, it := range pageResult {
+		asset := it["asset"].(string)
+		tokenid := it["tokenid"].(string)
+		key := asset + tokenid
+
+		if raw[key] != nil {
+			value := raw[key].(map[string]interface{})
+			it["buyNowAmount"] = value["buyNowAmount"]
+			it["buyNowAsset"] = value["buyNowAmount"]
+			it["currentBidAmount"] = value["currentBidAmount"]
+			it["currentBidAsset"] = value["currentBidAsset"]
+			it["lastSoldAmount"] = value["lastSoldAmount"]
+			it["lastSoldAsset"] = value["lastSoldAsset"]
+			it["offerAmount"] = value["offerAmount"]
+			it["offerAsset"] = value["offerAsset"]
+		}
+		delete(it, "properties")
+
 	}
 
 	r3, err := me.FilterAggragateAndAppendCount(pageResult, len(result), args.Filter)
