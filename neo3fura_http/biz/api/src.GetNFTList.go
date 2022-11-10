@@ -286,75 +286,77 @@ func (me *T) GetNFTList(args struct {
 		}
 	}
 
-	//获取offer 价格
-	var nftlist = make([]struct {
-		Asset   h160.T
-		TokenId strval.T
-	}, 0)
-
-	for _, it := range pageResult {
-		asset := h160.T(it["asset"].(string))
-		tokenid := strval.T(it["tokenid"].(string))
-		nftlist = append(nftlist, struct {
+	if len(pageResult) > 0 {
+		//获取offer 价格
+		var nftlist = make([]struct {
 			Asset   h160.T
 			TokenId strval.T
-		}{Asset: asset, TokenId: tokenid})
-	}
+		}, 0)
 
-	raw := make(map[string]interface{})
-	//err = me.GetHighestOfferByNFTList(struct {
-	//	NFT []struct {
-	//		Asset   h160.T
-	//		TokenId strval.T
-	//	}
-	//	MarketHash h160.T
-	//	Limit      int64
-	//	Skip       int64
-	//	Filter     map[string]interface{}
-	//	Raw        *map[string]interface{}
-	//}{  NFT: nftlist,
-	//	MarketHash: args.SecondaryMarket,
-	//	Raw: &raw},ret)
-	//if err !=nil{
-	//	return err
-	//}
-
-	//for _,it := range pageResult{
-	//	asset :=it["asset"].(string)
-	//	tokenid := it["tokenid"].(string)
-	//	key:=asset+tokenid
-	//	value := raw[key]
-	//	fmt.Println(value)
-	//	delete(it, "properties")
-	//}
-
-	err = me.GetInfoByNFTList(struct {
-		NFT []struct {
-			Asset   h160.T
-			TokenId strval.T
+		for _, it := range pageResult {
+			asset := h160.T(it["asset"].(string))
+			tokenid := strval.T(it["tokenid"].(string))
+			nftlist = append(nftlist, struct {
+				Asset   h160.T
+				TokenId strval.T
+			}{Asset: asset, TokenId: tokenid})
 		}
-		Filter map[string]interface{}
-		Raw    *map[string]interface{}
-	}{NFT: nftlist, Raw: &raw}, ret)
 
-	for _, it := range pageResult {
-		asset := it["asset"].(string)
-		tokenid := it["tokenid"].(string)
-		key := asset + tokenid
+		raw := make(map[string]interface{})
+		//err = me.GetHighestOfferByNFTList(struct {
+		//	NFT []struct {
+		//		Asset   h160.T
+		//		TokenId strval.T
+		//	}
+		//	MarketHash h160.T
+		//	Limit      int64
+		//	Skip       int64
+		//	Filter     map[string]interface{}
+		//	Raw        *map[string]interface{}
+		//}{  NFT: nftlist,
+		//	MarketHash: args.SecondaryMarket,
+		//	Raw: &raw},ret)
+		//if err !=nil{
+		//	return err
+		//}
 
-		if raw[key] != nil {
-			value := raw[key].(map[string]interface{})
-			it["buyNowAmount"] = value["buyNowAmount"]
-			it["buyNowAsset"] = value["buyNowAmount"]
-			it["currentBidAmount"] = value["currentBidAmount"]
-			it["currentBidAsset"] = value["currentBidAsset"]
-			it["lastSoldAmount"] = value["lastSoldAmount"]
-			it["lastSoldAsset"] = value["lastSoldAsset"]
-			it["offerAmount"] = value["offerAmount"]
-			it["offerAsset"] = value["offerAsset"]
+		//for _,it := range pageResult{
+		//	asset :=it["asset"].(string)
+		//	tokenid := it["tokenid"].(string)
+		//	key:=asset+tokenid
+		//	value := raw[key]
+		//	fmt.Println(value)
+		//	delete(it, "properties")
+		//}
+
+		err = me.GetInfoByNFTList(struct {
+			NFT []struct {
+				Asset   h160.T
+				TokenId strval.T
+			}
+			Filter map[string]interface{}
+			Raw    *map[string]interface{}
+		}{NFT: nftlist, Raw: &raw}, ret)
+
+		for _, it := range pageResult {
+			asset := it["asset"].(string)
+			tokenid := it["tokenid"].(string)
+			key := asset + tokenid
+
+			if raw[key] != nil {
+				value := raw[key].(map[string]interface{})
+				it["buyNowAmount"] = value["buyNowAmount"]
+				it["buyNowAsset"] = value["buyNowAsset"]
+				it["currentBidAmount"] = value["currentBidAmount"]
+				it["currentBidAsset"] = value["currentBidAsset"]
+				it["lastSoldAmount"] = value["lastSoldAmount"]
+				it["lastSoldAsset"] = value["lastSoldAsset"]
+				it["offerAmount"] = value["offerAmount"]
+				it["offerAsset"] = value["offerAsset"]
+			}
+			delete(it, "properties")
+
 		}
-		delete(it, "properties")
-
 	}
 
 	r3, err := me.FilterAggragateAndAppendCount(pageResult, len(result), args.Filter)
