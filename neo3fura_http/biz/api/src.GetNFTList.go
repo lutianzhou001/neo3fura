@@ -269,6 +269,8 @@ func (me *T) GetNFTList(args struct {
 					dst["class"] = newProperties["class"]
 					dst["count"] = len(groupInfo)
 
+				} else {
+					continue
 				}
 				//	}
 			}
