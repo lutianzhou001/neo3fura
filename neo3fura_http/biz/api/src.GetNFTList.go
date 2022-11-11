@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -252,7 +253,12 @@ func (me *T) GetNFTList(args struct {
 					}
 					dst["image"] = ImagUrl(newProperties["asset"].(string), newProperties["image"].(string), "images")
 					if newProperties["thumbnail"] != nil {
-						dst["thumbnail"] = ImagUrl(newProperties["asset"].(string), newProperties["thumbnail"].(string), "thumbnail")
+						tb, err2 := base64.URLEncoding.DecodeString(newProperties["thumbnail"].(string))
+						if err2 != nil {
+							return err2
+						}
+						dst["thumbnail"] = ImagUrl(newProperties["asset"].(string), string(tb[:]), "thumbnail")
+
 					} else {
 						dst["thumbnail"] = ImagUrl(newProperties["asset"].(string), newProperties["image"].(string), "thumbnail")
 					}
