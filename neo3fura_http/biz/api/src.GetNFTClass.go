@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"neo3fura_http/lib/mapsort"
 	"neo3fura_http/lib/type/NFTstate"
 	"neo3fura_http/lib/type/h160"
 	"neo3fura_http/var/stderr"
@@ -27,78 +28,6 @@ func (me *T) GetNFTClass(args struct {
 	if args.MarketHash.Valid() == false {
 		return stderr.ErrInvalidArgs
 	}
-	//currentTime := time.Now().UnixNano() / 1e6
-	//result := make([]map[string]interface{}, 0)
-
-	//var filter bson.M
-	//if args.NFTSate == NFTstate.Auction.Val(){
-	//	//filter = bson.M{"market": args.MarketHash,"asset": args.AssetHash,"auctionType":2,"amount":1}
-	//	filter = bson.M{"market":args.MarketHash,"asset":args.AssetHash,"eventname":"Auction","$or": []interface{}{
-	//		bson.M{"extendData": bson.M{"$regex": "auctionType\":\"2", "$options": "$i"}},
-	//		bson.M{"extendData": bson.M{"$regex": "auctionType\": \" 2", "$options": "$i"}},
-	//	}}
-	//}else if args.NFTSate == NFTstate.Sale.Val(){
-	//	filter = bson.M{"market":args.MarketHash,"asset":args.AssetHash,"eventname":"Auction","$or": []interface{}{
-	//		bson.M{"extendData": bson.M{"$regex": "auctionType\":\"1", "$options": "$i"}},
-	//		bson.M{"extendData": bson.M{"$regex": "auctionType\": \" 1", "$options": "$i"}},
-	//	}}
-	//}else{
-	//	filter = bson.M{"market":args.MarketHash,"asset":args.AssetHash,"eventname":"Auction",}
-	//}
-
-	//var r1, err = me.Client.QueryAggregate(
-	//	struct {
-	//		Collection string
-	//		Index      string
-	//		Sort       bson.M
-	//		Filter     bson.M
-	//		Pipeline   []bson.M
-	//		Query      []string
-	//	}{
-	//		Collection: "MarketNotification",
-	//		Index:      "GetNFTClass",
-	//		Sort:       bson.M{},
-	//		Filter:     bson.M{},
-	//		Pipeline: []bson.M{
-	//			bson.M{"$match": filter},
-	//			bson.M{"$lookup": bson.M{
-	//				"from": "SelfControlNep11Properties",
-	//				"let":  bson.M{"asset": "$asset", "tokenid": "$tokenid"},
-	//				"pipeline": []bson.M{
-	//					bson.M{"$match": bson.M{"$expr": bson.M{"$and": []interface{}{
-	//						bson.M{"$eq": []interface{}{"$tokenid", "$$tokenid"}},
-	//						bson.M{"$eq": []interface{}{"$asset", "$$asset"}},
-	//					}}}},
-	//					bson.M{"$set": bson.M{"class": "$image"}},
-	//				//	bson.M{"$sort"}
-	//				},
-	//				"as": "properties"},
-	//			},
-	//			bson.M{"$lookup": bson.M{
-	//				"from": "Market",
-	//				"let":  bson.M{"asset": "$asset", "tokenid": "$tokenid"},
-	//				"pipeline": []bson.M{
-	//					bson.M{"$match":bson.M{"amount":1}},
-	//					bson.M{"$match": bson.M{"$expr": bson.M{"$and": []interface{}{
-	//						bson.M{"$eq": []interface{}{"$tokenid", "$$tokenid"}},
-	//						bson.M{"$eq": []interface{}{"$asset", "$$asset"}},
-	//					}}}},
-	//				},
-	//				"as": "marketInfo"},
-	//			},
-	//			bson.M{"$group": bson.M{"_id": bson.M{"asset": "$asset", "class": "$properties.class"}, "asset": bson.M{"$last": "$asset"}, "tokenid": bson.M{"$last": "$tokenid"}, "properties": bson.M{"$last": "$properties"}, "marketInfo": bson.M{"$last": "$marketInfo"},
-	//				  "extendData": bson.M{"$last": "$extendData"}, "deadline": bson.M{"$last": "$extendData"},"infoArr": bson.M{"$push": "$$ROOT"}}},
-	//			//bson.M{"$project": bson.M{"_id": 1, "properties": 1, "asset": 1, "tokenid": 1, "propertiesArr": 1, "auctionAmount": 1, "deadline": 1, "timestamp": 1}},
-	//			//bson.M{"$group": bson.M{"_id": bson.M{"asset": "$asset", "class": "$properties.class"}, "asset": bson.M{"$last": "$asset"}, "tokenid": bson.M{"$last": "$tokenid"},"properties": bson.M{"$last": "$properties"}}},
-	//			//bson.M{"$project": bson.M{"_id": 1, "properties": 1, "asset": 1, "tokenid": 1}},
-	//
-	//		},
-	//		Query: []string{},
-	//	}, ret)
-	//
-	//if err != nil {
-	//	return err
-	//}
 
 	var filter bson.M
 	if args.NFTSate == NFTstate.Auction.Val() {
@@ -236,9 +165,7 @@ func (me *T) GetNFTClass(args struct {
 
 	}
 
-	//mapsort.MapSort5(result, "number")
-
-	//count := len(result)
+	mapsort.MapSort5(r2, "number")
 
 	r3, err := me.FilterAggragateAndAppendCount(r2, len(r2), args.Filter)
 
