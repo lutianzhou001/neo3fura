@@ -6,6 +6,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"neo3fura_http/lib/mapsort"
+	"neo3fura_http/lib/type/NFTstate"
 	"neo3fura_http/lib/type/h160"
 	"neo3fura_http/var/stderr"
 	"strconv"
@@ -16,6 +17,7 @@ import (
 func (me *T) GetNFTClass(args struct {
 	MarketHash h160.T
 	AssetHash  h160.T
+	NFTSate    string
 	Filter     map[string]interface{}
 	Raw        *map[string]interface{}
 }, ret *json.RawMessage) error {
@@ -26,86 +28,17 @@ func (me *T) GetNFTClass(args struct {
 	if args.MarketHash.Valid() == false {
 		return stderr.ErrInvalidArgs
 	}
-	currentTime := time.Now().UnixNano() / 1e6
-	//length := 0
-	//cond := bson.M{}
-	//var tokenidClassList [][]interface{}
-	//if len(args.SubClass) > 0 {
-	//	for _, i := range args.SubClass {
-	//		if len(i) != 2 {
-	//			return stderr.ErrInvalidArgs
-	//		} else {
-	//			_tokenid, _ := base64.StdEncoding.DecodeString(i[1].Val())
-	//			tokenid := string(_tokenid)
-	//
-	//			category := strings.Split(tokenid, "#")
-	//			str := category[0]
-	//			var number = 1
-	//			num := category[1]
-	//			number, _ = strconv.Atoi(num)
-	//			str = str + "#"
-	//
-	//			//if len(tokenid) == 17 {
-	//			//	series := tokenid[13:14]
-	//			//	num := tokenid[15:17]
-	//			//	numberstr = append(numberstr, num)
-	//			//	number, _ = strconv.Atoi(num)
-	//			//	str = "MetaPanacea #" + series + "-"
-	//			//} else if len(tokenid) == 18 {
-	//			//	series := tokenid[13:15]
-	//			//	num := tokenid[16:18]
-	//			//	numberstr = append(numberstr, num)
-	//			//	number, _ = strconv.Atoi(num)
-	//			//	str = "MetaPanacea #" + series + "-"
-	//			//
-	//			//}
-	//
-	//			var tokenidList []interface{}
-	//			for j := 1; j <= number; j++ {
-	//				var s string
-	//				if j < 10 {
-	//					s = str + "0" + strconv.Itoa(j)
-	//				} else {
-	//					s = str + strconv.Itoa(j)
-	//				}
-	//
-	//				token := base64.StdEncoding.EncodeToString([]byte(s))
-	//				tokenidList = append(tokenidList, token)
-	//			}
-	//			tokenidClassList = append(tokenidClassList, tokenidList)
-	//		}
-	//	}
-	//
-	//	//fmt.Println("tokenList: ",tokenidClassList)
-	//	for _, i := range tokenidClassList {
-	//		//classSort[]
-	//		b := bson.M{}
-	//		//a := bson.M{"$and": []interface{}{bson.M{"$gte": []interface{}{"$tokenid", i[0].Val()}}, bson.M{"$lte": []interface{}{"$tokenid", i[1].Val()}}}}
-	//		a := bson.M{"$and": []interface{}{bson.M{"$in": []interface{}{"$tokenid", i}}}}
-	//		//a :=bson.M{"tokenid":bson.M{"$in":i}}
-	//		if length == 0 {
-	//			b = bson.M{"if": a, "then": length, "else": length - 1}
-	//		} else {
-	//			b = bson.M{"if": a, "then": length, "else": cond}
-	//		}
-	//		length++
-	//
-	//		cond = bson.M{"$cond": b}
-	//	}
-	//} else {
-	//	return stderr.ErrInvalidArgs
-	//}
-	result := make([]map[string]interface{}, 0)
 
-	//pipeline := []bson.M{
-	//	bson.M{"$match": bson.M{"market": args.MarketHash}},
-	//	bson.M{"$match": bson.M{"asset": args.AssetHash}},
-	//	bson.M{"$match": bson.M{"eventname": "Auction"}},
-	//	bson.M{"$project": bson.M{"class": cond, "asset": 1, "tokenid": 1, "extendData": 1}},
-	//	bson.M{"$group": bson.M{"_id": "$class", "asset": bson.M{"$last": "$asset"}, "tokenid": bson.M{"$last": "$tokenid"}, "tokenidArr": bson.M{"$push": "$$ROOT"}, "extendData": bson.M{"$last": "$extendData"}}},
-	//}
+	var filter bson.M
+	if args.NFTSate == NFTstate.Auction.Val() {
+		filter = bson.M{"market": args.MarketHash, "amount": 1, "auctionType": 2}
+	} else if args.NFTSate == NFTstate.Sale.Val() {
+		filter = bson.M{"market": args.MarketHash, "amount": 1, "auctionType": 1}
+	} else {
+		filter = bson.M{"amount": 1}
+	}
 
-	var r1, err = me.Client.QueryAggregate(
+	var r2, err = me.Client.QueryAggregate(
 		struct {
 			Collection string
 			Index      string
@@ -114,30 +47,29 @@ func (me *T) GetNFTClass(args struct {
 			Pipeline   []bson.M
 			Query      []string
 		}{
-			Collection: "MarketNotification",
+			Collection: "SelfControlNep11Properties",
 			Index:      "GetNFTClass",
 			Sort:       bson.M{},
 			Filter:     bson.M{},
 			Pipeline: []bson.M{
-				bson.M{"$match": bson.M{"market": args.MarketHash}},
 				bson.M{"$match": bson.M{"asset": args.AssetHash}},
-				bson.M{"$match": bson.M{"eventname": "Auction"}},
 				bson.M{"$lookup": bson.M{
-					"from": "SelfControlNep11Properties",
+					"from": "Market",
 					"let":  bson.M{"asset": "$asset", "tokenid": "$tokenid"},
 					"pipeline": []bson.M{
+						bson.M{"$match": filter},
 						bson.M{"$match": bson.M{"$expr": bson.M{"$and": []interface{}{
 							bson.M{"$eq": []interface{}{"$tokenid", "$$tokenid"}},
 							bson.M{"$eq": []interface{}{"$asset", "$$asset"}},
 						}}}},
-						bson.M{"$set": bson.M{"class": bson.M{"$ifNull": []interface{}{"$name", "$tokenid"}}}},
-						bson.M{"$set": bson.M{"class": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", "0x50ac1c37690cc2cfc594472833cf57505d5f46de"}}, "then": "$asset", "else": "$class"}}}},
+						//	bson.M{"$sort"}
 					},
-					"as": "properties"},
+					"as": "marketInfo"},
 				},
-				bson.M{"$group": bson.M{"_id": bson.M{"asset": "$asset", "class": "$properties.class"}, "asset": bson.M{"$last": "$asset"}, "extendData": bson.M{"$last": "$extendData"}, "properties": bson.M{"$last": "$properties"}}},
-				//bson.M{"$project": bson.M{"_id": 1, "properties": 1, "asset": 1, "tokenid": 1}},
-
+				bson.M{"$set": bson.M{"class": "$image"}},
+				bson.M{"$group": bson.M{"_id": bson.M{"asset": "$asset", "class": "$class"}, "class": bson.M{"$last": "$class"}, "asset": bson.M{"$last": "$asset"}, "tokenid": bson.M{"$last": "$tokenid"},
+					"name": bson.M{"$last": "$name"}, "image": bson.M{"$last": "$image"}, "supply": bson.M{"$last": "$supply"}, "thumbnail": bson.M{"$last": "$thumbnail"},
+					"properties": bson.M{"$last": "$properties"}, "marketArr": bson.M{"$last": "$marketInfo"}, "itemList": bson.M{"$push": "$$ROOT"}}},
 			},
 			Query: []string{},
 		}, ret)
@@ -146,147 +78,96 @@ func (me *T) GetNFTClass(args struct {
 		return err
 	}
 
-	//  获取claimed 的值
-	pipeline2 := []bson.M{
-		bson.M{"$match": bson.M{"market": args.MarketHash}},
-		bson.M{"$match": bson.M{"asset": args.AssetHash}},
-		bson.M{"$match": bson.M{"eventname": "Claim"}},
-		bson.M{"$lookup": bson.M{
-			"from": "SelfControlNep11Properties",
-			"let":  bson.M{"asset": "$asset", "tokenid": "$tokenid"},
-			"pipeline": []bson.M{
-				bson.M{"$match": bson.M{"$expr": bson.M{"$and": []interface{}{
-					bson.M{"$eq": []interface{}{"$tokenid", "$$tokenid"}},
-					bson.M{"$eq": []interface{}{"$asset", "$$asset"}},
-				}}}},
-				bson.M{"$set": bson.M{"class": bson.M{"$ifNull": []interface{}{"$name", "$tokenid"}}}},
-				bson.M{"$set": bson.M{"class": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", "0x50ac1c37690cc2cfc594472833cf57505d5f46de"}}, "then": "$asset", "else": "$class"}}}},
-			},
-			"as": "properties"},
-		},
-		bson.M{"$group": bson.M{"_id": "$class", "asset": bson.M{"$last": "$asset"}, "tokenid": bson.M{"$last": "$tokenid"}, "claimedInfo": bson.M{"$push": "$$ROOT"}, "extendData": bson.M{"$last": "$extendData"}, "claimed": bson.M{"$sum": 1}}},
-	}
+	//result := make([]map[string]interface{},0)
+	for _, item := range r2 {
+		marketInfo := item["marketArr"].(primitive.A)[0].(map[string]interface{})
+		marketInfo = GetNFTState(marketInfo, args.MarketHash)
+		item["currentBidAmount"] = marketInfo["bidAmount"]
+		item["currentBidAsset"] = marketInfo["auctionAsset"]
+		//item["state"] =marketInfo["state"]
+		item["auctionType"] = marketInfo["auctionType"]
+		item["auctionAsset"] = marketInfo["auctionAsset"]
+		item["auctionAmount"] = marketInfo["auctionAmount"]
+		item["deadline"] = marketInfo["deadline"]
 
-	r2, err := me.Client.QueryAggregate(
-		struct {
-			Collection string
-			Index      string
-			Sort       bson.M
-			Filter     bson.M
-			Pipeline   []bson.M
-			Query      []string
-		}{
-			Collection: "MarketNotification",
-			Index:      "GetNFTClass",
-			Sort:       bson.M{},
-			Filter:     bson.M{},
-			Pipeline:   pipeline2,
-			Query:      []string{},
-		}, ret)
+		count := 0
+		groupinfo := item["itemList"].(primitive.A)
+		for _, it := range groupinfo {
+			pit := it.(map[string]interface{})
+			market := pit["marketInfo"].(primitive.A)[0].(map[string]interface{})
+			market = GetNFTState(market, args.MarketHash)
+			if market["state"].(string) == "sale" || market["state"].(string) == "auction" {
+				count++
+			}
+		}
+		item["claimed"] = len(groupinfo) - count
 
-	if err != nil {
-		return err
-	}
-
-	for _, item := range r1 {
-		deadline := int64(0)
 		asset := item["asset"].(string)
-		extendData := item["extendData"].(string)
-
-		var dat map[string]interface{}
-		if err1 := json.Unmarshal([]byte(extendData), &dat); err1 == nil {
-			item["deadline"] = dat["deadline"]
-			ddl := dat["deadline"].(string)
-			deadline, err = strconv.ParseInt(ddl, 10, 64)
-			if err != nil {
-				return err
-			}
-			auctionAsset := dat["auctionAsset"]
-			auctionAmount := dat["auctionAmount"]
-			item["price"] = auctionAmount
-			item["sellAsset"] = auctionAsset
+		image := item["image"]
+		if image != nil {
+			item["image"] = ImagUrl(asset, item["image"].(string), "images")
 		} else {
-			return err1
+			item["image"] = ""
 		}
+		if item["thumbnail"] != nil {
+			tb, err2 := base64.URLEncoding.DecodeString(item["thumbnail"].(string))
+			if err2 != nil {
+				return err2
+			}
+			item["thumbnail"] = ImagUrl(item["asset"].(string), string(tb[:]), "thumbnail")
 
-		if item["properties"] != nil {
-			properties := item["properties"].(primitive.A)[0].(map[string]interface{})
-			if properties["image"] != nil {
-				item["image"] = ImagUrl(asset, properties["image"].(string), "images")
-			}
-			if properties["thumbnail"] != nil {
-				tb, err2 := base64.URLEncoding.DecodeString(properties["thumbnail"].(string))
-				if err2 != nil {
-					return err2
-				}
-				item["thumbnail"] = ImagUrl(asset, string(tb[:]), "thumbnail")
-			}
-			if properties["series"] != nil {
-				series, err2 := base64.URLEncoding.DecodeString(properties["series"].(string))
-				if err2 != nil {
-					return err2
-				}
-				item["series"] = string(series)
-			}
-			if properties["name"] != nil {
-				name := strings.Split(properties["name"].(string), "#")
-				item["name"] = strings.TrimSpace(name[0])
-
-				if len(name) >= 2 {
-					number := name[1]
-					n, err2 := strconv.ParseInt(number, 10, 32)
-					if err2 != nil {
-						item["number"] = int32(-1)
-					}
-					item["number"] = int32(n)
-
-				}
-			}
-			if properties["supply"] != nil {
-				supply, err2 := base64.URLEncoding.DecodeString(properties["supply"].(string))
-				if err2 != nil {
-					return err2
-				}
-				item["supply"] = string(supply)
-			}
-
+		} else {
+			item["thumbnail"] = ImagUrl(item["asset"].(string), image.(string), "thumbnail")
 		}
-
-		//获取claimed
-		if deadline > currentTime {
-			if len(r2) > 0 {
-				for _, item1 := range r2 {
-					if item["_id"] == item1["_id"] {
-						item["claimed"] = item1["claimed"]
-						break
-					} else {
-						item["claimed"] = 0
-					}
+		if item["name"] != nil {
+			item["name"] = item["name"]
+		} else {
+			item["name"] = ""
+		}
+		if item["number"] != nil {
+			item["number"] = item["number"]
+		} else {
+			strArray := strings.Split(item["name"].(string), "#")
+			if len(strArray) >= 2 {
+				number := strArray[1]
+				n, err22 := strconv.ParseInt(number, 10, 64)
+				if err22 != nil {
+					item["number"] = int64(-1)
 				}
+				item["number"] = n
 			} else {
-				item["claimed"] = 0
+				item["number"] = int64(-1)
 			}
+		}
+
+		if item["supply"] != nil {
+			series, err2 := base64.URLEncoding.DecodeString(item["supply"].(string))
+			if err2 != nil {
+				return err2
+			}
+			item["supply"] = string(series)
 		} else {
-			claimed, err3 := strconv.Atoi(item["supply"].(string))
-			if err3 != nil {
-				return err3
-			}
-			item["claimed"] = claimed
+			item["supply"] = ""
+		}
+
+		if item["video"] != nil {
+			item["video"] = item["video"]
+		} else {
+			item["video"] = ""
 		}
 
 		delete(item, "_id")
+		delete(item, "itemList")
+		delete(item, "marketArr")
 		delete(item, "properties")
-		delete(item, "extendData")
-
-		result = append(result, item)
+		delete(item, "class")
+		//result = append(result, item)
 
 	}
 
-	mapsort.MapSort5(result, "number")
+	mapsort.MapSort5(r2, "number")
 
-	count := len(result)
-
-	r3, err := me.FilterAggragateAndAppendCount(result, count, args.Filter)
+	r3, err := me.FilterAggragateAndAppendCount(r2, len(r2), args.Filter)
 
 	if err != nil {
 		return err
@@ -300,4 +181,40 @@ func (me *T) GetNFTClass(args struct {
 	}
 	*ret = json.RawMessage(r)
 	return nil
+}
+
+func GetNFTState(info map[string]interface{}, primarymarket interface{}) map[string]interface{} {
+	if len(info) > 0 {
+		deadline := info["deadline"].(int64)
+		auctionType := info["auctionType"].(int32)
+		bidAmount := info["bidAmount"].(primitive.Decimal128).String()
+		market := info["market"]
+		info["currentBidAmount"] = info["bidAmount"]
+		info["currentBidAmount"] = info["auctionAsset"]
+		currentTime := time.Now().UnixNano() / 1e6
+		if deadline > currentTime && market == primarymarket {
+			if auctionType == 1 {
+				info["state"] = "sale" //
+			} else if auctionType == 2 {
+				info["state"] = "auction"
+			}
+		} else if deadline <= currentTime && market == primarymarket {
+			if auctionType == 2 && bidAmount != "0" {
+				info["state"] = "soldout" //竞拍有人出价
+			} else {
+				info["state"] = "expired"
+			}
+		} else {
+			info["state"] = "soldout"
+		}
+
+	} else {
+		info["state"] = ""
+	}
+
+	delete(info, "bidAmount")
+	delete(info, "bidder")
+	delete(info, "auctor")
+	delete(info, "timestamp")
+	return info
 }
