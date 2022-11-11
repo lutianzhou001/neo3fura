@@ -238,10 +238,9 @@ func (me *T) GetNFTList(args struct {
 			dst := make(map[string]interface{})
 			for _, it := range groupInfo {
 				newit := it.(map[string]interface{})
-				//	if rawTokenid == newit["tokenid"] {
 
-				dst = CopyMap(dst, newit)
-				if dst["properties"] != nil {
+				if newit["properties"] != nil {
+					dst = CopyMap(dst, newit)
 					properties := dst["properties"].(primitive.A)
 					pp := properties[0].(map[string]interface{})
 					newProperties, err1 := ReSetProperties(pp)
@@ -275,7 +274,10 @@ func (me *T) GetNFTList(args struct {
 				//	}
 			}
 
-			result = append(result, dst)
+			if len(dst) > 0 {
+				result = append(result, dst)
+			}
+
 		}
 
 	}
