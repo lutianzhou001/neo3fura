@@ -167,7 +167,7 @@ func (me *T) GetNFTList(args struct {
 			},
 			"as": "properties"},
 		},
-
+		{"$sort": bson.M{"bidAmount": 1, "auctionAmount": 1}},
 		bson.M{"$group": bson.M{"_id": bson.M{"asset": "$asset", "class": "$properties.class"}, "asset": bson.M{"$last": "$asset"}, "tokenid": bson.M{"$last": "$tokenid"}, "deadline": bson.M{"$last": "$deadline"}, "auctionAmount": bson.M{"$last": "$auctionAmount"}, "timestamp": bson.M{"$last": "$timestamp"}, "propertiesArr": bson.M{"$push": "$$ROOT"}}},
 		bson.M{"$project": bson.M{"deadlineCond": deadlineCond, "auctionAmountCond": auctionAmountCond, "_id": 1, "properties": 1, "asset": 1, "tokenid": 1, "propertiesArr": 1, "auctionAmount": 1, "deadline": 1, "timestamp": 1}},
 
@@ -235,10 +235,11 @@ func (me *T) GetNFTList(args struct {
 			//	rawResult := newRaw[0]
 
 			//	rawTokenid := rawResult["tokenid"]
+			dst := make(map[string]interface{})
 			for _, it := range groupInfo {
 				newit := it.(map[string]interface{})
 				//	if rawTokenid == newit["tokenid"] {
-				dst := make(map[string]interface{})
+
 				dst = CopyMap(dst, newit)
 				if dst["properties"] != nil {
 					properties := dst["properties"].(primitive.A)
@@ -268,10 +269,11 @@ func (me *T) GetNFTList(args struct {
 					dst["class"] = newProperties["class"]
 					dst["count"] = len(groupInfo)
 
-					result = append(result, dst)
 				}
 				//	}
 			}
+
+			result = append(result, dst)
 		}
 
 	}
