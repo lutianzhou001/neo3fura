@@ -90,7 +90,7 @@ func (me *T) GetMarketCollections(args struct {
 						if pitem["image"] != nil {
 							proMap["image"] = ImagUrl(pitem["asset"].(string), pitem["image"].(string), "images")
 						}
-						if pitem["thumbnail"] != nil {
+						if pitem["thumbnail"] != nil && pitem["thumbnail"] != "" {
 							tb, err2 := base64.URLEncoding.DecodeString(pitem["thumbnail"].(string))
 							if err2 != nil {
 								return err2
