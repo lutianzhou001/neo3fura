@@ -134,7 +134,6 @@ func (me *T) GetMarketCollections(args struct {
 
 						}
 						if proMap["image"] == nil {
-
 							if pitem["properties"] != nil {
 								//
 								jsonData := make(map[string]interface{})
@@ -198,6 +197,11 @@ func (me *T) GetMarketCollections(args struct {
 						if proMap["name"] != nil && proMap["name"].(string) == "Video" {
 							proMap["video"] = proMap["image"]
 							delete(proMap, "image")
+						}
+
+						if proMap["image"] == "" && proMap["video"] == "" {
+							count++
+							continue
 						}
 						tokenidProperties = append(tokenidProperties, proMap)
 					}

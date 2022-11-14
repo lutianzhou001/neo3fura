@@ -123,7 +123,7 @@ func (me *T) GetInfoByNFT(args struct {
 					if eventname == "Claim" {
 						finishTime = eventItem["timestamp"].(int64)
 						item["lastSoldAsset"] = data["auctionAsset"]
-						item["lastSoldAmount"] = item["bidAmount"]
+						item["lastSoldAmount"] = data["bidAmount"]
 					} else if eventname == "Offer" || eventname == "OfferCollection" {
 						//判断offer 有效期以及是否有足够的保证金
 						deadline := data["deadline"].(string)
