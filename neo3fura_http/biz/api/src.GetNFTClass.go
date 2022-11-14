@@ -188,7 +188,8 @@ func (me *T) GetNFTClass(args struct {
 func GetNFTState(info map[string]interface{}, primarymarket interface{}) map[string]interface{} {
 	if len(info) > 0 {
 		market := info["market"]
-		if market == nil || market == primarymarket {
+
+		if market == nil || market.(string) == primarymarket.(h160.T).Val() {
 			deadline := info["deadline"].(int64)
 			auctionType := info["auctionType"].(int32)
 			bidAmount := info["bidAmount"].(primitive.Decimal128).String()
@@ -196,13 +197,13 @@ func GetNFTState(info map[string]interface{}, primarymarket interface{}) map[str
 			info["currentBidAmount"] = info["bidAmount"]
 			info["currentBidAmount"] = info["auctionAsset"]
 			currentTime := time.Now().UnixNano() / 1e6
-			if deadline > currentTime && market == primarymarket {
+			if deadline > currentTime && market.(string) == primarymarket.(h160.T).Val() {
 				if auctionType == 1 {
 					info["state"] = "sale" //
 				} else if auctionType == 2 {
 					info["state"] = "auction"
 				}
-			} else if deadline <= currentTime && market == primarymarket {
+			} else if deadline <= currentTime && market.(string) == primarymarket.(h160.T).Val() {
 				if auctionType == 2 && bidAmount != "0" {
 					info["state"] = "soldout" //竞拍有人出价
 				} else {
