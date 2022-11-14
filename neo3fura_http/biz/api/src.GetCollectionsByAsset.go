@@ -153,7 +153,7 @@ func (me *T) GetCollectionsByAsset(args struct {
 
 							}
 						}
-						if proMap["name"].(string) == "Video" {
+						if proMap["name"] != nil && proMap["name"].(string) == "Video" {
 							proMap["video"] = proMap["image"]
 							delete(proMap, "image")
 						}

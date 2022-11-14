@@ -535,7 +535,7 @@ func (me *T) GetOffersByAddress(args struct {
 														}
 													}
 												}
-												if copyItem["name"].(string) == "Video" {
+												if copyItem["name"] != nil && copyItem["name"].(string) == "Video" {
 													copyItem["video"] = copyItem["image"]
 													delete(copyItem, "image")
 												}
@@ -565,7 +565,7 @@ func (me *T) GetOffersByAddress(args struct {
 									delete(item, "assetInfo")
 									delete(item, "extendData")
 
-									if item["name"].(string) == "Video" {
+									if item["name"] != nil && item["name"].(string) == "Video" {
 										item["video"] = item["image"]
 										delete(item, "image")
 									}

@@ -497,7 +497,7 @@ func (me *T) GetNFTOwnedByAddress(args struct {
 					} else {
 						return err
 					}
-					if item["name"].(string) == "Video" {
+					if item["name"] != nil && item["name"].(string) == "Video" {
 						item["video"] = item["image"]
 						delete(item, "image")
 						properties["video"] = properties["image"]

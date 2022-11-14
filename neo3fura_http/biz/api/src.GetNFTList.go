@@ -241,7 +241,7 @@ func (me *T) GetNFTList(args struct {
 				delegateItem["thumbnail"] = ImagUrl(newProperties["asset"].(string), newProperties["image"].(string), "thumbnail")
 			}
 			delegateItem["name"] = newProperties["name"]
-			if newProperties["name"].(string) == "Video" {
+			if newProperties["name"] != nil && newProperties["name"].(string) == "Video" {
 				delegateItem["video"] = delegateItem["image"]
 				delete(delegateItem, "image")
 			}

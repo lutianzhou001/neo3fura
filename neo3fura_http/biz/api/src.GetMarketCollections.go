@@ -160,7 +160,7 @@ func (me *T) GetMarketCollections(args struct {
 							}
 						}
 
-						if proMap["name"].(string) == "Video" {
+						if proMap["name"] != nil && proMap["name"].(string) == "Video" {
 							proMap["video"] = proMap["image"]
 							delete(proMap, "image")
 						}
@@ -191,7 +191,7 @@ func (me *T) GetMarketCollections(args struct {
 					tokeniditem["image"] = it["image"]
 					tokeniditem["thumbnail"] = it["thumbnail"]
 					tokeniditem["name"] = it["name"]
-					if tokeniditem["name"].(string) == "Video" {
+					if tokeniditem["name"] != nil && tokeniditem["name"].(string) == "Video" {
 						tokeniditem["video"] = tokeniditem["image"]
 						delete(tokeniditem, "image")
 					}

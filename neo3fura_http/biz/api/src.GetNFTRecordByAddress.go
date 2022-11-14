@@ -813,7 +813,7 @@ func getNFTProperties(tokenId strval.T, contractHash h160.T, me *T, ret *json.Ra
 				}
 			}
 
-			if r1["name"].(string) == "Video" {
+			if r1["name"] != nil && r1["name"].(string) == "Video" {
 				r1["video"] = r1["image"]
 				delete(r1, "image")
 			}
