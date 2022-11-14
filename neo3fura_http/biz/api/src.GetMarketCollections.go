@@ -11,9 +11,11 @@ import (
 	"math/big"
 	"neo3fura_http/lib/joh"
 	log2 "neo3fura_http/lib/log"
+	"neo3fura_http/lib/type/Contract"
 	"neo3fura_http/lib/type/h160"
 	"neo3fura_http/var/stderr"
 	"net/http"
+	"os"
 	"strconv"
 )
 
@@ -26,6 +28,25 @@ func (me *T) GetMarketCollections(args struct {
 }, ret *json.RawMessage) error {
 	if args.MarketHash.Valid() == false {
 		return stderr.ErrInvalidArgs
+	}
+	rt := os.ExpandEnv("${RUNTIME}")
+	var nns, genesis, polemen string
+	if rt == "staging" {
+		nns = Contract.Main_NNS.Val()
+		//  metapanacea = Contract.Main_MetaPanacea.Val()
+		genesis = Contract.Main_ILEXGENESIS.Val()
+		polemen = Contract.Main_ILEXPOLEMEN.Val()
+
+	} else if rt == "test2" {
+		nns = Contract.Test_NNS.Val()
+		//	metapanacea = Contract.Test_MetaPanacea.Val()
+		genesis = Contract.Test_ILEXGENESIS.Val()
+		polemen = Contract.Test_ILEXPOLEMEN.Val()
+	} else {
+		nns = Contract.Test_NNS.Val()
+		//	metapanacea = Contract.Test_MetaPanacea.Val()
+		genesis = Contract.Test_ILEXGENESIS.Val()
+		polemen = Contract.Test_ILEXPOLEMEN.Val()
 	}
 
 	result, err := me.Client.QueryLastJob(struct {
@@ -56,7 +77,11 @@ func (me *T) GetMarketCollections(args struct {
 					"let":  bson.M{"asset": "$hash"},
 					"pipeline": []bson.M{
 						bson.M{"$match": bson.M{"$expr": bson.M{"$eq": []interface{}{"$asset", "$$asset"}}}},
-						//bson.M{"$group": bson.M{"_id": "$asset","asset":bson.M{"$last":"$asset"}, "properities": bson.M{"$push": "$$ROOT"}}},
+						bson.M{"$set": bson.M{"class": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", nns}}, "then": "$asset",
+							"else": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", genesis}}, "then": "$image",
+								"else": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", polemen}}, "then": "$tokenid",
+									"else": "$name"}}}}}}}},
+						bson.M{"$group": bson.M{"_id": bson.M{"asset": "$asset", "class": "$class"}, "asset": bson.M{"$last": "$asset"}, "tokenid": bson.M{"$last": "$tokenid"}, "properties": bson.M{"$push": "$$ROOT"}}},
 					},
 					"as": "properties"},
 				},
@@ -78,9 +103,19 @@ func (me *T) GetMarketCollections(args struct {
 
 				for index, it := range properities {
 					proMap := make(map[string]interface{})
-					if index < 3 {
-						pitem := it.(map[string]interface{})
+					count := 3
+					if index < count {
+						p := it.(map[string]interface{})["properties"]
+						if p == nil {
+							continue
+						}
+						pro := p.(primitive.A)[0]
+						pitem := pro.(map[string]interface{})
 						asset := pitem["asset"].(string)
+						if pitem["tokenid"] == nil {
+							count++
+							continue
+						}
 						tokenid := pitem["tokenid"].(string)
 						proMap["name"] = pitem["name"]
 						proMap["asset"] = asset
