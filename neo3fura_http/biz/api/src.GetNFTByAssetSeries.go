@@ -148,7 +148,7 @@ func (me *T) GetNFTByAssetClass(args struct {
 				}
 			}
 
-			if item["name"].(string) == "Video" {
+			if item["name"] != nil && item["name"].(string) == "Video" {
 				item["video"] = item["image"]
 				delete(item, "image")
 			}
