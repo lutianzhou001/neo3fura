@@ -15,7 +15,7 @@ import (
 func (me *T) GetNFTClass(args struct {
 	MarketHash h160.T
 	AssetHash  h160.T
-	NFTSate    string
+	NFTState   string
 	Filter     map[string]interface{}
 	Raw        *map[string]interface{}
 }, ret *json.RawMessage) error {
@@ -28,9 +28,9 @@ func (me *T) GetNFTClass(args struct {
 	}
 
 	var filter bson.M
-	if args.NFTSate == NFTstate.Auction.Val() {
+	if args.NFTState == NFTstate.Auction.Val() {
 		filter = bson.M{"market": args.MarketHash, "amount": 1, "auctionType": 2}
-	} else if args.NFTSate == NFTstate.Sale.Val() {
+	} else if args.NFTState == NFTstate.Sale.Val() {
 		filter = bson.M{"market": args.MarketHash, "amount": 1, "auctionType": 1}
 	} else {
 		filter = bson.M{"amount": 1}
@@ -140,7 +140,14 @@ func (me *T) GetNFTClass(args struct {
 		} else {
 			item["name"] = ""
 		}
-		//if item["number"] != nil {
+
+		if item["name"].(string) == "Video" {
+			item["video"] = item["image"]
+			item["image"] = ""
+
+		}
+
+		///if item["number"] != nil {
 		//	item["number"] = item["number"]
 		//} else {
 		//	strArray := strings.Split(item["name"].(string), "#")
