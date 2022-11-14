@@ -218,64 +218,40 @@ func (me *T) GetNFTList(args struct {
 				tokenid := it["tokenid"].(string)
 				tokenidArr = append(tokenidArr, tokenid)
 			}
-			//raw := make(map[string]interface{})
+			delegateItem := groupInfo[len(groupInfo)-1].(map[string]interface{})
 
-			//rawResult := raw["result"].([]map[string]interface{})[0]
-
-			//	newRaw := raw["result"].([]map[string]interface{})
-			//
-			//	if args.NFTState.Val() == NFTstate.Sale.Val() {
-			//		mapsort.MapSort9(newRaw, "buyNowAmount")
-			//	} else if args.NFTState.Val() == NFTstate.Sale.Val() {
-			//		mapsort.MapSort9(newRaw, "currentBidAmount")
-			//	} else {
-			//		mapsort.MapSort9(newRaw, "lastSoldAmount")
-			//	}
-			//
-			//	rawResult := newRaw[0]
-
-			//	rawTokenid := rawResult["tokenid"]
-			dst := make(map[string]interface{})
-			for _, it := range groupInfo {
-				newit := it.(map[string]interface{})
-
-				if newit["properties"] != nil {
-					dst = CopyMap(dst, newit)
-					properties := dst["properties"].(primitive.A)
-					pp := properties[0].(map[string]interface{})
-					newProperties, err1 := ReSetProperties(pp)
-					if err1 != nil {
-						continue
-					}
-
-					if newProperties["image"] == nil {
-						continue
-					}
-					dst["image"] = ImagUrl(newProperties["asset"].(string), newProperties["image"].(string), "images")
-					if newProperties["thumbnail"] != nil {
-						tb, err2 := base64.URLEncoding.DecodeString(newProperties["thumbnail"].(string))
-						if err2 != nil {
-							return err2
-						}
-						dst["thumbnail"] = ImagUrl(newProperties["asset"].(string), string(tb[:]), "thumbnail")
-
-					} else {
-						dst["thumbnail"] = ImagUrl(newProperties["asset"].(string), newProperties["image"].(string), "thumbnail")
-					}
-					dst["name"] = newProperties["name"]
-					dst["number"] = newProperties["number"]
-					//dst["properties"] = newProperties
-					dst["class"] = newProperties["class"]
-					dst["count"] = len(groupInfo)
-
-				} else {
-					continue
-				}
-				//	}
+			properties := delegateItem["properties"].(primitive.A)
+			pp := properties[0].(map[string]interface{})
+			newProperties, err1 := ReSetProperties(pp)
+			if err1 != nil {
+				continue
 			}
 
-			if len(dst) > 0 {
-				result = append(result, dst)
+			if newProperties["image"] == nil {
+				continue
+			}
+			delegateItem["image"] = ImagUrl(newProperties["asset"].(string), newProperties["image"].(string), "images")
+			if newProperties["thumbnail"] != nil && newProperties["thumbnail"] != "" {
+				tb, err2 := base64.URLEncoding.DecodeString(newProperties["thumbnail"].(string))
+				if err2 != nil {
+					return err2
+				}
+				delegateItem["thumbnail"] = ImagUrl(newProperties["asset"].(string), string(tb[:]), "thumbnail")
+			} else {
+				delegateItem["thumbnail"] = ImagUrl(newProperties["asset"].(string), newProperties["image"].(string), "thumbnail")
+			}
+			delegateItem["name"] = newProperties["name"]
+			if newProperties["name"].(string) == "Video" {
+				delegateItem["video"] = delegateItem["image"]
+				delete(delegateItem, "image")
+			}
+			delegateItem["number"] = newProperties["number"]
+			//dst["properties"] = newProperties
+			delegateItem["class"] = newProperties["class"]
+			delegateItem["count"] = len(groupInfo)
+
+			if delegateItem["image"] != nil || delegateItem["video"] != nil {
+				result = append(result, delegateItem)
 			}
 
 		}

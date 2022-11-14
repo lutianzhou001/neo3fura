@@ -141,28 +141,6 @@ func (me *T) GetNFTClass(args struct {
 			item["name"] = ""
 		}
 
-		if item["name"].(string) == "Video" {
-			item["video"] = item["image"]
-			item["image"] = ""
-
-		}
-
-		///if item["number"] != nil {
-		//	item["number"] = item["number"]
-		//} else {
-		//	strArray := strings.Split(item["name"].(string), "#")
-		//	if len(strArray) >= 2 {
-		//		number := strArray[1]
-		//		n, err22 := strconv.ParseInt(number, 10, 64)
-		//		if err22 != nil {
-		//			item["number"] = int64(-1)
-		//		}
-		//		item["number"] = n
-		//	} else {
-		//		item["number"] = int64(-1)
-		//	}
-		//}
-
 		if item["supply"] != nil {
 			series, err2 := base64.URLEncoding.DecodeString(item["supply"].(string))
 			if err2 != nil {
@@ -173,12 +151,11 @@ func (me *T) GetNFTClass(args struct {
 			item["supply"] = ""
 		}
 
-		if item["video"] != nil {
-			item["video"] = item["video"]
-		} else {
-			item["video"] = ""
-		}
+		if item["name"].(string) == "Video" {
+			item["video"] = item["image"]
+			delete(item, "image")
 
+		}
 		delete(item, "_id")
 		delete(item, "itemList")
 		delete(item, "marketArr")
