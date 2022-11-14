@@ -428,10 +428,7 @@ func (me *T) GetNFTMarket(args struct {
 							properties["number"] = n
 							item["number"] = n
 						}
-						video, ok5 := data["video"]
-						if ok5 {
-							properties["video"] = video
-						}
+
 						thumbnail, ok6 := data["thumbnail"]
 						if ok6 {
 							//r1["image"] = thumbnail
@@ -452,6 +449,7 @@ func (me *T) GetNFTMarket(args struct {
 								}
 							}
 						}
+
 					} else {
 						return err
 					}

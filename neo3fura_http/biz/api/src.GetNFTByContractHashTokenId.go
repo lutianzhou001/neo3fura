@@ -160,6 +160,12 @@ func (me *T) GetNFTByContractHashTokenId(args struct {
 		item["number"] = raw3["number"]
 		item["properties"] = raw3["properties"]
 		item["thumbnail"] = raw3["thumbnail"]
+		if raw3["video"] != nil && raw3["video"] != "" {
+			item["video"] = raw3["video"]
+		}
+		if raw3["image"] != nil && raw3["image"] != "" {
+			item["image"] = raw3["image"]
+		}
 
 	}
 

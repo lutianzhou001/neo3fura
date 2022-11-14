@@ -144,11 +144,18 @@ func (me *T) GetCollectionsByAsset(args struct {
 									if key == "name" {
 										proMap["name"] = value
 									}
+
 								}
 							} else {
 								proMap["image"] = ""
 								proMap["thumbnail"] = ""
+								proMap["video"] = ""
+
 							}
+						}
+						if proMap["name"].(string) == "Video" {
+							proMap["video"] = proMap["image"]
+							delete(proMap, "image")
 						}
 						tokenidProperties = append(tokenidProperties, proMap)
 					}

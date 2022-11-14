@@ -138,11 +138,17 @@ func (me *T) GetNFTRecordByAddress(args struct {
 				rr["number"] = int64(-1)
 				rr["properties"] = ""
 			}
-			rr["image"] = raw2["image"]
+
 			rr["thumbnail"] = raw2["thumbnail"]
 			rr["name"] = raw2["name"]
 			rr["number"] = raw2["number"]
 			rr["properties"] = raw2["properties"]
+			if raw2["image"] != nil && raw2["image"] != "" {
+				rr["image"] = raw2["image"]
+			}
+			if raw2["video"] != nil && raw2["video"] != "" {
+				rr["video"] = raw2["video"]
+			}
 
 		}
 		//获取此时Nft的状态
@@ -618,10 +624,15 @@ func (me *T) GetNFTRecordByAddress(args struct {
 				rr["properties"] = ""
 			}
 
-			rr["image"] = raw3["image"]
 			rr["name"] = raw3["name"]
 			rr["number"] = raw3["number"]
 			rr["properties"] = raw3["properties"]
+			if raw3["image"] != nil && raw3["image"] != "" {
+				rr["image"] = raw3["image"]
+			}
+			if raw3["video"] != nil && raw3["video"] != "" {
+				rr["video"] = raw3["video"]
+			}
 
 			if from == args.Address.Val() && (to != args.SecondaryMarket.Val() || to != args.PrimaryMarket.Val()) {
 				rr["user"] = from
@@ -802,6 +813,11 @@ func getNFTProperties(tokenId strval.T, contractHash h160.T, me *T, ret *json.Ra
 				}
 			}
 
+			if r1["name"].(string) == "Video" {
+				r1["video"] = r1["image"]
+				delete(r1, "image")
+			}
+
 		} else {
 			return err
 		}
@@ -812,6 +828,7 @@ func getNFTProperties(tokenId strval.T, contractHash h160.T, me *T, ret *json.Ra
 		r1["name"] = ""
 		r1["number"] = int64(-1)
 		r1["properties"] = ""
+
 	}
 
 	filter1, err := me.Filter(r1, filter)

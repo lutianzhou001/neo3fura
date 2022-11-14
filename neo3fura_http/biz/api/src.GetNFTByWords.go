@@ -220,10 +220,7 @@ func (me *T) GetNFTByWords(args struct {
 							properties["number"] = n
 							item["number"] = n
 						}
-						video, ok5 := data["video"]
-						if ok5 {
-							properties["video"] = video
-						}
+
 						thumbnail, ok6 := data["thumbnail"]
 						if ok6 {
 							//r1["image"] = thumbnail
@@ -255,6 +252,11 @@ func (me *T) GetNFTByWords(args struct {
 					item["name"] = ""
 					item["number"] = int64(-1)
 					item["properties"] = ""
+				}
+
+				if item["name"].(string) == "Video" {
+					item["video"] = item["image"]
+					delete(item, "image")
 				}
 
 			}

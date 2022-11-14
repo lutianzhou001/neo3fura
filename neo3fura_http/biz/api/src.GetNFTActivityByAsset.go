@@ -188,6 +188,11 @@ func (me *T) GetNFTActivityByAsset(args struct {
 					}
 				}
 
+				if r2["name"].(string) == "Video" {
+					r2["video"] = r2["image"]
+					delete(r2, "image")
+				}
+
 			} else {
 				return err
 			}
@@ -211,6 +216,7 @@ func (me *T) GetNFTActivityByAsset(args struct {
 			r2["image"] = ""
 			r2["name"] = assetInfo["tokenname"]
 			r2["thumbnail"] = ""
+			r2["video"] = ""
 
 		}
 

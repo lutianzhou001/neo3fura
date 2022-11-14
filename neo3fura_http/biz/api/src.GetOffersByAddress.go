@@ -234,6 +234,12 @@ func (me *T) GetOffersByAddress(args struct {
 								}
 							}
 						}
+						if item["name"] == "Video" {
+							item["video"] = item["image"]
+							delete(item, "image")
+							properties["video"] = properties["image"]
+							delete(properties, "image")
+						}
 
 					} else {
 						return err
@@ -529,6 +535,10 @@ func (me *T) GetOffersByAddress(args struct {
 														}
 													}
 												}
+												if copyItem["name"].(string) == "Video" {
+													copyItem["video"] = copyItem["image"]
+													delete(copyItem, "image")
+												}
 											} else {
 												return err
 											}
@@ -554,6 +564,12 @@ func (me *T) GetOffersByAddress(args struct {
 									item["originOwner"] = ""
 									delete(item, "assetInfo")
 									delete(item, "extendData")
+
+									if item["name"].(string) == "Video" {
+										item["video"] = item["image"]
+										delete(item, "image")
+									}
+
 									result = append(result, item)
 								}
 							}

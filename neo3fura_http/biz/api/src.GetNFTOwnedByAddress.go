@@ -473,10 +473,7 @@ func (me *T) GetNFTOwnedByAddress(args struct {
 							properties["number"] = n
 							item["number"] = n
 						}
-						video, ok5 := data["video"]
-						if ok5 {
-							properties["video"] = video
-						}
+
 						thumbnail, ok6 := data["thumbnail"]
 						if ok6 {
 							tb, err22 := base64.URLEncoding.DecodeString(thumbnail.(string))
@@ -499,6 +496,12 @@ func (me *T) GetNFTOwnedByAddress(args struct {
 
 					} else {
 						return err
+					}
+					if item["name"].(string) == "Video" {
+						item["video"] = item["image"]
+						delete(item, "image")
+						properties["video"] = properties["image"]
+						delete(properties, "image")
 					}
 
 					item["properties"] = properties

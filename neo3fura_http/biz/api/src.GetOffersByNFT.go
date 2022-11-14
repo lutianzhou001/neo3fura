@@ -265,6 +265,11 @@ func (me *T) GetOffersByNFT(args struct {
 							}
 						}
 
+						if item["name"].(string) == "Video" {
+							item["video"] = item["image"]
+							delete(item, "image")
+						}
+
 					} else {
 						return err
 					}
