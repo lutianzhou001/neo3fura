@@ -83,7 +83,7 @@ func (me *T) GetNFTByAssetClass(args struct {
 		if item["image"] != nil {
 			item["image"] = ImagUrl(item["asset"].(string), item["image"].(string), "images")
 		}
-		if item["thumbnail"] != nil {
+		if item["thumbnail"] != nil && item["thumbnail"] != "" {
 			tb, err2 := base64.URLEncoding.DecodeString(item["thumbnail"].(string))
 			if err2 != nil {
 				return err2

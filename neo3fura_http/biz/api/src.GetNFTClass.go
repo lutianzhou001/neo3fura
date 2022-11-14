@@ -9,8 +9,6 @@ import (
 	"neo3fura_http/lib/type/NFTstate"
 	"neo3fura_http/lib/type/h160"
 	"neo3fura_http/var/stderr"
-	"strconv"
-	"strings"
 	"time"
 )
 
@@ -66,9 +64,22 @@ func (me *T) GetNFTClass(args struct {
 					},
 					"as": "marketInfo"},
 				},
+				bson.M{"$lookup": bson.M{
+					"from": "MarketNotification",
+					"let":  bson.M{"asset": "$asset", "tokenid": "$tokenid"},
+					"pipeline": []bson.M{
+						bson.M{"$match": bson.M{"market": args.MarketHash, "eventname": "Auction"}},
+						bson.M{"$match": bson.M{"$expr": bson.M{"$and": []interface{}{
+							bson.M{"$eq": []interface{}{"$tokenid", "$$tokenid"}},
+							bson.M{"$eq": []interface{}{"$asset", "$$asset"}},
+						}}}},
+						//	bson.M{"$sort"}
+					},
+					"as": "marketNotification"},
+				},
 				bson.M{"$set": bson.M{"class": "$image"}},
 				bson.M{"$group": bson.M{"_id": bson.M{"asset": "$asset", "class": "$class"}, "class": bson.M{"$last": "$class"}, "asset": bson.M{"$last": "$asset"}, "tokenid": bson.M{"$last": "$tokenid"},
-					"name": bson.M{"$last": "$name"}, "image": bson.M{"$last": "$image"}, "supply": bson.M{"$last": "$supply"}, "thumbnail": bson.M{"$last": "$thumbnail"},
+					"name": bson.M{"$last": "$name"}, "image": bson.M{"$last": "$image"}, "supply": bson.M{"$last": "$supply"}, "thumbnail": bson.M{"$last": "$thumbnail"}, "marketNotification": bson.M{"$last": "$marketNotification"},
 					"properties": bson.M{"$last": "$properties"}, "marketArr": bson.M{"$last": "$marketInfo"}, "itemList": bson.M{"$push": "$$ROOT"}}},
 			},
 			Query: []string{},
@@ -78,10 +89,15 @@ func (me *T) GetNFTClass(args struct {
 		return err
 	}
 
-	//result := make([]map[string]interface{},0)
+	result := make([]map[string]interface{}, 0)
 	for _, item := range r2 {
-		marketInfo := item["marketArr"].(primitive.A)[0].(map[string]interface{})
+		Info := item["marketArr"].(primitive.A)
+		if len(Info) == 0 {
+			continue
+		}
+		marketInfo := Info[0].(map[string]interface{})
 		marketInfo = GetNFTState(marketInfo, args.MarketHash)
+
 		item["currentBidAmount"] = marketInfo["bidAmount"]
 		item["currentBidAsset"] = marketInfo["auctionAsset"]
 		//item["state"] =marketInfo["state"]
@@ -109,7 +125,7 @@ func (me *T) GetNFTClass(args struct {
 		} else {
 			item["image"] = ""
 		}
-		if item["thumbnail"] != nil {
+		if item["thumbnail"] != nil && item["thumbnail"] != "" {
 			tb, err2 := base64.URLEncoding.DecodeString(item["thumbnail"].(string))
 			if err2 != nil {
 				return err2
@@ -124,21 +140,21 @@ func (me *T) GetNFTClass(args struct {
 		} else {
 			item["name"] = ""
 		}
-		if item["number"] != nil {
-			item["number"] = item["number"]
-		} else {
-			strArray := strings.Split(item["name"].(string), "#")
-			if len(strArray) >= 2 {
-				number := strArray[1]
-				n, err22 := strconv.ParseInt(number, 10, 64)
-				if err22 != nil {
-					item["number"] = int64(-1)
-				}
-				item["number"] = n
-			} else {
-				item["number"] = int64(-1)
-			}
-		}
+		//if item["number"] != nil {
+		//	item["number"] = item["number"]
+		//} else {
+		//	strArray := strings.Split(item["name"].(string), "#")
+		//	if len(strArray) >= 2 {
+		//		number := strArray[1]
+		//		n, err22 := strconv.ParseInt(number, 10, 64)
+		//		if err22 != nil {
+		//			item["number"] = int64(-1)
+		//		}
+		//		item["number"] = n
+		//	} else {
+		//		item["number"] = int64(-1)
+		//	}
+		//}
 
 		if item["supply"] != nil {
 			series, err2 := base64.URLEncoding.DecodeString(item["supply"].(string))
@@ -161,13 +177,15 @@ func (me *T) GetNFTClass(args struct {
 		delete(item, "marketArr")
 		delete(item, "properties")
 		delete(item, "class")
-		//result = append(result, item)
+		delete(item, "marketNotification")
 
+		item["count"] = item["supply"]
+		result = append(result, item)
 	}
 
-	mapsort.MapSort5(r2, "number")
+	mapsort.MapSort8(result, "name")
 
-	r3, err := me.FilterAggragateAndAppendCount(r2, len(r2), args.Filter)
+	r3, err := me.FilterAggragateAndAppendCount(result, len(result), args.Filter)
 
 	if err != nil {
 		return err
@@ -185,31 +203,77 @@ func (me *T) GetNFTClass(args struct {
 
 func GetNFTState(info map[string]interface{}, primarymarket interface{}) map[string]interface{} {
 	if len(info) > 0 {
-		deadline := info["deadline"].(int64)
-		auctionType := info["auctionType"].(int32)
-		bidAmount := info["bidAmount"].(primitive.Decimal128).String()
 		market := info["market"]
-		info["currentBidAmount"] = info["bidAmount"]
-		info["currentBidAmount"] = info["auctionAsset"]
-		currentTime := time.Now().UnixNano() / 1e6
-		if deadline > currentTime && market == primarymarket {
-			if auctionType == 1 {
-				info["state"] = "sale" //
-			} else if auctionType == 2 {
-				info["state"] = "auction"
-			}
-		} else if deadline <= currentTime && market == primarymarket {
-			if auctionType == 2 && bidAmount != "0" {
-				info["state"] = "soldout" //竞拍有人出价
-			} else {
-				info["state"] = "expired"
-			}
-		} else {
-			info["state"] = "soldout"
-		}
+		if market == nil || market == primarymarket {
+			deadline := info["deadline"].(int64)
+			auctionType := info["auctionType"].(int32)
+			bidAmount := info["bidAmount"].(primitive.Decimal128).String()
 
+			info["currentBidAmount"] = info["bidAmount"]
+			info["currentBidAmount"] = info["auctionAsset"]
+			currentTime := time.Now().UnixNano() / 1e6
+			if deadline > currentTime && market == primarymarket {
+				if auctionType == 1 {
+					info["state"] = "sale" //
+				} else if auctionType == 2 {
+					info["state"] = "auction"
+				}
+			} else if deadline <= currentTime && market == primarymarket {
+				if auctionType == 2 && bidAmount != "0" {
+					info["state"] = "soldout" //竞拍有人出价
+				} else {
+					info["state"] = "expired"
+				}
+			} else {
+				info["state"] = "soldout"
+			}
+
+		} else {
+			info["state"] = ""
+		}
 	} else {
-		info["state"] = ""
+		info["state"] = "no"
+	}
+
+	delete(info, "bidAmount")
+	delete(info, "bidder")
+	delete(info, "auctor")
+	delete(info, "timestamp")
+	return info
+}
+
+func GetNFTStateByNotication(info map[string]interface{}, primarymarket interface{}) map[string]interface{} {
+	if len(info) > 0 {
+		market := info["market"]
+		if market == nil || market == primarymarket {
+			deadline := info["deadline"].(int64)
+			auctionType := info["auctionType"].(int32)
+			bidAmount := info["bidAmount"].(primitive.Decimal128).String()
+
+			info["currentBidAmount"] = info["bidAmount"]
+			info["currentBidAmount"] = info["auctionAsset"]
+			currentTime := time.Now().UnixNano() / 1e6
+			if deadline > currentTime && market == primarymarket {
+				if auctionType == 1 {
+					info["state"] = "sale" //
+				} else if auctionType == 2 {
+					info["state"] = "auction"
+				}
+			} else if deadline <= currentTime && market == primarymarket {
+				if auctionType == 2 && bidAmount != "0" {
+					info["state"] = "soldout" //竞拍有人出价
+				} else {
+					info["state"] = "expired"
+				}
+			} else {
+				info["state"] = "soldout"
+			}
+
+		} else {
+			info["state"] = ""
+		}
+	} else {
+		info["state"] = "no"
 	}
 
 	delete(info, "bidAmount")
