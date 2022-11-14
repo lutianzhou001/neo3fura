@@ -11,7 +11,6 @@ import (
 func (me *T) GetMarketAssetOwnedByAddress(args struct {
 	Address    h160.T
 	MarketHash h160.T
-	NFTState   string //state:aution  sale  notlisted  unclaimed
 	Limit      int64
 	Skip       int64
 	Filter     map[string]interface{}
@@ -77,20 +76,6 @@ func (me *T) GetMarketAssetOwnedByAddress(args struct {
 		}}},
 
 		bson.M{"$group": bson.M{"_id": "asset", "asset": bson.M{"$last": "$asset"}, "marketAsset": bson.M{"$push": "$$ROOT"}}},
-		//bson.M{"$lookup": bson.M{
-		//	"from": "Nep11Properties",
-		//	"let":  bson.M{"asset": "$asset", "tokenid": "$tokenid"},
-		//	"pipeline": []bson.M{
-		//		bson.M{"$match": bson.M{"$expr": bson.M{"$and": []interface{}{
-		//			bson.M{"$eq": []interface{}{"$tokenid", "$$tokenid"}},
-		//			bson.M{"$eq": []interface{}{"$asset", "$$asset"}},
-		//		}}}},
-		//		bson.M{"$project": bson.M{"asset": 1, "tokenid": 1, "properties": 1}},
-		//	},
-		//	"as": "properties"},
-		//},
-		//bson.M{"$skip": args.Skip},
-		//bson.M{"$limit": args.Limit},
 		bson.M{"$project": bson.M{"_id": 1, "asset": 1, "marketAsset": 1}},
 	}
 	pipeline = append(pipeline, pipeline1...)
