@@ -87,6 +87,8 @@ func (me *T) GetInfoByNFT(args struct {
 		item["currentBidAmount"] = "0"
 		item["offerAsset"] = ""
 		item["offerAmount"] = "0"
+		item["nonce"] = 0
+		item["eventname"] = ""
 
 		auctionType := item["auctionType"].(int32)
 		if ddl > currentTime {
@@ -150,6 +152,8 @@ func (me *T) GetInfoByNFT(args struct {
 								if guarantee.Cmp(amount) == 1 {
 									item["offerAsset"] = highestOffer["offerAsset"]
 									item["offerAmount"] = amount.String()
+									item["nonce"] = highestOffer["nonce"]
+									item["eventname"] = highestOffer["eventname"]
 								}
 
 							}
