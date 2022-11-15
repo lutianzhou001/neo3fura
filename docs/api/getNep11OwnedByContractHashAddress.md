@@ -6,6 +6,7 @@ Gets the Nep11 assets owned by the contract hash and user's address.
 
 |    Name    | Type | Description | Required |
 | ---------- | --- |    ------    | ----|
+| Address | string | The address of owner | Required |
 | ContractHash    | string| The contract script hash | Required |
 | Limit    | int|  The number of items to return| Optional|
 | Skip    | int|  The number of items to return| Optional |
