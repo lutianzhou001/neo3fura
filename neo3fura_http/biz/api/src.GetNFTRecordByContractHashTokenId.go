@@ -22,7 +22,7 @@ func (me *T) GetNFTRecordByContractHashTokenId(args struct {
 	if len(args.TokenId) <= 0 {
 		return stderr.ErrInvalidArgs
 	}
-	f := bson.M{"eventname": "Claim", "asset": args.ContractHash.Val(), "tokenid": args.TokenId.Val()}
+	f := bson.M{"eventname": bson.M{"$in": []interface{}{"Claim", "CompleteOffer", "CompleteOfferCollection"}}, "asset": args.ContractHash.Val(), "tokenid": args.TokenId.Val()}
 	if len(args.MarketHash) > 0 {
 		f["market"] = args.MarketHash.Val()
 	}
@@ -69,7 +69,6 @@ func (me *T) GetNFTRecordByContractHashTokenId(args struct {
 		rr["to"] = item["to"]
 		rr["auctionAsset"] = "" //普通账户之间转账  无价格
 		rr["auctionAmount"] = ""
-		rr["timestamp"] = item["timestamp"]
 
 		//筛选出从市场交易的nft 会有交易价格
 		for _, i := range r1 {
@@ -77,13 +76,29 @@ func (me *T) GetNFTRecordByContractHashTokenId(args struct {
 				extendData := i["extendData"].(string)
 				var dat map[string]interface{}
 				if err2 := json.Unmarshal([]byte(extendData), &dat); err2 == nil {
-					bidAmount, err1 := strconv.ParseInt(dat["bidAmount"].(string), 10, 64)
-					if err1 != nil {
-						return err1
+					eventname := i["eventname"].(string)
+					rr["timestamp"] = i["timestamp"]
+					if eventname == "Claim" {
+						bidAmount, err1 := strconv.ParseInt(dat["bidAmount"].(string), 10, 64)
+						if err1 != nil {
+							return err1
+						}
+						rr["from"] = item["from"]
+						rr["to"] = item["to"]
+						auctionAsset := dat["auctionAsset"]
+						rr["auctionAsset"] = auctionAsset
+						rr["auctionAmount"] = bidAmount
+
+					} else if eventname == "CompleteOffer" || eventname == "CompleteOfferCollection" {
+						offerAmount, err1 := strconv.ParseInt(dat["offerAmount"].(string), 10, 64)
+						if err1 != nil {
+							return err1
+						}
+						rr["auctionAsset"] = dat["offerAsset"]
+						rr["auctionAmount"] = offerAmount
+						rr["from"] = i["user"]
+						rr["to"] = dat["offerer"]
 					}
-					auctionAsset := dat["auctionAsset"]
-					rr["auctionAsset"] = auctionAsset
-					rr["auctionAmount"] = bidAmount
 
 				} else {
 					return err2
