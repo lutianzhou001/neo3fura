@@ -197,13 +197,13 @@ func GetNFTState(info map[string]interface{}, primarymarket interface{}) map[str
 			info["currentBidAmount"] = info["bidAmount"]
 			info["currentBidAmount"] = info["auctionAsset"]
 			currentTime := time.Now().UnixNano() / 1e6
-			if deadline > currentTime && market.(string) == primarymarket.(h160.T).Val() {
+			if deadline > currentTime && market != nil && market.(string) == primarymarket.(h160.T).Val() {
 				if auctionType == 1 {
 					info["state"] = "sale" //
 				} else if auctionType == 2 {
 					info["state"] = "auction"
 				}
-			} else if deadline <= currentTime && market.(string) == primarymarket.(h160.T).Val() {
+			} else if deadline <= currentTime && market != nil && market.(string) == primarymarket.(h160.T).Val() {
 				if auctionType == 2 && bidAmount != "0" {
 					info["state"] = "soldout" //竞拍有人出价
 				} else {
