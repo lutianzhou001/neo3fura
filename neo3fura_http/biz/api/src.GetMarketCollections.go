@@ -134,7 +134,24 @@ func (me *T) GetMarketCollections(args struct {
 
 						}
 						if proMap["image"] == nil {
-							if pitem["properties"] != nil {
+							if pitem["tokenURI"] != nil {
+								tokenUrl := pitem["tokenURI"].(string)
+								ppjson, err := GetImgFromTokenURL(tokenurl(tokenUrl), asset, tokenid)
+								if err != nil {
+									return err
+								}
+								for key, value := range ppjson {
+									//item[key] = value
+									if key == "image" {
+										img := value.(string)
+										proMap["thumbnail"] = ImagUrl(asset, img, "thumbnail")
+										proMap["image"] = ImagUrl(asset, img, "images")
+									}
+									if key == "name" {
+										proMap["name"] = value
+									}
+								}
+							} else if pitem["properties"] != nil {
 								//
 								jsonData := make(map[string]interface{})
 								properties := pitem["properties"].(string)
@@ -171,23 +188,6 @@ func (me *T) GetMarketCollections(args struct {
 									}
 								}
 
-							} else if pitem["tokenURI"] != nil {
-								tokenUrl := pitem["tokenURI"].(string)
-								ppjson, err := GetImgFromTokenURL(tokenurl(tokenUrl), asset, tokenid)
-								if err != nil {
-									return err
-								}
-								for key, value := range ppjson {
-									//item[key] = value
-									if key == "image" {
-										img := value.(string)
-										proMap["thumbnail"] = ImagUrl(asset, img, "thumbnail")
-										proMap["image"] = ImagUrl(asset, img, "images")
-									}
-									if key == "name" {
-										proMap["name"] = value
-									}
-								}
 							} else {
 								proMap["image"] = ""
 								proMap["thumbnail"] = ""
