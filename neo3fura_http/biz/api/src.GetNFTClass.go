@@ -68,12 +68,12 @@ func (me *T) GetNFTClass(args struct {
 					"from": "MarketNotification",
 					"let":  bson.M{"asset": "$asset", "tokenid": "$tokenid"},
 					"pipeline": []bson.M{
-						bson.M{"$match": bson.M{"market": args.MarketHash, "eventname": "Auction"}},
+						bson.M{"$match": bson.M{"market": args.MarketHash, "eventname": "Claim"}},
 						bson.M{"$match": bson.M{"$expr": bson.M{"$and": []interface{}{
 							bson.M{"$eq": []interface{}{"$tokenid", "$$tokenid"}},
 							bson.M{"$eq": []interface{}{"$asset", "$$asset"}},
 						}}}},
-						//	bson.M{"$sort"}
+						//bson.M{"$sort":bson.M{"timestamp":1}},
 					},
 					"as": "marketNotification"},
 				},
@@ -88,7 +88,7 @@ func (me *T) GetNFTClass(args struct {
 	if err != nil {
 		return err
 	}
-
+	currentTime := time.Now().UnixNano() / 1e6
 	result := make([]map[string]interface{}, 0)
 	for _, item := range r2 {
 		Info := item["marketArr"].(primitive.A)
@@ -101,10 +101,38 @@ func (me *T) GetNFTClass(args struct {
 		item["currentBidAmount"] = marketInfo["bidAmount"]
 		item["currentBidAsset"] = marketInfo["auctionAsset"]
 		//item["state"] =marketInfo["state"]
-		item["auctionType"] = marketInfo["auctionType"]
+		auctionType := marketInfo["auctionType"].(int32)
+		if auctionType == 2 {
+			item["currentBidAsset"] = marketInfo["auctionAsset"]
+		} else {
+			item["currentBidAsset"] = ""
+		}
 		item["auctionAsset"] = marketInfo["auctionAsset"]
 		item["auctionAmount"] = marketInfo["auctionAmount"]
 		item["deadline"] = marketInfo["deadline"]
+		item["lastSoldAsset"] = ""
+		item["lastSoldAmount"] = "0"
+
+		notify := item["marketNotification"].(primitive.A)
+
+		if len(notify) > 0 {
+			notification := notify[0].(map[string]interface{})
+			extendData := notification["extendData"]
+			if extendData != nil && extendData != "" {
+				data := make(map[string]interface{})
+				if err := json.Unmarshal([]byte(extendData.(string)), &data); err == nil {
+					item["lastSoldAsset"] = data["auctionAsset"]
+					item["lastSoldAmount"] = data["bidAmount"]
+				}
+			}
+		}
+
+		deadline := marketInfo["deadline"].(int64)
+		bidAmount := marketInfo["bidAmount"].(primitive.Decimal128).String()
+		if deadline < currentTime && bidAmount != "0" {
+			item["lastSoldAsset"] = marketInfo["auctionAsset"]
+			item["lastSoldAmount"] = marketInfo["auctionAmount"]
+		}
 
 		count := 0
 		groupinfo := item["itemList"].(primitive.A)
@@ -150,7 +178,6 @@ func (me *T) GetNFTClass(args struct {
 		} else {
 			item["supply"] = ""
 		}
-
 		if item["name"] != nil && item["name"].(string) == "Video" {
 			item["video"] = item["image"]
 			delete(item, "image")
@@ -161,7 +188,7 @@ func (me *T) GetNFTClass(args struct {
 		delete(item, "marketArr")
 		delete(item, "properties")
 		delete(item, "class")
-		delete(item, "marketNotification")
+		//delete(item, "marketNotification")
 
 		item["count"] = item["supply"]
 		result = append(result, item)
@@ -220,7 +247,7 @@ func GetNFTState(info map[string]interface{}, primarymarket interface{}) map[str
 		info["state"] = "no"
 	}
 
-	delete(info, "bidAmount")
+	//delete(info, "bidAmount")
 	delete(info, "bidder")
 	delete(info, "auctor")
 	delete(info, "timestamp")
