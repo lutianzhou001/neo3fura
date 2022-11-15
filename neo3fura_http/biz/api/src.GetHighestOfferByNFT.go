@@ -126,7 +126,8 @@ func (me *T) GetHighestOfferByNFT(args struct {
 					}
 					offer["offerAmount"] = offerAmount
 					offer["deadline"] = deadline
-
+					offer["nonce"] = item["nonce"]
+					offer["eventname"] = item["eventname"]
 					result = append(result, offer)
 
 				}
