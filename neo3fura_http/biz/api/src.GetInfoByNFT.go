@@ -47,7 +47,7 @@ func (me *T) GetInfoByNFT(args struct {
 							bson.M{"$eq": []interface{}{"$asset", "$$asset"}},
 							bson.M{"$eq": []interface{}{"$tokenid", "$$tokenid"}},
 						}}}},
-						bson.M{"$sort": bson.M{"nonce": 1}},
+						bson.M{"$sort": bson.M{"timestamp": 1}},
 						bson.M{"$group": bson.M{"_id": "$eventname", "eventname": bson.M{"$last": "$eventname"}, "market": bson.M{"$last": "$market"}, "timestamp": bson.M{"$last": "$timestamp"}, "extendData": bson.M{"$last": "$extendData"}}},
 						bson.M{"$project": bson.M{"eventname": 1, "market": 1, "extendData": 1, "timestamp": 1}},
 					},
