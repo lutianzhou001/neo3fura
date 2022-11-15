@@ -88,6 +88,10 @@ func (me *T) GetCollectionsByAsset(args struct {
 							}
 							proMap["thumbnail"] = ImagUrl(pitem["asset"].(string), string(tb[:]), "thumbnail")
 
+						} else {
+							if proMap["image"] != nil && proMap["image"] != "" {
+								proMap["thumbnail"] = ImagUrl(pitem["asset"].(string), pitem["image"].(string), "thumbnail")
+							}
 						}
 						if proMap["image"] == nil {
 
@@ -109,7 +113,7 @@ func (me *T) GetCollectionsByAsset(args struct {
 									}
 
 									thumbnail, ok1 := jsonData["thumbnail"]
-									if ok1 {
+									if ok1 && item["thumbnail"] != "" {
 										tb, err2 := base64.URLEncoding.DecodeString(thumbnail.(string))
 										if err2 != nil {
 											return err2
@@ -184,6 +188,10 @@ func (me *T) GetCollectionsByAsset(args struct {
 					tokeniditem["image"] = it["image"]
 					tokeniditem["thumbnail"] = it["thumbnail"]
 					tokeniditem["name"] = it["name"]
+					if tokeniditem["name"] != nil && tokeniditem["name"].(string) == "Video" {
+						tokeniditem["video"] = tokeniditem["image"]
+						delete(tokeniditem, "image")
+					}
 				}
 			}
 
