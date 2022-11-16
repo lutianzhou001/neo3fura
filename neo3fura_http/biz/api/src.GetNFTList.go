@@ -148,6 +148,12 @@ func (me *T) GetNFTList(args struct {
 		}
 	}
 
+	var nnsclass string
+	if args.ContractHash.Val() == nns {
+		nnsclass = "$tokenid"
+	} else {
+		nnsclass = "$asset"
+	}
 	//group
 	setAndGroup := []bson.M{
 
@@ -160,7 +166,7 @@ func (me *T) GetNFTList(args struct {
 					bson.M{"$eq": []interface{}{"$asset", "$$asset"}},
 				}}}},
 
-				bson.M{"$set": bson.M{"class": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", nns}}, "then": "$asset",
+				bson.M{"$set": bson.M{"class": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", nns}}, "then": nnsclass,
 					"else": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", genesis}}, "then": "$image",
 						"else": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", polemen}}, "then": "$tokenid",
 							"else": "$name"}}}}}}}},
@@ -291,31 +297,6 @@ func (me *T) GetNFTList(args struct {
 		}
 
 		raw := make(map[string]interface{})
-		//err = me.GetHighestOfferByNFTList(struct {
-		//	NFT []struct {
-		//		Asset   h160.T
-		//		TokenId strval.T
-		//	}
-		//	MarketHash h160.T
-		//	Limit      int64
-		//	Skip       int64
-		//	Filter     map[string]interface{}
-		//	Raw        *map[string]interface{}
-		//}{  NFT: nftlist,
-		//	MarketHash: args.SecondaryMarket,
-		//	Raw: &raw},ret)
-		//if err !=nil{
-		//	return err
-		//}
-
-		//for _,it := range pageResult{
-		//	asset :=it["asset"].(string)
-		//	tokenid := it["tokenid"].(string)
-		//	key:=asset+tokenid
-		//	value := raw[key]
-		//	fmt.Println(value)
-		//	delete(it, "properties")
-		//}
 
 		err = me.GetInfoByNFTList(struct {
 			NFT []struct {
@@ -343,6 +324,10 @@ func (me *T) GetNFTList(args struct {
 				it["offerAsset"] = value["offerAsset"]
 			}
 			delete(it, "properties")
+			//处理nns name  一级不展示，二级展示
+			if args.ContractHash.Val() != nns && it["asset"] == nns {
+				it["name"] = nil
+			}
 
 		}
 	}
