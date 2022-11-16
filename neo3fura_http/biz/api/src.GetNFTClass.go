@@ -97,7 +97,7 @@ func (me *T) GetNFTClass(args struct {
 		}
 		marketInfo := Info[0].(map[string]interface{})
 		marketInfo = GetNFTState(marketInfo, args.MarketHash)
-
+		item["auctionType"] = marketInfo["auctionType"]
 		item["currentBidAmount"] = marketInfo["bidAmount"]
 		item["currentBidAsset"] = marketInfo["auctionAsset"]
 		//item["state"] =marketInfo["state"]
@@ -188,7 +188,7 @@ func (me *T) GetNFTClass(args struct {
 		delete(item, "marketArr")
 		delete(item, "properties")
 		delete(item, "class")
-		//delete(item, "marketNotification")
+		delete(item, "marketNotification")
 
 		item["count"] = item["supply"]
 		result = append(result, item)
