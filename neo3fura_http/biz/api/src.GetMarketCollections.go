@@ -100,7 +100,6 @@ func (me *T) GetMarketCollections(args struct {
 		if item["properties"] != nil {
 			properities := item["properties"].(primitive.A)
 			if len(properities) > 0 {
-
 				for index, it := range properities {
 					proMap := make(map[string]interface{})
 					count := 3
@@ -134,24 +133,8 @@ func (me *T) GetMarketCollections(args struct {
 
 						}
 						if proMap["image"] == nil {
-							if pitem["tokenURI"] != nil {
-								tokenUrl := pitem["tokenURI"].(string)
-								ppjson, err := GetImgFromTokenURL(tokenurl(tokenUrl), asset, tokenid)
-								if err != nil {
-									return err
-								}
-								for key, value := range ppjson {
-									//item[key] = value
-									if key == "image" {
-										img := value.(string)
-										proMap["thumbnail"] = ImagUrl(asset, img, "thumbnail")
-										proMap["image"] = ImagUrl(asset, img, "images")
-									}
-									if key == "name" {
-										proMap["name"] = value
-									}
-								}
-							} else if pitem["properties"] != nil {
+
+							if pitem["properties"] != nil {
 								//
 								jsonData := make(map[string]interface{})
 								properties := pitem["properties"].(string)
@@ -166,6 +149,12 @@ func (me *T) GetMarketCollections(args struct {
 										proMap["image"] = ImagUrl(pitem["asset"].(string), image.(string), "images")
 									} else {
 										proMap["image"] = ""
+									}
+									name, ok := jsonData["name"]
+									if ok {
+										proMap["name"] = name
+									} else {
+										proMap["name"] = ""
 									}
 
 									thumbnail, ok1 := jsonData["thumbnail"]
@@ -186,6 +175,25 @@ func (me *T) GetMarketCollections(args struct {
 											}
 										}
 									}
+									tokenUrl, ok2 := jsonData["tokenURI"]
+									if ok2 {
+										ppjson, err := GetImgFromTokenURL(tokenurl(tokenUrl.(string)), asset, tokenid)
+										if err != nil {
+											return err
+										}
+										for key, value := range ppjson {
+											//item[key] = value
+											if key == "image" {
+												img := value.(string)
+												proMap["thumbnail"] = ImagUrl(asset, img, "thumbnail")
+												proMap["image"] = ImagUrl(asset, img, "images")
+											}
+											if key == "name" {
+												proMap["name"] = value
+											}
+										}
+									}
+
 								}
 
 							} else {
