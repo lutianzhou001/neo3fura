@@ -69,7 +69,7 @@ func (me *T) GetNFTRecordByContractHashTokenId(args struct {
 		rr["to"] = item["to"]
 		rr["auctionAsset"] = "" //普通账户之间转账  无价格
 		rr["auctionAmount"] = ""
-
+		rr["timestamp"] = item["timestamp"]
 		//筛选出从市场交易的nft 会有交易价格
 		for _, i := range r1 {
 			if item["txid"] == i["txid"] { //为了获取nft的交易价格
