@@ -110,7 +110,7 @@ func (me *T) GetInfoByNFT(args struct {
 				item["lastSoldAmount"] = item["bidAmount"]
 			}
 		}
-
+		var finishTime int64
 		if item["eventlist"] != nil {
 			eventlist := item["eventlist"].(primitive.A)
 			for _, it := range eventlist {
@@ -119,13 +119,16 @@ func (me *T) GetInfoByNFT(args struct {
 				extendData := eventItem["extendData"]
 				market := eventItem["market"].(string)
 
-				var finishTime int64
 				data := make(map[string]interface{})
 				if err := json.Unmarshal([]byte(extendData.(string)), &data); err == nil {
 					if eventname == "Claim" {
-						finishTime = eventItem["timestamp"].(int64)
-						item["lastSoldAsset"] = data["auctionAsset"]
-						item["lastSoldAmount"] = data["bidAmount"]
+						time := eventItem["timestamp"].(int64)
+						if time > finishTime {
+							finishTime = time
+							item["lastSoldAsset"] = data["auctionAsset"]
+							item["lastSoldAmount"] = data["bidAmount"]
+						}
+
 					} else if eventname == "Offer" || eventname == "OfferCollection" {
 						//判断offer 有效期以及是否有足够的保证金
 						deadline := data["deadline"].(string)
@@ -155,7 +158,6 @@ func (me *T) GetInfoByNFT(args struct {
 									item["nonce"] = highestOffer["nonce"]
 									item["eventname"] = highestOffer["eventname"]
 								}
-
 							}
 						}
 					} else if eventname == "CompleteOffer" || eventname == "CompleteOfferCollection" {

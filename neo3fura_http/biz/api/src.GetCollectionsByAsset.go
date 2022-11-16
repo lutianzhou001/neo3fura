@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"neo3fura_http/lib/type/Contract"
 	"neo3fura_http/lib/type/h160"
 	"neo3fura_http/var/stderr"
+	"os"
 )
 
 func (me *T) GetCollectionsByAsset(args struct {
@@ -25,7 +27,25 @@ func (me *T) GetCollectionsByAsset(args struct {
 		}
 		list = append(list, item)
 	}
+	rt := os.ExpandEnv("${RUNTIME}")
+	var nns, genesis, polemen string
+	if rt == "staging" {
+		nns = Contract.Main_NNS.Val()
+		//  metapanacea = Contract.Main_MetaPanacea.Val()
+		genesis = Contract.Main_ILEXGENESIS.Val()
+		polemen = Contract.Main_ILEXPOLEMEN.Val()
 
+	} else if rt == "test2" {
+		nns = Contract.Test_NNS.Val()
+		//	metapanacea = Contract.Test_MetaPanacea.Val()
+		genesis = Contract.Test_ILEXGENESIS.Val()
+		polemen = Contract.Test_ILEXPOLEMEN.Val()
+	} else {
+		nns = Contract.Test_NNS.Val()
+		//	metapanacea = Contract.Test_MetaPanacea.Val()
+		genesis = Contract.Test_ILEXGENESIS.Val()
+		polemen = Contract.Test_ILEXPOLEMEN.Val()
+	}
 	//获取Collection基本信息
 	r1, err := me.Client.QueryAggregate(
 		struct {
@@ -47,6 +67,11 @@ func (me *T) GetCollectionsByAsset(args struct {
 					"let":  bson.M{"asset": "$hash"},
 					"pipeline": []bson.M{
 						bson.M{"$match": bson.M{"$expr": bson.M{"$eq": []interface{}{"$asset", "$$asset"}}}},
+						bson.M{"$set": bson.M{"class": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", nns}}, "then": "$tokenid",
+							"else": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", genesis}}, "then": "$image",
+								"else": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", polemen}}, "then": "$tokenid",
+									"else": "$name"}}}}}}}},
+						bson.M{"$group": bson.M{"_id": bson.M{"asset": "$asset", "class": "$class"}, "asset": bson.M{"$last": "$asset"}, "tokenid": bson.M{"$last": "$tokenid"}, "properties": bson.M{"$push": "$$ROOT"}}},
 						//bson.M{"$group": bson.M{"_id": "$asset","asset":bson.M{"$last":"$asset"}, "properities": bson.M{"$push": "$$ROOT"}}},
 					},
 					"as": "properties"},
@@ -69,9 +94,19 @@ func (me *T) GetCollectionsByAsset(args struct {
 
 				for index, it := range properities {
 					proMap := make(map[string]interface{})
-					if index < 3 {
-						pitem := it.(map[string]interface{})
+					count := 3
+					if index < count {
+						p := it.(map[string]interface{})["properties"]
+						if p == nil {
+							continue
+						}
+						pro := p.(primitive.A)[0]
+						pitem := pro.(map[string]interface{})
 						asset := pitem["asset"].(string)
+						if pitem["tokenid"] == nil {
+							count++
+							continue
+						}
 						tokenid := pitem["tokenid"].(string)
 						proMap["name"] = pitem["name"]
 						proMap["asset"] = asset
@@ -88,14 +123,26 @@ func (me *T) GetCollectionsByAsset(args struct {
 							}
 							proMap["thumbnail"] = ImagUrl(pitem["asset"].(string), string(tb[:]), "thumbnail")
 
-						} else {
-							if proMap["image"] != nil && proMap["image"] != "" {
-								proMap["thumbnail"] = ImagUrl(pitem["asset"].(string), pitem["image"].(string), "thumbnail")
-							}
 						}
 						if proMap["image"] == nil {
-
-							if pitem["properties"] != nil {
+							if pitem["tokenURI"] != nil {
+								tokenUrl := pitem["tokenURI"].(string)
+								ppjson, err := GetImgFromTokenURL(tokenurl(tokenUrl), asset, tokenid)
+								if err != nil {
+									return err
+								}
+								for key, value := range ppjson {
+									//item[key] = value
+									if key == "image" {
+										img := value.(string)
+										proMap["thumbnail"] = ImagUrl(asset, img, "thumbnail")
+										proMap["image"] = ImagUrl(asset, img, "images")
+									}
+									if key == "name" {
+										proMap["name"] = value
+									}
+								}
+							} else if pitem["properties"] != nil {
 								//
 								jsonData := make(map[string]interface{})
 								properties := pitem["properties"].(string)
@@ -113,7 +160,7 @@ func (me *T) GetCollectionsByAsset(args struct {
 									}
 
 									thumbnail, ok1 := jsonData["thumbnail"]
-									if ok1 && item["thumbnail"] != "" {
+									if ok1 {
 										tb, err2 := base64.URLEncoding.DecodeString(thumbnail.(string))
 										if err2 != nil {
 											return err2
@@ -132,34 +179,20 @@ func (me *T) GetCollectionsByAsset(args struct {
 									}
 								}
 
-							} else if pitem["tokenURI"] != nil {
-								tokenUrl := pitem["tokenURI"].(string)
-								ppjson, err := GetImgFromTokenURL(tokenurl(tokenUrl), asset, tokenid)
-								if err != nil {
-									return err
-								}
-								for key, value := range ppjson {
-									//item[key] = value
-									if key == "image" {
-										img := value.(string)
-										proMap["thumbnail"] = ImagUrl(asset, img, "thumbnail")
-										proMap["image"] = ImagUrl(asset, img, "images")
-									}
-									if key == "name" {
-										proMap["name"] = value
-									}
-
-								}
 							} else {
 								proMap["image"] = ""
 								proMap["thumbnail"] = ""
-								proMap["video"] = ""
-
 							}
 						}
+
 						if proMap["name"] != nil && proMap["name"].(string) == "Video" {
 							proMap["video"] = proMap["image"]
 							delete(proMap, "image")
+						}
+
+						if proMap["image"] == "" && proMap["video"] == "" {
+							count++
+							continue
 						}
 						tokenidProperties = append(tokenidProperties, proMap)
 					}
