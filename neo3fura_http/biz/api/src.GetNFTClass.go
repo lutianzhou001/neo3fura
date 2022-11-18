@@ -191,10 +191,17 @@ func (me *T) GetNFTClass(args struct {
 		delete(item, "marketNotification")
 
 		item["count"] = item["supply"]
+		//处理排序 video优先
+		tokenid := item["tokenid"].(string)
+		if tokenid == "QUUyMDE4MDctMQ==" {
+			item["order"] = "00"
+		} else {
+			item["order"] = "11"
+		}
 		result = append(result, item)
 	}
 
-	mapsort.MapSort8(result, "name")
+	mapsort.MapSort8(result, "order")
 
 	r3, err := me.FilterAggragateAndAppendCount(result, len(result), args.Filter)
 

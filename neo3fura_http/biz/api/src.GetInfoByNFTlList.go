@@ -11,6 +11,7 @@ import (
 	"neo3fura_http/lib/utils"
 	"neo3fura_http/var/stderr"
 	"os"
+	"strconv"
 	"time"
 )
 
@@ -110,20 +111,20 @@ func (me *T) GetInfoByNFTList(args struct {
 		if ddl > currentTime {
 			if auctionType == 1 {
 				item["buyNowAsset"] = item["auctionAsset"]
-				item["buyNowAmount"] = item["auctionAmount"]
+				item["buyNowAmount"] = item["auctionAmount"].(primitive.Decimal128).String()
 			} else if auctionType == 2 {
 				if bidAmount != "0" {
 					item["currentBidAsset"] = item["auctionAsset"]
-					item["currentBidAmount"] = item["bidAmount"]
+					item["currentBidAmount"] = item["bidAmount"].(primitive.Decimal128).String()
 				} else {
 					item["currentBidAsset"] = item["auctionAsset"]
-					item["currentBidAmount"] = item["auctionAmount"]
+					item["currentBidAmount"] = item["auctionAmount"].(primitive.Decimal128).String()
 				}
 			}
 		} else {
 			if auctionType == 2 && bidAmount != "0" {
 				item["lastSoldAsset"] = item["auctionAsset"]
-				item["lastSoldAmount"] = item["bidAmount"]
+				item["lastSoldAmount"] = item["bidAmount"].(primitive.Decimal128).String()
 			}
 		}
 
@@ -228,6 +229,21 @@ func (me *T) GetInfoByNFTList(args struct {
 			item["offerAsset"] = ""
 		}
 
+		var order string
+		if item["buyNowAmount"] != "0" {
+			order = item["buyNowAmount"].(string)
+		} else if item["currentBidAmount"] != "0" {
+			order = item["currentBidAmount"].(string)
+		} else if item["lastSoldAmount"] != "0" {
+			order = item["lastSoldAmount"].(string)
+		} else {
+			order = item["offerAmount"].(string)
+		}
+		number, err := strconv.ParseInt(order, 10, 64)
+		if err != nil {
+			return err
+		}
+		item["order"] = number
 		result[key] = item
 
 	}

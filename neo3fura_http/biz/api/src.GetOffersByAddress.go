@@ -296,27 +296,34 @@ func (me *T) GetOffersByAddress(args struct {
 	if err != nil {
 		return err
 	}
-	if raw != nil {
-		asset := raw["assetlist"]
-		pipeline1 := []bson.M{}
-		if args.OfferState.Val() == OfferState.Valid.Val() { //拍卖中  accont >0 && auctionType =2 &&  owner=market && runtime <deadline
-			pipeline1 = []bson.M{
-				bson.M{"$match": bson.M{"user": args.Address, "eventname": "OfferCollection"}},
-				bson.M{"$lookup": bson.M{
-					"from": "Nep11Properties",
-					"let":  bson.M{"asset": "$asset"},
-					"pipeline": []bson.M{
-						bson.M{"$match": bson.M{"$expr": bson.M{"$and": []interface{}{
-							//bson.M{"$eq": []interface{}{"$tokenid", "$$tokenid"}},
-							bson.M{"$eq": []interface{}{"$asset", "$$asset"}},
-						}}}},
-						bson.M{"$project": bson.M{"properties": 1, "asset": 1}},
-					},
-					"as": "properties"},
+	//if raw != nil {
+	//	asset := raw["assetlist"]
+	pipeline1 := []bson.M{}
+	if args.OfferState.Val() == OfferState.Valid.Val() { //拍卖中  accont >0 && auctionType =2 &&  owner=market && runtime <deadline
+		pipeline1 = []bson.M{
+			bson.M{"$match": bson.M{"user": args.Address, "eventname": "OfferCollection"}},
+			bson.M{"$lookup": bson.M{
+				"from": "Asset",
+				"let":  bson.M{"asset": "$asset"},
+				"pipeline": []bson.M{
+					bson.M{"$match": bson.M{"$expr": bson.M{"$and": []interface{}{
+						//bson.M{"$eq": []interface{}{"$tokenid", "$$tokenid"}},
+						bson.M{"$eq": []interface{}{"$hash", "$$asset"}},
+					}}}},
+					//bson.M{"$project": bson.M{"properties": 1, "asset": 1}},
 				},
-			}
-		} else if args.OfferState.Val() == OfferState.Received.Val() {
+				"as": "assetInfo"},
+			},
+		}
+	} else if args.OfferState.Val() == OfferState.Received.Val() {
+		if raw != nil {
+			asset := raw["assetlist"]
 			assetList := asset.([]interface{})
+			marketAsset := raw["result"].([]map[string]interface{})
+
+			tokenlist := GetAssetTokenid(marketAsset)
+			tokenidArr := tokenlist["tokenidArr"]
+
 			if len(assetList) > 0 {
 				pipeline1 = []bson.M{
 					bson.M{"$match": bson.M{"user": bson.M{"$ne": args.Address.Val()}, "eventname": "OfferCollection", "asset": bson.M{"$in": asset}}},
@@ -324,321 +331,318 @@ func (me *T) GetOffersByAddress(args struct {
 						"from": "Nep11Properties",
 						"let":  bson.M{"asset": "$asset"},
 						"pipeline": []bson.M{
+							bson.M{"$match": bson.M{"tokenid": bson.M{"$in": tokenidArr}}},
 							bson.M{"$match": bson.M{"$expr": bson.M{"$and": []interface{}{
 								//bson.M{"$eq": []interface{}{"$tokenid", "$$tokenid"}},
 								bson.M{"$eq": []interface{}{"$asset", "$$asset"}},
 							}}}},
-							bson.M{"$project": bson.M{"properties": 1, "asset": 1}},
+
+							//bson.M{"$project": bson.M{"properties": 1, "asset": 1}},
 						},
 						"as": "properties"},
 					},
 				}
 
-			} else {
-				pipeline1 = nil
 			}
+		}
 
+	} else {
+		if raw != nil && raw["assetlist"] != nil {
+			asset := raw["assetlist"]
+			pipeline1 = []bson.M{
+				bson.M{"$match": bson.M{"eventname": "OfferCollection", "$or": []interface{}{
+					bson.M{"user": args.Address},
+					bson.M{"asset": bson.M{"$in": asset}},
+				}}},
+
+				bson.M{"$lookup": bson.M{
+					"from": "Nep11Properties",
+					"let":  bson.M{"asset": "$asset", "tokenid": "$tokenid"},
+					"pipeline": []bson.M{
+						bson.M{"$match": bson.M{"$expr": bson.M{"$and": []interface{}{
+							//bson.M{"$eq": []interface{}{"$tokenid", "$$tokenid"}},
+							bson.M{"$eq": []interface{}{"$asset", "$$asset"}},
+						}}}},
+						bson.M{"$project": bson.M{"properties": 1, "asset": 1, "tokenid": 1}},
+					},
+					"as": "properties"},
+				},
+			}
 		} else {
-			if asset != nil {
-				pipeline1 = []bson.M{
-					bson.M{"$match": bson.M{"eventname": "OfferCollection", "$or": []interface{}{
-						bson.M{"user": args.Address},
-						bson.M{"asset": bson.M{"$in": asset}},
-					}}},
-
-					bson.M{"$lookup": bson.M{
-						"from": "Nep11Properties",
-						"let":  bson.M{"asset": "$asset", "tokenid": "$tokenid"},
-						"pipeline": []bson.M{
-							bson.M{"$match": bson.M{"$expr": bson.M{"$and": []interface{}{
-								//bson.M{"$eq": []interface{}{"$tokenid", "$$tokenid"}},
-								bson.M{"$eq": []interface{}{"$asset", "$$asset"}},
-							}}}},
-							bson.M{"$project": bson.M{"properties": 1, "asset": 1, "tokenid": 1}},
-						},
-						"as": "properties"},
+			pipeline1 = []bson.M{
+				bson.M{"$match": bson.M{"eventname": "OfferCollection"}},
+				bson.M{"$match": bson.M{"$expr": bson.M{"$or": []interface{}{
+					bson.M{"user": args.Address},
+					//bson.M{"asset": bson.M{"$in": asset}},
+				}}}},
+				bson.M{"$lookup": bson.M{
+					"from": "Nep11Properties",
+					"let":  bson.M{"asset": "$asset", "tokenid": "$tokenid"},
+					"pipeline": []bson.M{
+						bson.M{"$match": bson.M{"$expr": bson.M{"$and": []interface{}{
+							bson.M{"$eq": []interface{}{"$tokenid", "$$tokenid"}},
+							bson.M{"$eq": []interface{}{"$asset", "$$asset"}},
+						}}}},
+						bson.M{"$project": bson.M{"properties": 1, "asset": 1}},
 					},
-				}
-			} else {
-				pipeline1 = []bson.M{
-					bson.M{"$match": bson.M{"eventname": "OfferCollection"}},
-					bson.M{"$match": bson.M{"$expr": bson.M{"$or": []interface{}{
-						bson.M{"user": args.Address},
-						//bson.M{"asset": bson.M{"$in": asset}},
-					}}}},
-					bson.M{"$lookup": bson.M{
-						"from": "Nep11Properties",
-						"let":  bson.M{"asset": "$asset", "tokenid": "$tokenid"},
-						"pipeline": []bson.M{
-							bson.M{"$match": bson.M{"$expr": bson.M{"$and": []interface{}{
-								bson.M{"$eq": []interface{}{"$tokenid", "$$tokenid"}},
-								bson.M{"$eq": []interface{}{"$asset", "$$asset"}},
-							}}}},
-							bson.M{"$project": bson.M{"properties": 1, "asset": 1}},
-						},
-						"as": "properties"},
-					},
-				}
+					"as": "properties"},
+				},
 			}
-
 		}
 
-		if pipeline1 != nil {
-			offerCollection, err := me.Client.QueryAggregate(struct {
-				Collection string
-				Index      string
-				Sort       bson.M
-				Filter     bson.M
-				Pipeline   []bson.M
-				Query      []string
-			}{Collection: "MarketNotification",
-				Index:    "getOfferCollection",
-				Sort:     bson.M{},
-				Filter:   bson.M{},
-				Pipeline: pipeline1,
-				Query:    []string{},
-			}, ret)
-			if err != nil {
-				return err
-			}
-
-			if offerCollection != nil {
-				for _, item := range offerCollection {
-					//查看offer 当前状态
-					offer_nonce := item["nonce"]
-					offer, _ := me.Client.QueryOne(struct {
-						Collection string
-						Index      string
-						Sort       bson.M
-						Filter     bson.M
-						Query      []string
-					}{
-						Collection: "MarketNotification",
-						Index:      "getOfferSate",
-						Sort:       bson.M{},
-						Filter: bson.M{
-							"nonce":   offer_nonce,
-							"asset":   item["asset"],
-							"tokenid": item["tokenid"],
-							//"eventname":"CancelOffer",
-							"$or": []interface{}{
-								bson.M{"eventname": "CompleteOfferCollection"},
-								bson.M{"eventname": "CancelOfferCollection"},
-							},
-						},
-						Query: []string{},
-					}, ret)
-
-					if len(offer) > 0 {
-						offereventname := offer["eventname"].(string)
-						if offereventname == "CancelOfferCollection" {
-							continue
-						} else {
-							extendData := item["extendData"].(string)
-							var data map[string]interface{}
-							if err1 := json.Unmarshal([]byte(extendData), &data); err1 == nil {
-								count := data["count"].(string)
-								if count == "0" {
-									continue
-								}
-
-							}
-						}
-					}
-
-					if item["extendData"] != nil {
-						extendData := item["extendData"].(string)
-						if extendData != "" {
-							var data map[string]interface{}
-							if err2 := json.Unmarshal([]byte(extendData), &data); err2 == nil {
-								//item["originOwner"] = data["originOwner"]
-								item["offerAsset"] = data["offerAsset"]
-								oa := data["offerAmount"].(string)
-								offerAmount, err := strconv.ParseInt(oa, 10, 64)
-								if err != nil {
-									return err
-								}
-								if data["count"] != nil {
-									c := data["count"].(string)
-									count, err := strconv.ParseInt(c, 10, 64)
-									if err != nil {
-										return err
-									}
-									item["count"] = count
-								} else {
-									item["count"] = 1
-								}
-								item["offerAmount"] = offerAmount
-								dl := data["deadline"].(string)
-								deadline, err := strconv.ParseInt(dl, 10, 64)
-								if err != nil {
-									return err
-								}
-								item["deadline"] = deadline
-								if deadline < currentTime {
-									continue
-								}
-								//properties
-								if args.OfferState.Val() == OfferState.Received.Val() {
-									if item["properties"] != nil {
-										properties := item["properties"].(primitive.A)
-										for _, ppit := range properties {
-											copyItem := item
-											ppitem := ppit.(map[string]interface{})
-											ppinfo := ppitem["properties"]
-											ppAsset := ppitem["asset"].(string)
-											ppTokenid := ppitem["tokenid"].(string)
-											var ppdata map[string]interface{}
-											copyItem["tokenid"] = ppTokenid
-											//item["asset"] = ppAsset
-											copyItem["properties"] = ppinfo
-
-											//
-
-											marketInfo, err := me.Client.QueryOne(struct {
-												Collection string
-												Index      string
-												Sort       bson.M
-												Filter     bson.M
-												Query      []string
-											}{Collection: "Market",
-												Index:  "GetMarketInfo",
-												Sort:   bson.M{},
-												Filter: bson.M{"amount": bson.M{"$gt": 0}, "asset": item["asset"], "tokenid": ppTokenid},
-												Query:  []string{},
-											}, ret)
-
-											if err != nil {
-												return stderr.ErrGetNFTInfo
-											}
-											market := marketInfo["market"]
-											owner := marketInfo["owner"]
-											bidder := marketInfo["bidder"]
-											bidAmount := marketInfo["bidAmount"].(primitive.Decimal128).String()
-											ddl := marketInfo["deadline"].(int64)
-
-											if market == owner && ddl > currentTime { // 上架未过期
-												copyItem["originOwner"] = marketInfo["auctor"]
-											} else if market == owner && ddl < currentTime { //上架过期
-												if bidAmount == "0" {
-													copyItem["originOwner"] = marketInfo["auctor"]
-												} else {
-													copyItem["originOwner"] = bidder
-												}
-											} else { //未上架
-												copyItem["originOwner"] = owner
-											}
-											//筛选
-											if copyItem["originOwner"].(string) != args.Address.Val() {
-												continue
-											}
-											//properties
-											if ppinfo != nil {
-												if err1 := json.Unmarshal([]byte(ppinfo.(string)), &ppdata); err1 == nil {
-													name, ok := ppdata["name"]
-													if ok {
-														copyItem["name"] = name
-													} else {
-														copyItem["name"] = ""
-													}
-													image, ok := ppdata["image"]
-													if ok {
-
-														copyItem["image"] = ImagUrl(ppAsset, image.(string), "images")
-													} else {
-														copyItem["image"] = ""
-													}
-													thumbnail, ok := ppdata["thumbnail"]
-													if ok {
-														tb, err22 := base64.URLEncoding.DecodeString(thumbnail.(string))
-														if err22 != nil {
-															return err22
-														}
-														//item["image"] = string(tb[:])
-														copyItem["thumbnail"] = ImagUrl(ppAsset, string(tb[:]), "thumbnail")
-													} else {
-														if copyItem["thumbnail"] == nil {
-															if image != nil && image != "" {
-																if image == nil {
-																	copyItem["thumbnail"] = item["image"]
-																} else {
-																	copyItem["thumbnail"] = ImagUrl(ppAsset, image.(string), "thumbnail")
-																}
-															}
-														}
-													}
-													tokenuri, ok := ppdata["tokenURI"]
-													if ok {
-														ppjson, err := GetImgFromTokenURL(tokenurl(tokenuri.(string)), ppAsset, ppTokenid)
-														if err != nil {
-															return err
-														}
-														for key, value := range ppjson {
-															copyItem[key] = value
-
-															if key == "image" {
-																img := value.(string)
-																copyItem["thumbnail"] = ImagUrl(ppAsset, img, "thumbnail")
-																copyItem["image"] = ImagUrl(ppAsset, img, "images")
-															}
-															if key == "name" {
-																copyItem["name"] = value
-															}
-														}
-													}
-													if copyItem["name"] != nil && copyItem["name"].(string) == "Video" {
-														copyItem["video"] = copyItem["image"]
-														delete(copyItem, "image")
-													}
-												} else {
-													return err
-												}
-											}
-
-											delete(copyItem, "extendData")
-											delete(copyItem, "properties")
-
-											re := make(map[string]interface{})
-											re = CopyMap(re, copyItem)
-											result = append(result, re)
-
-										}
-									}
-
-								} else if args.OfferState.Val() == OfferState.Valid.Val() {
-									if item["assetInfo"] != nil {
-										assetInfo := item["assetInfo"].(primitive.A)
-										info := assetInfo[0].(map[string]interface{})
-										item["name"] = info["tokenname"]
-										item["image"] = ""
-										item["thumbnail"] = ""
-										item["originOwner"] = ""
-										delete(item, "assetInfo")
-										delete(item, "extendData")
-
-										if item["name"] != nil && item["name"].(string) == "Video" {
-											item["video"] = item["image"]
-											delete(item, "image")
-										}
-
-										result = append(result, item)
-									}
-								}
-
-							} else {
-								return err2
-							}
-
-						}
-					}
-
-				}
-
-			}
-
-			//append(result, )
-		}
 	}
+
+	if pipeline1 != nil {
+		offerCollection, err := me.Client.QueryAggregate(struct {
+			Collection string
+			Index      string
+			Sort       bson.M
+			Filter     bson.M
+			Pipeline   []bson.M
+			Query      []string
+		}{Collection: "MarketNotification",
+			Index:    "getOfferCollection",
+			Sort:     bson.M{},
+			Filter:   bson.M{},
+			Pipeline: pipeline1,
+			Query:    []string{},
+		}, ret)
+		if err != nil {
+			return err
+		}
+
+		if offerCollection != nil {
+			for _, item := range offerCollection {
+				//查看offer 当前状态
+				offer_nonce := item["nonce"]
+				offer, _ := me.Client.QueryOne(struct {
+					Collection string
+					Index      string
+					Sort       bson.M
+					Filter     bson.M
+					Query      []string
+				}{
+					Collection: "MarketNotification",
+					Index:      "getOfferSate",
+					Sort:       bson.M{},
+					Filter: bson.M{
+						"nonce":   offer_nonce,
+						"asset":   item["asset"],
+						"tokenid": item["tokenid"],
+						//"eventname":"CancelOffer",
+						"$or": []interface{}{
+							bson.M{"eventname": "CompleteOfferCollection"},
+							bson.M{"eventname": "CancelOfferCollection"},
+						},
+					},
+					Query: []string{},
+				}, ret)
+
+				if len(offer) > 0 {
+					offereventname := offer["eventname"].(string)
+					if offereventname == "CancelOfferCollection" {
+						continue
+					} else {
+						extendData := item["extendData"].(string)
+						var data map[string]interface{}
+						if err1 := json.Unmarshal([]byte(extendData), &data); err1 == nil {
+							count := data["count"].(string)
+							if count == "0" {
+								continue
+							}
+
+						}
+					}
+				}
+
+				if item["extendData"] != nil {
+					extendData := item["extendData"].(string)
+					if extendData != "" {
+						var data map[string]interface{}
+						if err2 := json.Unmarshal([]byte(extendData), &data); err2 == nil {
+							//item["originOwner"] = data["originOwner"]
+							item["offerAsset"] = data["offerAsset"]
+							oa := data["offerAmount"].(string)
+							offerAmount, err := strconv.ParseInt(oa, 10, 64)
+							if err != nil {
+								return err
+							}
+							if data["count"] != nil {
+								c := data["count"].(string)
+								count, err := strconv.ParseInt(c, 10, 64)
+								if err != nil {
+									return err
+								}
+								item["count"] = count
+							} else {
+								item["count"] = 1
+							}
+							item["offerAmount"] = offerAmount
+							dl := data["deadline"].(string)
+							deadline, err := strconv.ParseInt(dl, 10, 64)
+							if err != nil {
+								return err
+							}
+							item["deadline"] = deadline
+							if deadline < currentTime {
+								continue
+							}
+							//properties
+							if args.OfferState.Val() == OfferState.Received.Val() {
+								if item["properties"] != nil {
+									properties := item["properties"].(primitive.A)
+									for _, ppit := range properties {
+										copyItem := item
+										ppitem := ppit.(map[string]interface{})
+										ppinfo := ppitem["properties"]
+										ppAsset := ppitem["asset"].(string)
+										ppTokenid := ppitem["tokenid"].(string)
+										var ppdata map[string]interface{}
+										copyItem["tokenid"] = ppTokenid
+										//item["asset"] = ppAsset
+										copyItem["properties"] = ppinfo
+
+										//
+
+										marketInfo, err := me.Client.QueryOne(struct {
+											Collection string
+											Index      string
+											Sort       bson.M
+											Filter     bson.M
+											Query      []string
+										}{Collection: "Market",
+											Index:  "GetMarketInfo",
+											Sort:   bson.M{},
+											Filter: bson.M{"amount": bson.M{"$gt": 0}, "asset": item["asset"], "tokenid": ppTokenid},
+											Query:  []string{},
+										}, ret)
+
+										if err != nil {
+											return stderr.ErrGetNFTInfo
+										}
+										market := marketInfo["market"]
+										owner := marketInfo["owner"]
+										bidder := marketInfo["bidder"]
+										bidAmount := marketInfo["bidAmount"].(primitive.Decimal128).String()
+										ddl := marketInfo["deadline"].(int64)
+
+										if market == owner && ddl > currentTime { // 上架未过期
+											copyItem["originOwner"] = marketInfo["auctor"]
+										} else if market == owner && ddl < currentTime { //上架过期
+											if bidAmount == "0" {
+												copyItem["originOwner"] = marketInfo["auctor"]
+											} else {
+												copyItem["originOwner"] = bidder
+											}
+										} else { //未上架
+											copyItem["originOwner"] = owner
+										}
+										//筛选
+										if copyItem["originOwner"].(string) != args.Address.Val() {
+											continue
+										}
+										//properties
+										if ppinfo != nil {
+											if err1 := json.Unmarshal([]byte(ppinfo.(string)), &ppdata); err1 == nil {
+												name, ok := ppdata["name"]
+												if ok {
+													copyItem["name"] = name
+												} else {
+													copyItem["name"] = ""
+												}
+												image, ok := ppdata["image"]
+												if ok {
+
+													copyItem["image"] = ImagUrl(ppAsset, image.(string), "images")
+												} else {
+													copyItem["image"] = ""
+												}
+												thumbnail, ok := ppdata["thumbnail"]
+												if ok {
+													tb, err22 := base64.URLEncoding.DecodeString(thumbnail.(string))
+													if err22 != nil {
+														return err22
+													}
+													//item["image"] = string(tb[:])
+													copyItem["thumbnail"] = ImagUrl(ppAsset, string(tb[:]), "thumbnail")
+												} else {
+													if copyItem["thumbnail"] == nil {
+														if image != nil && image != "" {
+															if image == nil {
+																copyItem["thumbnail"] = item["image"]
+															} else {
+																copyItem["thumbnail"] = ImagUrl(ppAsset, image.(string), "thumbnail")
+															}
+														}
+													}
+												}
+												tokenuri, ok := ppdata["tokenURI"]
+												if ok {
+													ppjson, err := GetImgFromTokenURL(tokenurl(tokenuri.(string)), ppAsset, ppTokenid)
+													if err != nil {
+														return err
+													}
+													for key, value := range ppjson {
+														copyItem[key] = value
+
+														if key == "image" {
+															img := value.(string)
+															copyItem["thumbnail"] = ImagUrl(ppAsset, img, "thumbnail")
+															copyItem["image"] = ImagUrl(ppAsset, img, "images")
+														}
+														if key == "name" {
+															copyItem["name"] = value
+														}
+													}
+												}
+												if copyItem["name"] != nil && copyItem["name"].(string) == "Video" {
+													copyItem["video"] = copyItem["image"]
+													delete(copyItem, "image")
+												}
+											} else {
+												return err
+											}
+										}
+
+										delete(copyItem, "extendData")
+										delete(copyItem, "properties")
+
+										re := make(map[string]interface{})
+										re = CopyMap(re, copyItem)
+										result = append(result, re)
+
+									}
+								}
+
+							} else if args.OfferState.Val() == OfferState.Valid.Val() {
+								if item["assetInfo"] != nil {
+									assetInfo := item["assetInfo"].(primitive.A)
+									info := assetInfo[0].(map[string]interface{})
+									item["name"] = info["tokenname"]
+									item["image"] = ""
+									item["thumbnail"] = ""
+									item["originOwner"] = ""
+									delete(item, "assetInfo")
+									delete(item, "extendData")
+
+									result = append(result, item)
+								}
+							}
+
+						} else {
+							return err2
+						}
+
+					}
+				}
+
+			}
+
+		}
+
+		//append(result, )
+	}
+	//}
 
 	if args.OfferState.Val() == OfferState.Received.Val() {
 		result = mapsort.MapSort(result, "offerAmount")
@@ -670,6 +674,26 @@ func (me *T) GetOffersByAddress(args struct {
 
 	*ret = json.RawMessage(r)
 	return nil
+}
+
+func GetAssetTokenid(mapArr []map[string]interface{}) map[string]interface{} {
+	result := make(map[string]interface{})
+	var tokenidArr []interface{}
+	if len(mapArr) > 0 {
+		for _, item := range mapArr {
+			asset := item["asset"].(string)
+			marketArr := item["marketAsset"].(primitive.A)
+			tokenidList := []interface{}{}
+			for _, it := range marketArr {
+				i := it.(map[string]interface{})
+				tokenidList = append(tokenidList, i["tokenid"].(string))
+				tokenidArr = append(tokenidArr, i["tokenid"].(string))
+			}
+			result[asset] = tokenidList
+		}
+	}
+	result["tokenidArr"] = tokenidArr
+	return result
 }
 
 func GetImgFromTokenURL(tokenurl string, asset string, tokenid string) (map[string]interface{}, error) {

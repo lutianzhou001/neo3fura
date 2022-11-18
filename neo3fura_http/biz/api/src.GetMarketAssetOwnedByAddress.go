@@ -68,6 +68,11 @@ func (me *T) GetMarketAssetOwnedByAddress(args struct {
 				bson.M{"auctor": args.Address.Val()},
 				bson.M{"deadline": bson.M{"$gte": currentTime}},
 			}},
+			bson.M{"$and": []interface{}{ //
+				bson.M{"auctor": args.Address.Val()},
+				bson.M{"bidAmount": 0},
+				bson.M{"deadline": bson.M{"$lte": currentTime}},
+			}},
 			bson.M{"$and": []interface{}{ //未领取   竞价成功bidder
 				bson.M{"bidder": args.Address.Val()},
 				bson.M{"bidAmount": bson.M{"$gt": 0}},
@@ -75,7 +80,7 @@ func (me *T) GetMarketAssetOwnedByAddress(args struct {
 			}},
 		}}},
 
-		bson.M{"$group": bson.M{"_id": "asset", "asset": bson.M{"$last": "$asset"}, "marketAsset": bson.M{"$push": "$$ROOT"}}},
+		bson.M{"$group": bson.M{"_id": "$asset", "asset": bson.M{"$last": "$asset"}, "marketAsset": bson.M{"$push": "$$ROOT"}}},
 		bson.M{"$project": bson.M{"_id": 1, "asset": 1, "marketAsset": 1}},
 	}
 	pipeline = append(pipeline, pipeline1...)
