@@ -29,22 +29,26 @@ func (me *T) GetHighestOfferByNFT(args struct {
 		return stderr.ErrInvalidArgs
 	}
 
-	r1, _, err := me.Client.QueryAll(struct {
+	r1, err := me.Client.QueryAggregate(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
 		Filter     bson.M
+		Pipeline   []bson.M
 		Query      []string
-		Limit      int64
-		Skip       int64
 	}{
 		Collection: "MarketNotification",
 		Index:      "GetHighestOfferByNFT",
-		Sort:       bson.M{"nonce": -1},
-		Filter:     bson.M{"asset": args.Asset.Val(), "tokenid": args.TokenId.Val(), "market": args.MarketHash, "eventname": bson.M{"$in": []interface{}{"Offer", "OfferCollection"}}},
-		Query:      []string{},
-		Limit:      args.Limit,
-		Skip:       args.Skip,
+		Sort:       bson.M{},
+		Filter:     bson.M{},
+		Pipeline: []bson.M{
+			bson.M{"$match": bson.M{"asset": args.Asset.Val(), "market": args.MarketHash}},
+			bson.M{"$match": bson.M{"$or": []interface{}{
+				bson.M{"eventname": "Offer", "tokenid": args.TokenId},
+				bson.M{"eventname": "OfferCollection"},
+			}}},
+		},
+		Query: []string{},
 	}, ret)
 
 	if err != nil {

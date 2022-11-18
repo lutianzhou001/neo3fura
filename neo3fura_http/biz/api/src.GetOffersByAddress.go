@@ -244,7 +244,7 @@ func (me *T) GetOffersByAddress(args struct {
 								}
 							}
 						}
-						if item["name"] == "Video" {
+						if item["name"] == "Nuanced Floral Symphony" {
 							item["video"] = item["image"]
 							delete(item, "image")
 							properties["video"] = properties["image"]
@@ -595,7 +595,7 @@ func (me *T) GetOffersByAddress(args struct {
 														}
 													}
 												}
-												if copyItem["name"] != nil && copyItem["name"].(string) == "Video" {
+												if copyItem["name"] != nil && copyItem["name"].(string) == "Nuanced Floral Symphony" {
 													copyItem["video"] = copyItem["image"]
 													delete(copyItem, "image")
 												}

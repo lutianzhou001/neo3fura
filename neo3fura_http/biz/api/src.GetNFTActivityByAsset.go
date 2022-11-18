@@ -188,7 +188,7 @@ func (me *T) GetNFTActivityByAsset(args struct {
 					}
 				}
 
-				if r2["name"] == nil && r2["name"].(string) == "Video" {
+				if r2["name"] == nil && r2["name"].(string) == "Nuanced Floral Symphony" {
 					r2["video"] = r2["image"]
 					delete(r2, "image")
 				}

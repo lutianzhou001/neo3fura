@@ -230,9 +230,14 @@ func (me *T) GetNFTOwnedByAddress(args struct {
 			bson.M{"$match": bson.M{"amount": bson.M{"$gt": 0}}},
 			bson.M{"$match": bson.M{"$or": []interface{}{
 				bson.M{"owner": args.Address.Val()}, //	未上架  owner
-				bson.M{"$and": []interface{}{ //上架 售卖中、过期（无人出价）auctor
+				bson.M{"$and": []interface{}{ //上架中未过期
 					bson.M{"auctor": args.Address.Val()},
 					bson.M{"deadline": bson.M{"$gte": currentTime}},
+				}},
+				bson.M{"$and": []interface{}{ //上架过期 没人出价
+					bson.M{"auctor": args.Address.Val()},
+					bson.M{"bidAmount": 0},
+					bson.M{"deadline": bson.M{"$lte": currentTime}},
 				}},
 				bson.M{"$and": []interface{}{ //未领取   竞价成功bidder
 					bson.M{"bidder": args.Address.Val()},
@@ -375,6 +380,11 @@ func (me *T) GetNFTOwnedByAddress(args struct {
 				item["state"] = ""
 			}
 		}
+		//将未领取的价格都置为0
+		if item["state"] == NFTstate.Unclaimed.Val() {
+			item["auctionAsset"] = ""
+			item["auctionAmount"] = ""
+		}
 		//获得上架时间
 
 		if item["marketnotification"] != nil && item["marketnotification"] != "" {
@@ -497,7 +507,7 @@ func (me *T) GetNFTOwnedByAddress(args struct {
 					} else {
 						return err
 					}
-					if item["name"] != nil && item["name"].(string) == "Video" {
+					if item["name"] != nil && item["name"].(string) == "Nuanced Floral Symphony" {
 						item["video"] = item["image"]
 						delete(item, "image")
 						properties["video"] = properties["image"]
