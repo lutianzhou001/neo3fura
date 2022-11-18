@@ -121,7 +121,7 @@ func (me *T) GetOffersByNFT(args struct {
 
 		if len(offer) > 0 {
 			offereventname := offer["eventname"].(string)
-			if offereventname == "CancelOfferCollection" {
+			if offereventname == "CancelOfferCollection" || offereventname == "CancelOffer" || offereventname == "CompleteOffer" {
 				continue
 			} else {
 				extendData := item["extendData"].(string)

@@ -6,6 +6,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"math"
+	"neo3fura_http/lib/mapsort"
 	"neo3fura_http/lib/type/Contract"
 	"neo3fura_http/lib/type/NFTstate"
 	"neo3fura_http/lib/type/h160"
@@ -214,55 +215,55 @@ func (me *T) GetNFTList(args struct {
 	}
 
 	result := make([]map[string]interface{}, 0)
-	for _, item := range r1 {
-		if item["propertiesArr"] != nil {
-			groupInfo := item["propertiesArr"].(primitive.A)
-			//	var asset = item["asset"].(string)
-			var tokenidArr []string
-			for _, pitem := range groupInfo {
-				it := pitem.(map[string]interface{})
-				tokenid := it["tokenid"].(string)
-				tokenidArr = append(tokenidArr, tokenid)
-			}
-			delegateItem := groupInfo[len(groupInfo)-1].(map[string]interface{})
-
-			properties := delegateItem["properties"].(primitive.A)
-			pp := properties[0].(map[string]interface{})
-			newProperties, err1 := ReSetProperties(pp)
-			if err1 != nil {
-				continue
-			}
-
-			if newProperties["image"] == nil {
-				continue
-			}
-			delegateItem["image"] = ImagUrl(newProperties["asset"].(string), newProperties["image"].(string), "images")
-			if newProperties["thumbnail"] != nil && newProperties["thumbnail"] != "" {
-				tb, err2 := base64.URLEncoding.DecodeString(newProperties["thumbnail"].(string))
-				if err2 != nil {
-					return err2
-				}
-				delegateItem["thumbnail"] = ImagUrl(newProperties["asset"].(string), string(tb[:]), "thumbnail")
-			} else {
-				delegateItem["thumbnail"] = ImagUrl(newProperties["asset"].(string), newProperties["image"].(string), "thumbnail")
-			}
-			delegateItem["name"] = newProperties["name"]
-			if newProperties["name"] != nil && newProperties["name"].(string) == "Video" {
-				delegateItem["video"] = delegateItem["image"]
-				delete(delegateItem, "image")
-			}
-			delegateItem["number"] = newProperties["number"]
-			//dst["properties"] = newProperties
-			delegateItem["class"] = newProperties["class"]
-			delegateItem["count"] = len(groupInfo)
-
-			if delegateItem["image"] != nil || delegateItem["video"] != nil {
-				result = append(result, delegateItem)
-			}
-
-		}
-
-	}
+	//for _, item := range r1 {
+	//	if item["propertiesArr"] != nil {
+	//		groupInfo := item["propertiesArr"].(primitive.A)
+	//		//	var asset = item["asset"].(string)
+	//		var tokenidArr []string
+	//		for _, pitem := range groupInfo {
+	//			it := pitem.(map[string]interface{})
+	//			tokenid := it["tokenid"].(string)
+	//			tokenidArr = append(tokenidArr, tokenid)
+	//		}
+	//		delegateItem := groupInfo[len(groupInfo)-1].(map[string]interface{})
+	//
+	//		properties := delegateItem["properties"].(primitive.A)
+	//		pp := properties[0].(map[string]interface{})
+	//		newProperties, err1 := ReSetProperties(pp)
+	//		if err1 != nil {
+	//			continue
+	//		}
+	//
+	//		if newProperties["image"] == nil {
+	//			continue
+	//		}
+	//		delegateItem["image"] = ImagUrl(newProperties["asset"].(string), newProperties["image"].(string), "images")
+	//		if newProperties["thumbnail"] != nil && newProperties["thumbnail"] != "" {
+	//			tb, err2 := base64.URLEncoding.DecodeString(newProperties["thumbnail"].(string))
+	//			if err2 != nil {
+	//				return err2
+	//			}
+	//			delegateItem["thumbnail"] = ImagUrl(newProperties["asset"].(string), string(tb[:]), "thumbnail")
+	//		} else {
+	//			delegateItem["thumbnail"] = ImagUrl(newProperties["asset"].(string), newProperties["image"].(string), "thumbnail")
+	//		}
+	//		delegateItem["name"] = newProperties["name"]
+	//		if newProperties["name"] != nil && newProperties["name"].(string) == "Video" {
+	//			delegateItem["video"] = delegateItem["image"]
+	//			delete(delegateItem, "image")
+	//		}
+	//		delegateItem["number"] = newProperties["number"]
+	//		//dst["properties"] = newProperties
+	//		delegateItem["class"] = newProperties["class"]
+	//		delegateItem["count"] = len(groupInfo)
+	//
+	//		if delegateItem["image"] != nil || delegateItem["video"] != nil {
+	//			result = append(result, delegateItem)
+	//		}
+	//
+	//	}
+	//
+	//}
 
 	//  分页
 	if args.Limit == 0 {
@@ -270,7 +271,7 @@ func (me *T) GetNFTList(args struct {
 	}
 
 	pageResult := make([]map[string]interface{}, 0)
-	for i, item := range result {
+	for i, item := range r1 {
 		if int64(i) < args.Skip {
 			continue
 		} else if int64(i) > args.Skip+args.Limit-1 {
@@ -287,52 +288,101 @@ func (me *T) GetNFTList(args struct {
 			TokenId strval.T
 		}, 0)
 
-		for _, it := range pageResult {
-			asset := h160.T(it["asset"].(string))
-			tokenid := strval.T(it["tokenid"].(string))
-			nftlist = append(nftlist, struct {
-				Asset   h160.T
-				TokenId strval.T
-			}{Asset: asset, TokenId: tokenid})
+		for _, item := range pageResult {
+			if item["propertiesArr"] != nil {
+				groupInfo := item["propertiesArr"].(primitive.A)
+				//	var asset = item["asset"].(string)
+				var tokenidArr []string
+				for _, pitem := range groupInfo {
+					it := pitem.(map[string]interface{})
+					tokenid := it["tokenid"].(string)
+					asset := it["asset"].(string)
+
+					nftlist = append(nftlist, struct {
+						Asset   h160.T
+						TokenId strval.T
+					}{Asset: h160.T(asset), TokenId: strval.T(tokenid)})
+					tokenidArr = append(tokenidArr, tokenid)
+				}
+
+				raw := make(map[string]interface{})
+				err = me.GetInfoByNFTList(struct {
+					NFT []struct {
+						Asset   h160.T
+						TokenId strval.T
+					}
+					Filter map[string]interface{}
+					Raw    *map[string]interface{}
+				}{NFT: nftlist, Raw: &raw}, ret)
+				if err != nil {
+					return err
+				}
+
+				copygroup := make([]map[string]interface{}, 0)
+				for _, pitem := range groupInfo {
+					it := pitem.(map[string]interface{})
+					tokenid := it["tokenid"].(string)
+					asset := it["asset"].(string)
+					key := asset + tokenid
+					if raw[key] != nil {
+						value := raw[key].(map[string]interface{})
+						it["buyNowAmount"] = value["buyNowAmount"]
+						it["buyNowAsset"] = value["buyNowAsset"]
+						it["currentBidAmount"] = value["currentBidAmount"]
+						it["currentBidAsset"] = value["currentBidAsset"]
+						it["lastSoldAmount"] = value["lastSoldAmount"]
+						it["lastSoldAsset"] = value["lastSoldAsset"]
+						it["offerAmount"] = value["offerAmount"]
+						it["offerAsset"] = value["offerAsset"]
+						it["order"] = value["order"]
+					}
+					copygroup = append(copygroup, it)
+
+				}
+				mapsort.MapSort(copygroup, "order")
+				//// 排序之后的第一个元素
+				delegateItem := make(map[string]interface{})
+				//delegateItem := groupInfo[len(groupInfo)-1].(map[string]interface{})
+				delegateItem = CopyMap(delegateItem, copygroup[0])
+				properties := delegateItem["properties"].(primitive.A)
+				pp := properties[0].(map[string]interface{})
+				newProperties, err1 := ReSetProperties(pp)
+				if err1 != nil {
+					continue
+				}
+
+				if newProperties["image"] == nil {
+					continue
+				}
+				delegateItem["image"] = ImagUrl(newProperties["asset"].(string), newProperties["image"].(string), "images")
+				if newProperties["thumbnail"] != nil && newProperties["thumbnail"] != "" {
+					tb, err2 := base64.URLEncoding.DecodeString(newProperties["thumbnail"].(string))
+					if err2 != nil {
+						return err2
+					}
+					delegateItem["thumbnail"] = ImagUrl(newProperties["asset"].(string), string(tb[:]), "thumbnail")
+				} else {
+					delegateItem["thumbnail"] = ImagUrl(newProperties["asset"].(string), newProperties["image"].(string), "thumbnail")
+				}
+				delegateItem["name"] = newProperties["name"]
+				if newProperties["name"] != nil && newProperties["name"].(string) == "Video" {
+					delegateItem["video"] = delegateItem["image"]
+					delete(delegateItem, "image")
+				}
+				delegateItem["number"] = newProperties["number"]
+				//dst["properties"] = newProperties
+				delegateItem["class"] = newProperties["class"]
+				delegateItem["count"] = len(groupInfo)
+				delete(delegateItem, "properties")
+				if delegateItem["image"] != nil || delegateItem["video"] != nil {
+					result = append(result, delegateItem)
+				}
+			}
 		}
 
-		raw := make(map[string]interface{})
-
-		err = me.GetInfoByNFTList(struct {
-			NFT []struct {
-				Asset   h160.T
-				TokenId strval.T
-			}
-			Filter map[string]interface{}
-			Raw    *map[string]interface{}
-		}{NFT: nftlist, Raw: &raw}, ret)
-
-		for _, it := range pageResult {
-			asset := it["asset"].(string)
-			tokenid := it["tokenid"].(string)
-			key := asset + tokenid
-
-			if raw[key] != nil {
-				value := raw[key].(map[string]interface{})
-				it["buyNowAmount"] = value["buyNowAmount"]
-				it["buyNowAsset"] = value["buyNowAsset"]
-				it["currentBidAmount"] = value["currentBidAmount"]
-				it["currentBidAsset"] = value["currentBidAsset"]
-				it["lastSoldAmount"] = value["lastSoldAmount"]
-				it["lastSoldAsset"] = value["lastSoldAsset"]
-				it["offerAmount"] = value["offerAmount"]
-				it["offerAsset"] = value["offerAsset"]
-			}
-			delete(it, "properties")
-			//处理nns name  一级不展示，二级展示
-			if args.ContractHash.Val() != nns && it["asset"] == nns {
-				it["name"] = nil
-			}
-
-		}
 	}
 
-	r3, err := me.FilterAggragateAndAppendCount(pageResult, len(result), args.Filter)
+	r3, err := me.FilterAggragateAndAppendCount(result, len(r1), args.Filter)
 
 	if err != nil {
 		return err
