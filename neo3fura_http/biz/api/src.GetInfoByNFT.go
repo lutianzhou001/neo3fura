@@ -42,14 +42,20 @@ func (me *T) GetInfoByNFT(args struct {
 					"from": "MarketNotification",
 					"let":  bson.M{"asset": "$asset", "tokenid": "$tokenid"},
 					"pipeline": []bson.M{ //
-						bson.M{"$match": bson.M{"eventname": bson.M{"$in": []interface{}{"OfferCollection", "CompleteOfferCollection", "Offer", "CompleteOffer", "Claim"}}}},
-						bson.M{"$match": bson.M{"$expr": bson.M{"$and": []interface{}{
-							bson.M{"$eq": []interface{}{"$asset", "$$asset"}},
-							bson.M{"$eq": []interface{}{"$tokenid", "$$tokenid"}},
+						bson.M{"$match": bson.M{"$expr": bson.M{"$or": []interface{}{
+							bson.M{"$and": []interface{}{
+								bson.M{"$eq": []interface{}{"$eventname", []interface{}{"CompleteOfferCollection", "Offer", "CompleteOffer", "Claim"}}},
+								bson.M{"$eq": []interface{}{"$asset", "$$asset"}},
+								bson.M{"$eq": []interface{}{"$tokenid", "$$tokenid"}},
+							}},
+							bson.M{"$and": []interface{}{
+								bson.M{"$eq": []interface{}{"$eventname", "OfferCollection"}},
+								bson.M{"$eq": []interface{}{"$asset", "$$asset"}},
+							}},
 						}}}},
 						bson.M{"$sort": bson.M{"timestamp": 1}},
-						bson.M{"$group": bson.M{"_id": "$eventname", "eventname": bson.M{"$last": "$eventname"}, "market": bson.M{"$last": "$market"}, "timestamp": bson.M{"$last": "$timestamp"}, "extendData": bson.M{"$last": "$extendData"}}},
-						bson.M{"$project": bson.M{"eventname": 1, "market": 1, "extendData": 1, "timestamp": 1}},
+						bson.M{"$group": bson.M{"_id": "$eventname", "eventArr": bson.M{"$push": "$$ROOT"}, "eventname": bson.M{"$last": "$eventname"}, "market": bson.M{"$last": "$market"}, "timestamp": bson.M{"$last": "$timestamp"}, "extendData": bson.M{"$last": "$extendData"}}},
+						//bson.M{"$project": bson.M{"eventname": 1,"eventArr" :1"market": 1, "extendData": 1, "timestamp": 1}},
 					},
 					"as": "eventlist"}},
 			},

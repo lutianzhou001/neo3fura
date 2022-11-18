@@ -178,7 +178,7 @@ func (me *T) GetNFTClass(args struct {
 		} else {
 			item["supply"] = ""
 		}
-		if item["name"] != nil && item["name"].(string) == "Video" {
+		if item["name"] != nil && item["name"].(string) == "Nuanced Floral Symphony" {
 			item["video"] = item["image"]
 			delete(item, "image")
 

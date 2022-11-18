@@ -215,55 +215,6 @@ func (me *T) GetNFTList(args struct {
 	}
 
 	result := make([]map[string]interface{}, 0)
-	//for _, item := range r1 {
-	//	if item["propertiesArr"] != nil {
-	//		groupInfo := item["propertiesArr"].(primitive.A)
-	//		//	var asset = item["asset"].(string)
-	//		var tokenidArr []string
-	//		for _, pitem := range groupInfo {
-	//			it := pitem.(map[string]interface{})
-	//			tokenid := it["tokenid"].(string)
-	//			tokenidArr = append(tokenidArr, tokenid)
-	//		}
-	//		delegateItem := groupInfo[len(groupInfo)-1].(map[string]interface{})
-	//
-	//		properties := delegateItem["properties"].(primitive.A)
-	//		pp := properties[0].(map[string]interface{})
-	//		newProperties, err1 := ReSetProperties(pp)
-	//		if err1 != nil {
-	//			continue
-	//		}
-	//
-	//		if newProperties["image"] == nil {
-	//			continue
-	//		}
-	//		delegateItem["image"] = ImagUrl(newProperties["asset"].(string), newProperties["image"].(string), "images")
-	//		if newProperties["thumbnail"] != nil && newProperties["thumbnail"] != "" {
-	//			tb, err2 := base64.URLEncoding.DecodeString(newProperties["thumbnail"].(string))
-	//			if err2 != nil {
-	//				return err2
-	//			}
-	//			delegateItem["thumbnail"] = ImagUrl(newProperties["asset"].(string), string(tb[:]), "thumbnail")
-	//		} else {
-	//			delegateItem["thumbnail"] = ImagUrl(newProperties["asset"].(string), newProperties["image"].(string), "thumbnail")
-	//		}
-	//		delegateItem["name"] = newProperties["name"]
-	//		if newProperties["name"] != nil && newProperties["name"].(string) == "Video" {
-	//			delegateItem["video"] = delegateItem["image"]
-	//			delete(delegateItem, "image")
-	//		}
-	//		delegateItem["number"] = newProperties["number"]
-	//		//dst["properties"] = newProperties
-	//		delegateItem["class"] = newProperties["class"]
-	//		delegateItem["count"] = len(groupInfo)
-	//
-	//		if delegateItem["image"] != nil || delegateItem["video"] != nil {
-	//			result = append(result, delegateItem)
-	//		}
-	//
-	//	}
-	//
-	//}
 
 	//  分页
 	if args.Limit == 0 {
@@ -365,7 +316,7 @@ func (me *T) GetNFTList(args struct {
 					delegateItem["thumbnail"] = ImagUrl(newProperties["asset"].(string), newProperties["image"].(string), "thumbnail")
 				}
 				delegateItem["name"] = newProperties["name"]
-				if newProperties["name"] != nil && newProperties["name"].(string) == "Video" {
+				if newProperties["name"] != nil && newProperties["name"].(string) == "Nuanced Floral Symphony" {
 					delegateItem["video"] = delegateItem["image"]
 					delete(delegateItem, "image")
 				}
