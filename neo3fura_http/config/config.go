@@ -150,4 +150,6 @@ var Apis = []string{
 	"GetCollectionsByAsset",
 	"GetCountNFTList",
 	"GetInfoByNFTList",
+	"SetPrimaryMarketPreSaleWhitelist",
+	"GetPrimaryMarketPreSaleWhitelist",
 }
