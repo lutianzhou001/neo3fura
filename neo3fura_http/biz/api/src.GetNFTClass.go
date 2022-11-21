@@ -27,6 +27,11 @@ func (me *T) GetNFTClass(args struct {
 		return stderr.ErrInvalidArgs
 	}
 
+	_, err1 := me.Client.QueryLastJob(struct{ Collection string }{Collection: "PrimaryMarketPreSaleWhitelist"})
+
+	if err1 != nil {
+		return err1
+	}
 	var filter bson.M
 	if args.NFTState == NFTstate.Auction.Val() {
 		filter = bson.M{"market": args.MarketHash, "amount": 1, "auctionType": 2}

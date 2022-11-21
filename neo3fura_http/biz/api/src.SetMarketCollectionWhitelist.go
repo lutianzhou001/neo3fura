@@ -2,7 +2,6 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"neo3fura_http/lib/type/h160"
 	"neo3fura_http/var/stderr"
@@ -14,13 +13,13 @@ func (me *T) SetMarketCollectionWhitelist(args struct {
 	MarketHash   h160.T
 	ContractHash []h160.T
 }, ret *json.RawMessage) error {
-	var hashArr []interface{}
+	//var hashArr []interface{}
 	var hashArr2 []interface{}
 	for _, item := range args.ContractHash {
 		if item.Valid() == false {
 			return stderr.ErrInvalidArgs
 		}
-		hashArr = append(hashArr, item)
+		//hashArr = append(hashArr, item)
 		hashArr2 = append(hashArr2, item.Val())
 	}
 	raw := make(map[string]interface{})
@@ -30,7 +29,7 @@ func (me *T) SetMarketCollectionWhitelist(args struct {
 		Raw        *map[string]interface{}
 	}{MarketHash: args.MarketHash, Raw: &raw}, ret)
 	whitelist := raw["whiteList"].([]string)
-	fmt.Println(whitelist)
+
 	for _, item := range args.ContractHash {
 		flag := InArray(whitelist, item.Val())
 		if !flag {

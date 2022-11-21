@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"neo3fura_http/lib/type/h160"
 	"neo3fura_http/lib/type/strval"
 	"neo3fura_http/var/stderr"
@@ -61,7 +62,15 @@ func (me *T) GetNFTRecordByContractHashTokenId(args struct {
 		return err3
 	}
 
+	asset := args.ContractHash.Val()
+	tokenid := args.TokenId.Val()
+
+	var raw3 map[string]interface{}
+	err2 := getNFTProperties(strval.T(tokenid), h160.T(asset), me, ret, args.Filter, &raw3)
+
 	for _, item := range raw2 {
+		tobanlance := item["tobalance"].(primitive.Decimal128).String()
+
 		rr := make(map[string]interface{})
 		rr["asset"] = item["contract"]
 		rr["tokenid"] = item["tokenId"]
@@ -69,15 +78,21 @@ func (me *T) GetNFTRecordByContractHashTokenId(args struct {
 		rr["to"] = item["to"]
 		rr["auctionAsset"] = "" //普通账户之间转账  无价格
 		rr["auctionAmount"] = ""
+		rr["offerAsset"] = ""
+		rr["offerAmount"] = ""
 		rr["timestamp"] = item["timestamp"]
+		rr["eventname"] = "transfer"
+
 		//筛选出从市场交易的nft 会有交易价格
 		for _, i := range r1 {
 			if item["txid"] == i["txid"] { //为了获取nft的交易价格
 				extendData := i["extendData"].(string)
+
 				var dat map[string]interface{}
 				if err2 := json.Unmarshal([]byte(extendData), &dat); err2 == nil {
 					eventname := i["eventname"].(string)
 					rr["timestamp"] = i["timestamp"]
+					rr["eventname"] = i["eventname"]
 					if eventname == "Claim" {
 						bidAmount, err1 := strconv.ParseInt(dat["bidAmount"].(string), 10, 64)
 						if err1 != nil {
@@ -94,31 +109,19 @@ func (me *T) GetNFTRecordByContractHashTokenId(args struct {
 						if err1 != nil {
 							return err1
 						}
-						rr["auctionAsset"] = dat["offerAsset"]
-						rr["auctionAmount"] = offerAmount
+						rr["offerAsset"] = dat["offerAsset"]
+						rr["offerAmount"] = offerAmount
 						rr["from"] = i["user"]
 						rr["to"] = dat["offerer"]
+
 					}
 
 				} else {
 					return err2
 				}
+
 			}
 		}
-
-		asset := item["contract"].(string)
-		tokenid := item["tokenId"].(string)
-
-		var raw3 map[string]interface{}
-		err2 := getNFTProperties(strval.T(tokenid), h160.T(asset), me, ret, args.Filter, &raw3)
-		if err2 != nil {
-			rr["image"] = ""
-			rr["name"] = ""
-			rr["number"] = int64(-1)
-			rr["properties"] = ""
-
-		}
-
 		rr["thumbnail"] = raw3["thumbnail"]
 		rr["name"] = raw3["name"]
 		rr["number"] = raw3["number"]
@@ -129,8 +132,17 @@ func (me *T) GetNFTRecordByContractHashTokenId(args struct {
 		if raw3["video"] != nil && raw3["video"] != "" {
 			rr["video"] = raw3["video"]
 		}
+		if err2 != nil {
+			rr["image"] = ""
+			rr["name"] = ""
+			rr["number"] = int64(-1)
+			rr["properties"] = ""
 
-		result = append(result, rr)
+		}
+		if tobanlance != "0" {
+			result = append(result, rr)
+		}
+		//result = append(result, rr)
 
 	}
 
