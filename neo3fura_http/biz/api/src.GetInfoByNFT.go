@@ -44,7 +44,7 @@ func (me *T) GetInfoByNFT(args struct {
 					"pipeline": []bson.M{ //
 						bson.M{"$match": bson.M{"$expr": bson.M{"$or": []interface{}{
 							bson.M{"$and": []interface{}{
-								bson.M{"$eq": []interface{}{"$eventname", []interface{}{"CompleteOfferCollection", "Offer", "CompleteOffer", "Claim"}}},
+								bson.M{"$in": []interface{}{"$eventname", []interface{}{"CompleteOfferCollection", "Offer", "CompleteOffer", "Claim"}}},
 								bson.M{"$eq": []interface{}{"$asset", "$$asset"}},
 								bson.M{"$eq": []interface{}{"$tokenid", "$$tokenid"}},
 							}},
