@@ -32,7 +32,7 @@ func (me *T) GetMarketIndexByAsset(args struct {
 		Filter     bson.M
 	}{Collection: "MarketIndex", Filter: bson.M{"asset": args.AssetHash}})
 
-	if err != nil && err.Error() == "mongo: no documents in result" {
+	if err != nil && err.Error() != "mongo: no documents in result" {
 		return err
 	}
 
