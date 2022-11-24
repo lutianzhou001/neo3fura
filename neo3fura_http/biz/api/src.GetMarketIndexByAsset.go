@@ -37,7 +37,7 @@ func (me *T) GetMarketIndexByAsset(args struct {
 	}
 	if result == nil {
 		result["asset"] = args.AssetHash
-		result["auctionAmount"] = "0"
+		result["auctionAmount"] = ""
 		result["auctionAsset"] = ""
 		result["totalowner"] = 0
 		result["totalsupply"] = 0
