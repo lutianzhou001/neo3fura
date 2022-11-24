@@ -35,14 +35,17 @@ func (me *T) GetMarketIndexByAsset(args struct {
 	if err != nil && err.Error() != "mongo: no documents in result" {
 		return err
 	}
+
 	if result == nil {
-		result["asset"] = args.AssetHash
-		result["auctionAmount"] = ""
-		result["auctionAsset"] = ""
-		result["totalowner"] = 0
-		result["totalsupply"] = 0
-		result["totaltxamount"] = ""
-		result["usdAmount"] = ""
+		re := make(map[string]interface{})
+		re["asset"] = args.AssetHash.Val()
+		re["auctionAmount"] = ""
+		re["auctionAsset"] = ""
+		re["totalowner"] = 0
+		re["totalsupply"] = 0
+		re["totaltxamount"] = ""
+		re["usdAmount"] = ""
+		result = re
 	}
 	r, err := json.Marshal(result)
 	if err != nil {
