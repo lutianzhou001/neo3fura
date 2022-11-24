@@ -163,8 +163,12 @@ func (me *T) GetNFTClass(args struct {
 			if err2 != nil {
 				return err2
 			}
-			item["thumbnail"] = ImagUrl(item["asset"].(string), string(tb[:]), "thumbnail")
-
+			ss := string(tb[:])
+			if ss == "" {
+				item["thumbnail"] = ImagUrl(item["asset"].(string), item["image"].(string), "thumbnail")
+			} else {
+				item["thumbnail"] = ImagUrl(asset, string(tb[:]), "thumbnail")
+			}
 		} else {
 			item["thumbnail"] = ImagUrl(item["asset"].(string), image.(string), "thumbnail")
 		}

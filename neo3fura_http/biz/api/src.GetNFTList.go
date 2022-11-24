@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"math"
@@ -155,6 +156,7 @@ func (me *T) GetNFTList(args struct {
 	} else {
 		nnsclass = "$asset"
 	}
+	fmt.Println(nnsclass, genesis, polemen)
 	//group
 	setAndGroup := []bson.M{
 
@@ -311,7 +313,13 @@ func (me *T) GetNFTList(args struct {
 					if err2 != nil {
 						return err2
 					}
-					delegateItem["thumbnail"] = ImagUrl(newProperties["asset"].(string), string(tb[:]), "thumbnail")
+					ss := string(tb[:])
+					if ss == "" {
+						delegateItem["thumbnail"] = ImagUrl(newProperties["asset"].(string), newProperties["image"].(string), "thumbnail")
+					} else {
+						delegateItem["thumbnail"] = ImagUrl(newProperties["asset"].(string), string(tb[:]), "thumbnail")
+					}
+
 				} else {
 					delegateItem["thumbnail"] = ImagUrl(newProperties["asset"].(string), newProperties["image"].(string), "thumbnail")
 				}

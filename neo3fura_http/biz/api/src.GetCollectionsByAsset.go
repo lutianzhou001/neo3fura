@@ -121,7 +121,12 @@ func (me *T) GetCollectionsByAsset(args struct {
 							if err2 != nil {
 								return err2
 							}
-							proMap["thumbnail"] = ImagUrl(pitem["asset"].(string), string(tb[:]), "thumbnail")
+							ss := string(tb[:])
+							if ss == "" {
+								proMap["thumbnail"] = ImagUrl(proMap["asset"].(string), pitem["image"].(string), "thumbnail")
+							} else {
+								proMap["thumbnail"] = ImagUrl(proMap["asset"].(string), string(tb[:]), "thumbnail")
+							}
 
 						}
 						if proMap["image"] == nil {
