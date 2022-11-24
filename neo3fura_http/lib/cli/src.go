@@ -150,7 +150,7 @@ func (me *T) QueryAll(args struct {
 		}
 	}(cursor, me.Ctx)
 	if err == mongo.ErrNoDocuments {
-		log2.Error("TEST", args.Collection)
+		fmt.Println("TEST", args.Collection)
 		return nil, 0, stderr.ErrNotFound
 	}
 	if err != nil {
@@ -256,7 +256,7 @@ func (me *T) QueryLastJob(args struct {
 	opts := options.FindOne().SetSort(bson.M{"_id": -1})
 	err := collection.FindOne(me.Ctx, bson.M{}, opts).Decode(&result)
 	if err == mongo.ErrNoDocuments {
-		log2.Error("TEST", args.Collection)
+		fmt.Println("TEST", args.Collection)
 		return nil, stderr.ErrNotFound
 	}
 
@@ -290,7 +290,7 @@ func (me *T) QueryLastJobs(args struct {
 		}
 	}(cursor, me.Ctx)
 	if err == mongo.ErrNoDocuments {
-		log2.Error("TEST", args.Collection)
+		fmt.Println("TEST", args.Collection)
 		return nil, stderr.ErrNotFound
 	}
 	if err != nil {
@@ -337,7 +337,7 @@ func (me *T) QueryAggregate(args struct {
 		}
 	}(cursor, me.Ctx)
 	if err == mongo.ErrNoDocuments {
-		log2.Error("TEST", args.Collection)
+		fmt.Println("TEST", args.Collection)
 		return nil, stderr.ErrNotFound
 	}
 	if err != nil {
@@ -390,7 +390,7 @@ func (me *T) QueryAggregateJob(args struct {
 		}
 	}(cursor, me.Ctx)
 	if err == mongo.ErrNoDocuments {
-		log2.Error("TEST", args.Collection)
+		fmt.Println("TEST", args.Collection)
 		return nil, stderr.ErrNotFound
 	}
 	if err != nil {
@@ -430,7 +430,7 @@ func (me *T) QueryDocument(args struct {
 	collection := me.C_online.Database(me.Db_online).Collection(args.Collection)
 	count, err := collection.CountDocuments(me.Ctx, args.Filter, &co)
 	if err == mongo.ErrNoDocuments {
-		log2.Error("TEST", args.Collection)
+		fmt.Println("TEST", args.Collection)
 		return nil, stderr.ErrNotFound
 	}
 	convert := make(map[string]interface{})
@@ -470,7 +470,8 @@ func (me *T) GetDistinctCount(args struct {
 		}
 	}(cursor, me.Ctx)
 	if err == mongo.ErrNoDocuments {
-		log2.Error("TEST", args.Collection)
+		fmt.Println("", args.Collection)
+
 		return nil, stderr.ErrNotFound
 	}
 	if err != nil {
