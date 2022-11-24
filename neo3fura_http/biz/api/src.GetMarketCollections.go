@@ -129,7 +129,12 @@ func (me *T) GetMarketCollections(args struct {
 							if err2 != nil {
 								return err2
 							}
-							proMap["thumbnail"] = ImagUrl(pitem["asset"].(string), string(tb[:]), "thumbnail")
+							ss := string(tb[:])
+							if ss == "" {
+								proMap["thumbnail"] = ImagUrl(pitem["asset"].(string), pitem["image"].(string), "thumbnail")
+							} else {
+								proMap["thumbnail"] = ImagUrl(pitem["asset"].(string), string(tb[:]), "thumbnail")
+							}
 
 						}
 						if proMap["image"] == nil {
@@ -163,7 +168,12 @@ func (me *T) GetMarketCollections(args struct {
 										if err2 != nil {
 											return err2
 										}
-										proMap["thumbnail"] = ImagUrl(pitem["asset"].(string), string(tb[:]), "thumbnail")
+										ss := string(tb[:])
+										if ss == "" {
+											item["thumbnail"] = ImagUrl(item["asset"].(string), item["image"].(string), "thumbnail")
+										} else {
+											item["thumbnail"] = ImagUrl(asset, string(tb[:]), "thumbnail")
+										}
 									} else {
 										if proMap["thumbnail"] == nil {
 											if proMap["image"] != nil && proMap["image"] != "" {
