@@ -1,7 +1,12 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+	"neo3fura_http/lib/cli"
+	log2 "neo3fura_http/lib/log"
 	"neo3fura_http/lib/type/h160"
 	"neo3fura_http/lib/type/uintval"
 	"neo3fura_http/var/stderr"
@@ -25,7 +30,26 @@ func (me *T) GetSourceCodeByContractHash(args struct {
 	if args.Limit <= 0 {
 		args.Limit = 20
 	}
-	r1, count, err := me.Client.QueryAll(struct {
+	clientOptions := options.Client().ApplyURI("mongodb://Mindy:QMRhLk9m8rqXWC3X9pMJ@20.106.201.244:27019/ContractSource")
+	dbOnline := "ContractSource"
+	clientOptions.SetMaxPoolSize(50)
+	co, err := mongo.Connect(context.TODO(), clientOptions)
+	if err != nil {
+		log2.Fatalf("mongo connect error:%s", err)
+	}
+
+	client := &cli.T{
+		Redis:     me.Client.Redis,
+		Db_online: dbOnline,
+		C_online:  co,
+		C_local:   me.Client.C_local,
+		Ctx:       me.Client.Ctx,
+		RpcCli:    me.Client.RpcCli, // placeholder
+		RpcPorts:  me.Client.RpcPorts,
+		NeoFs:     me.Client.NeoFs,
+	}
+
+	r1, count, err := client.QueryAll(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
@@ -34,7 +58,7 @@ func (me *T) GetSourceCodeByContractHash(args struct {
 		Limit      int64
 		Skip       int64
 	}{
-		Collection: "ContractSourceCode",
+		Collection: getDocumentByEnv("ContractSourceCode"),
 		Index:      "someIndex",
 		Sort:       bson.M{},
 		Filter:     bson.M{"hash": args.ContractHash, "updatecounter": args.UpdateCounter},
