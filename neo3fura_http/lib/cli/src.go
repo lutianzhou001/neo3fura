@@ -49,6 +49,7 @@ func (me *T) QueryOne(args struct {
 	Filter     bson.M
 	Query      []string
 }, ret *json.RawMessage) (map[string]interface{}, error) {
+	fmt.Println(args.Collection)
 	var kvs string
 	kvs = kvs + args.Collection
 	kvs = kvs + args.Index
@@ -75,6 +76,7 @@ func (me *T) QueryOne(args struct {
 		if err == mongo.ErrNoDocuments {
 			return nil, stderr.ErrNotFound
 		} else if err != nil {
+			fmt.Println(1)
 			return nil, stderr.ErrFind
 		}
 		if len(args.Query) == 0 {
@@ -86,6 +88,7 @@ func (me *T) QueryOne(args struct {
 		}
 		r, err := json.Marshal(convert)
 		if err != nil {
+			fmt.Println(2)
 			return nil, stderr.ErrFind
 		}
 		//err = me.Redis.Set(me.Ctx, hash, hex.EncodeToString(r), 0).Err()
@@ -97,6 +100,7 @@ func (me *T) QueryOne(args struct {
 	} else {
 		r, err := hex.DecodeString(val)
 		if err != nil {
+			fmt.Println(3)
 			return nil, stderr.ErrFind
 		}
 
@@ -107,6 +111,7 @@ func (me *T) QueryOne(args struct {
 			convert["_id"], err = primitive.ObjectIDFromHex(convert["_id"].(string))
 		}
 		if err != nil {
+			fmt.Println(4)
 			return nil, stderr.ErrFind
 		}
 		return convert, nil
