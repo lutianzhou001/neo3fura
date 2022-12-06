@@ -25,14 +25,14 @@ func (me *T) GetMarketDailyVolume(args struct {
 
 	rt := os.ExpandEnv("${RUNTIME}")
 	fmt.Println(rt)
-	var secondMarketHash string
-	if rt == "staging" {
-		secondMarketHash = "0xd2e7cf18ee0d9b509fac02457f54b63e47b25e29"
-	} else if rt == "test2" {
-		secondMarketHash = "0xc198d687cc67e244662c3b9c1325f095f8e663b1"
-	} else {
-		secondMarketHash = "0xc198d687cc67e244662c3b9c1325f095f8e663b1"
-	}
+	//var secondMarketHash string
+	//if rt == "staging" {
+	//	secondMarketHash = "0xd2e7cf18ee0d9b509fac02457f54b63e47b25e29"
+	//} else if rt == "test2" {
+	//	secondMarketHash = "0xc198d687cc67e244662c3b9c1325f095f8e663b1"
+	//} else {
+	//	secondMarketHash = "0xc198d687cc67e244662c3b9c1325f095f8e663b1"
+	//}
 
 	result := make(map[string]interface{})
 
@@ -58,7 +58,7 @@ func (me *T) GetMarketDailyVolume(args struct {
 				Sort:       bson.M{},
 				Filter:     bson.M{},
 				Pipeline: []bson.M{
-					bson.M{"$match": bson.M{"asset": it, "market": secondMarketHash, "eventname": bson.M{"$in": []interface{}{"Claim", "CompleteOffer"}}}}, //交易:售卖，竞拍，offer
+					bson.M{"$match": bson.M{"asset": it, "eventname": bson.M{"$in": []interface{}{"Claim", "CompleteOffer"}}}}, //交易:售卖，竞拍，offer
 					bson.M{"$group": bson.M{"_id": bson.M{"$dateToString": bson.M{"format": "%Y-%m-%d", "date": bson.M{"$toDate": "$timestamp"}}},
 						"count":  bson.M{"$sum": 1},
 						"events": bson.M{"$push": "$$ROOT"},
