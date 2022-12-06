@@ -49,7 +49,6 @@ func (me *T) QueryOne(args struct {
 	Filter     bson.M
 	Query      []string
 }, ret *json.RawMessage) (map[string]interface{}, error) {
-	fmt.Println(args.Collection)
 	var kvs string
 	kvs = kvs + args.Collection
 	kvs = kvs + args.Index

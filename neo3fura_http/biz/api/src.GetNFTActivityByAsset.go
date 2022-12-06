@@ -32,7 +32,7 @@ func (me *T) GetNFTActivityByAsset(args struct {
 	var pipeline []bson.M
 	if args.State == "sales" {
 		pipeline = []bson.M{
-			bson.M{"$match": bson.M{"asset": args.Asset, "market": args.Market, "eventname": bson.M{"$in": []interface{}{"Claim", "CompleteOffer", "CompleteOfferCollection"}}}},
+			bson.M{"$match": bson.M{"asset": args.Asset, "eventname": bson.M{"$in": []interface{}{"Claim", "CompleteOffer", "CompleteOfferCollection"}}}},
 			bson.M{"$lookup": bson.M{
 				"from": "Nep11Properties",
 				"let":  bson.M{"asset": "$asset", "tokenid": "$tokenid"},
@@ -49,7 +49,7 @@ func (me *T) GetNFTActivityByAsset(args struct {
 		}
 	} else if args.State == "listings" {
 		pipeline = []bson.M{
-			bson.M{"$match": bson.M{"asset": args.Asset, "market": args.Market, "eventname": "Auction"}},
+			bson.M{"$match": bson.M{"asset": args.Asset, "eventname": "Auction"}},
 			bson.M{"$lookup": bson.M{
 				"from": "Nep11Properties",
 				"let":  bson.M{"asset": "$asset", "tokenid": "$tokenid"},
@@ -66,7 +66,7 @@ func (me *T) GetNFTActivityByAsset(args struct {
 		}
 	} else if args.State == "offers" {
 		pipeline = []bson.M{
-			bson.M{"$match": bson.M{"asset": args.Asset, "market": args.Market, "eventname": bson.M{"$in": []interface{}{"Offer", "OfferCollection"}}}},
+			bson.M{"$match": bson.M{"asset": args.Asset, "eventname": bson.M{"$in": []interface{}{"Offer", "OfferCollection"}}}},
 			bson.M{"$lookup": bson.M{
 				"from": "Nep11Properties",
 				"let":  bson.M{"asset": "$asset", "tokenid": "$tokenid"},
@@ -83,7 +83,7 @@ func (me *T) GetNFTActivityByAsset(args struct {
 		}
 	} else {
 		pipeline = []bson.M{
-			bson.M{"$match": bson.M{"asset": args.Asset, "market": args.Market}},
+			bson.M{"$match": bson.M{"asset": args.Asset, "eventname": bson.M{"$in": []interface{}{"Offer", "OfferCollection", "Claim", "CompleteOffer", "CompleteOfferCollection", "Offer", "OfferCollection"}}}},
 			bson.M{"$lookup": bson.M{
 				"from": "Nep11Properties",
 				"let":  bson.M{"asset": "$asset", "tokenid": "$tokenid"},
@@ -134,90 +134,93 @@ func (me *T) GetNFTActivityByAsset(args struct {
 		r2["image"] = ""
 		r2["name"] = item["name"]
 		r2["txid"] = item["txid"]
-		properties := item["properties"].(primitive.A)[0].(map[string]interface{})
-		if properties["properties"] != nil {
-			var data map[string]interface{}
-			if err := json.Unmarshal([]byte(properties["properties"].(string)), &data); err == nil {
 
-				image, ok := data["image"]
-				if ok {
-					r2["image"] = ImagUrl(item["asset"].(string), image.(string), "images")
-				} else {
-					r2["image"] = ""
-				}
+		if len(item["properties"].(primitive.A)) > 0 {
+			properties := item["properties"].(primitive.A)[0].(map[string]interface{})
+			if properties["properties"] != nil {
+				var data map[string]interface{}
+				if err := json.Unmarshal([]byte(properties["properties"].(string)), &data); err == nil {
 
-				thumbnail, ok1 := data["thumbnail"]
-				if ok1 {
-					//r1["image"] = thumbnail
-					tb, err2 := base64.URLEncoding.DecodeString(thumbnail.(string))
-					if err2 != nil {
-						return err2
+					image, ok := data["image"]
+					if ok {
+						r2["image"] = ImagUrl(item["asset"].(string), image.(string), "images")
+					} else {
+						r2["image"] = ""
 					}
-					r2["thumbnail"] = ImagUrl(item["asset"].(string), string(tb[:]), "thumbnail")
-				} else {
-					if r2["thumbnail"] == nil {
-						if r2["image"] != nil && r2["image"] != "" {
-							if image == nil {
-								r2["thumbnail"] = item["image"]
-							} else {
-								r2["thumbnail"] = ImagUrl(item["asset"].(string), image.(string), "thumbnail")
+
+					thumbnail, ok1 := data["thumbnail"]
+					if ok1 {
+						//r1["image"] = thumbnail
+						tb, err2 := base64.URLEncoding.DecodeString(thumbnail.(string))
+						if err2 != nil {
+							return err2
+						}
+						r2["thumbnail"] = ImagUrl(item["asset"].(string), string(tb[:]), "thumbnail")
+					} else {
+						if r2["thumbnail"] == nil {
+							if r2["image"] != nil && r2["image"] != "" {
+								if image == nil {
+									r2["thumbnail"] = item["image"]
+								} else {
+									r2["thumbnail"] = ImagUrl(item["asset"].(string), image.(string), "thumbnail")
+								}
 							}
 						}
 					}
-				}
 
-				tokenuri, ok := data["tokenURI"]
-				if ok {
-					ppjson, err := GetImgFromTokenURL(tokenurl(tokenuri.(string)), item["asset"].(string), item["tokenid"].(string))
-					if err != nil {
-						return err
-					}
-					for key, value := range ppjson {
-						r2[key] = value
-						if key == "image" {
-							img := value.(string)
-							r2["thumbnail"] = ImagUrl(item["asset"].(string), img, "thumbnail")
-							r2["image"] = ImagUrl(item["asset"].(string), img, "images")
+					tokenuri, ok := data["tokenURI"]
+					if ok {
+						ppjson, err := GetImgFromTokenURL(tokenurl(tokenuri.(string)), item["asset"].(string), item["tokenid"].(string))
+						if err != nil {
+							return err
+						}
+						for key, value := range ppjson {
+							r2[key] = value
+							if key == "image" {
+								img := value.(string)
+								r2["thumbnail"] = ImagUrl(item["asset"].(string), img, "thumbnail")
+								r2["image"] = ImagUrl(item["asset"].(string), img, "images")
+							}
 						}
 					}
-				}
-				if r2["name"] == "" || r2["name"] == nil {
-					name, ok := data["name"]
-					if ok {
-						r2["name"] = name
+					if r2["name"] == "" || r2["name"] == nil {
+						name, ok := data["name"]
+						if ok {
+							r2["name"] = name
+						}
 					}
-				}
 
-				if r2["name"] == nil && r2["name"].(string) == "Nuanced Floral Symphony" {
-					r2["video"] = r2["image"]
-					delete(r2, "image")
-				}
+					if r2["name"] == nil && r2["name"].(string) == "Nuanced Floral Symphony" {
+						r2["video"] = r2["image"]
+						delete(r2, "image")
+					}
 
+				} else {
+					return err
+				}
 			} else {
-				return err
-			}
-		} else {
 
-			assetInfo, err := me.Client.QueryOne(struct {
-				Collection string
-				Index      string
-				Sort       bson.M
-				Filter     bson.M
-				Query      []string
-			}{Collection: "Asset",
-				Index:  "GetAssetInfo",
-				Sort:   bson.M{},
-				Filter: bson.M{"hash": item["asset"]},
-				Query:  []string{},
-			}, ret)
-			if err != nil {
-				return err
-			}
-			r2["image"] = ""
-			r2["name"] = assetInfo["tokenname"]
-			r2["thumbnail"] = ""
-			r2["video"] = ""
+				assetInfo, err := me.Client.QueryOne(struct {
+					Collection string
+					Index      string
+					Sort       bson.M
+					Filter     bson.M
+					Query      []string
+				}{Collection: "Asset",
+					Index:  "GetAssetInfo",
+					Sort:   bson.M{},
+					Filter: bson.M{"hash": item["asset"]},
+					Query:  []string{},
+				}, ret)
+				if err != nil {
+					return err
+				}
+				r2["image"] = ""
+				r2["name"] = assetInfo["tokenname"]
+				r2["thumbnail"] = ""
+				r2["video"] = ""
 
+			}
 		}
 
 		eventname := item["eventname"].(string)
