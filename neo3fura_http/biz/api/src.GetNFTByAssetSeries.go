@@ -11,12 +11,13 @@ import (
 )
 
 func (me *T) GetNFTByAssetClass(args struct {
-	Asset  h160.T
-	Class  string
-	Limit  int64
-	Skip   int64
-	Filter map[string]interface{}
-	Raw    *map[string]interface{}
+	Asset     h160.T
+	Class     string
+	ClassName string
+	Limit     int64
+	Skip      int64
+	Filter    map[string]interface{}
+	Raw       *map[string]interface{}
 }, ret *json.RawMessage) error {
 	if args.Asset.Valid() == false {
 		return stderr.ErrInvalidArgs
@@ -39,10 +40,10 @@ func (me *T) GetNFTByAssetClass(args struct {
 		genesis = Contract.Test_ILEXGENESIS.Val()
 		polemen = Contract.Test_ILEXPOLEMEN.Val()
 	} else {
-		nns = Contract.Test_NNS.Val()
+		nns = Contract.Main_NNS.Val()
 		//	metapanacea = Contract.Test_MetaPanacea.Val()
-		genesis = Contract.Test_ILEXGENESIS.Val()
-		polemen = Contract.Test_ILEXPOLEMEN.Val()
+		genesis = Contract.Main_ILEXGENESIS.Val()
+		polemen = Contract.Main_ILEXPOLEMEN.Val()
 	}
 
 	r1, err := me.Client.QueryAggregate(
@@ -64,7 +65,7 @@ func (me *T) GetNFTByAssetClass(args struct {
 					"else": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", genesis}}, "then": "$image",
 						"else": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", polemen}}, "then": "$tokenid",
 							"else": "$name"}}}}}}}},
-				bson.M{"$match": bson.M{"class": args.Class}},
+				bson.M{"$match": bson.M{"class": args.ClassName}},
 				bson.M{"$skip": args.Skip},
 				bson.M{"$limit": args.Limit},
 			},
