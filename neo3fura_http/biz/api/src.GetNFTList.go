@@ -3,7 +3,6 @@ package api
 import (
 	"encoding/base64"
 	"encoding/json"
-	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"math"
@@ -156,7 +155,6 @@ func (me *T) GetNFTList(args struct {
 	} else {
 		nnsclass = "$asset"
 	}
-	fmt.Println(nnsclass, genesis, polemen)
 	//group
 	setAndGroup := []bson.M{
 
@@ -332,6 +330,24 @@ func (me *T) GetNFTList(args struct {
 				//dst["properties"] = newProperties
 				delegateItem["class"] = newProperties["class"]
 				delegateItem["count"] = len(groupInfo)
+
+				//处理 class 字段统一用 nft name 去展示 （避免直接使用image的url）
+				if len(groupInfo) > 1 {
+					// 处理ilex genesis 以image 分类的特殊情况
+					class := newProperties["class"].(string)
+					if isHttp(class) {
+						classname := newProperties["name"].(string)
+						classname = strings.Split(classname, " ")[0]
+						delegateItem["classname"] = class
+						delegateItem["class"] = classname
+
+					} else {
+						delegateItem["classname"] = class
+					}
+				} else {
+					delegateItem["classname"] = newProperties["class"]
+				}
+
 				delete(delegateItem, "properties")
 				if delegateItem["image"] != nil || delegateItem["video"] != nil {
 					result = append(result, delegateItem)
@@ -355,6 +371,17 @@ func (me *T) GetNFTList(args struct {
 	}
 	*ret = json.RawMessage(r)
 	return nil
+}
+
+func isHttp(class string) bool {
+	if len(class) > 4 {
+		str := class[:4]
+		if str == "http" {
+			return true
+		}
+	}
+
+	return false
 }
 
 func ReSetProperties(p map[string]interface{}) (map[string]interface{}, error) {
