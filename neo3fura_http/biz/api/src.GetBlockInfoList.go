@@ -28,6 +28,7 @@ func (me *T) GetBlockInfoList(args struct {
 			Sort:   bson.M{},
 			Filter: bson.M{},
 			Pipeline: []bson.M{
+				bson.M{"$sort": bson.M{"_id": -1}},
 				bson.M{"$lookup": bson.M{
 					"from": "Transaction",
 					"let":  bson.M{"blockhash": "$hash"},
@@ -43,7 +44,7 @@ func (me *T) GetBlockInfoList(args struct {
 				//bson.M{"$match": bson.M{"info": bson.M{"$elemMatch": bson.M{"$ne": nil}}}},
 				bson.M{"$project": bson.M{"transactioncount": bson.M{"$cond": bson.M{"if": bson.M{"$gt": []interface{}{"$info", []interface{}{}}}, "then": bson.M{"$arrayElemAt": []interface{}{"$info.count", 0}}, "else": 0}},
 					"_id": 1, "index": 1, "size": 1, "timestamp": 1, "hash": 1}},
-				bson.M{"$sort": -1},
+
 				bson.M{"$limit": args.Limit},
 				bson.M{"$skip": args.Skip},
 			},

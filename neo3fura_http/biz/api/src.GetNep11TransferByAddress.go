@@ -94,23 +94,16 @@ func (me *T) GetNep11TransferByAddress(args struct {
 		return err
 	}
 
-	_, count, err := me.Client.QueryAll(struct {
+	count, err := me.Client.QueryDocument(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
 		Filter     bson.M
-		Query      []string
-		Limit      int64
-		Skip       int64
 	}{
 		Collection: "Nep11TransferNotification",
 		Index:      "GetNep11TransferByAddress",
 		Sort:       bson.M{},
-		Filter:     filter,
-		Query:      []string{},
-		Limit:      args.Limit,
-		Skip:       args.Skip,
-	}, ret)
+		Filter:     filter}, ret)
 	if err != nil {
 		return err
 	}
@@ -133,7 +126,7 @@ func (me *T) GetNep11TransferByAddress(args struct {
 		delete(item, "transaction")
 	}
 
-	r2, err := me.FilterArrayAndAppendCount(r1, count, args.Filter)
+	r2, err := me.FilterArrayAndAppendCount(r1, count["total counts"].(int64), args.Filter)
 	if err != nil {
 		return err
 	}

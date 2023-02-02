@@ -2,7 +2,6 @@ package api
 
 import (
 	"encoding/json"
-
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"math/big"
@@ -116,26 +115,22 @@ func (me *T) GetAssetHoldersByContractHash(args struct {
 
 	}
 
-	_, count, err := me.Client.QueryAll(struct {
+	count, err := me.Client.QueryDocument(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
 		Filter     bson.M
-		Query      []string
-		Limit      int64
-		Skip       int64
 	}{
 		Collection: "Address-Asset",
 		Index:      "GetAssetHoldersByContractHash",
-		Sort:       bson.M{"balance": -1},
+		Sort:       bson.M{},
 		Filter:     bson.M{"asset": args.ContractHash.Val(), "balance": bson.M{"$gt": 0}},
-		Query:      []string{},
 	}, ret)
 	if err != nil {
 		return err
 	}
 
-	r3, err := me.FilterArrayAndAppendCount(r2, count, args.Filter)
+	r3, err := me.FilterArrayAndAppendCount(r2, count["total counts"].(int64), args.Filter)
 	if err != nil {
 		return err
 	}

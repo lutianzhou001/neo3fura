@@ -33,7 +33,7 @@ func (me *T) GetNep17TransferByContractHash(args struct {
 		Filter:     bson.M{},
 		Pipeline: []bson.M{
 			bson.M{"$match": bson.M{"contract": args.ContractHash.Val()}},
-			bson.M{"$sort": bson.M{"timestamp0": -1, "_id": -1}},
+			bson.M{"$sort": bson.M{"_id": -1}},
 			bson.M{"$lookup": bson.M{
 				"from": "Execution",
 				"let":  bson.M{"txid": "$txid", "blockhash": "$blockhash"},
@@ -52,23 +52,18 @@ func (me *T) GetNep17TransferByContractHash(args struct {
 		Query: []string{},
 	}, ret)
 
-	_, count, err := me.Client.QueryAll(struct {
+	count, err := me.Client.QueryDocument(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
 		Filter     bson.M
-		Query      []string
-		Limit      int64
-		Skip       int64
 	}{
 		Collection: "TransferNotification",
 		Index:      "GetNep17TransferByContractHash",
-		Sort:       bson.M{"timestamp": -1},
+		Sort:       bson.M{},
 		Filter:     bson.M{"contract": args.ContractHash.Val()},
-		Query:      []string{},
-		Limit:      args.Limit,
-		Skip:       args.Skip,
 	}, ret)
+
 	if err != nil {
 		return err
 	}
@@ -83,7 +78,7 @@ func (me *T) GetNep17TransferByContractHash(args struct {
 
 		delete(item, "execution")
 	}
-	r2, err := me.FilterArrayAndAppendCount(r1, count, args.Filter)
+	r2, err := me.FilterArrayAndAppendCount(r1, count["total counts"].(int64), args.Filter)
 	if err != nil {
 		return err
 	}
