@@ -331,6 +331,7 @@ func (me *T) QueryAggregate(args struct {
 	convert := make([]map[string]interface{}, 0)
 	collection := me.C_online.Database(me.Db_online).Collection(args.Collection)
 	op := options.AggregateOptions{}
+	op.SetAllowDiskUse(true)
 
 	cursor, err := collection.Aggregate(me.Ctx, args.Pipeline, &op)
 

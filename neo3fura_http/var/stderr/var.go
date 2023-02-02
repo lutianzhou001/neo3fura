@@ -45,3 +45,5 @@ var ErrNotInMarketWhiteList = jsonrpc2.NewError(-32001, "asset is not in whiteli
 var ErrGetHighestOffer = jsonrpc2.NewError(-32001, "get highest offer error")
 
 var ErrGetNFTInfo = jsonrpc2.NewError(-32001, "get NFT info error")
+
+var ErrAssetType = jsonrpc2.NewError(-32001, "asset type error")
