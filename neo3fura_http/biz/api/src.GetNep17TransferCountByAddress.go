@@ -15,14 +15,12 @@ func (me *T) GetNep17TransferCountByAddress(args struct {
 	if args.Address.Valid() == false {
 		return stderr.ErrInvalidArgs
 	}
-	_, count, err := me.Client.QueryAll(struct {
+
+	count, err := me.Client.QueryDocument(struct {
 		Collection string
 		Index      string
 		Sort       bson.M
 		Filter     bson.M
-		Query      []string
-		Limit      int64
-		Skip       int64
 	}{
 		Collection: "TransferNotification",
 		Index:      "GetNep17TransferCountByAddress",
@@ -36,7 +34,7 @@ func (me *T) GetNep17TransferCountByAddress(args struct {
 	if err != nil {
 		return err
 	}
-	r, err := json.Marshal(count)
+	r, err := json.Marshal(count["total counts"].(int64))
 	if err != nil {
 		return err
 	}
