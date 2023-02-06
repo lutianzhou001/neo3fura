@@ -153,4 +153,5 @@ var Apis = []string{
 	"SetPrimaryMarketPreSaleWhitelist",
 	"GetPrimaryMarketPreSaleWhitelist",
 	"GetAssetInfoByContracts",
+	"GetTagByAddresses",
 }
