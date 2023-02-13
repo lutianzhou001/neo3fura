@@ -248,8 +248,6 @@ func (me *T) GetInfoByNFTList(args struct {
 
 	}
 
-	//count := len(r1)
-	//r3, err := me.FilterAggragateAndAppendCount(r1, count, args.Filter)
 	r3, err := me.Filter(result, args.Filter)
 	if err != nil {
 		return err
