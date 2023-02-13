@@ -239,36 +239,41 @@ func (me *T) GetNFTList(args struct {
 			TokenId strval.T
 		}, 0)
 
+		//获取GetInfoByNFTList 接口参数
+		for _, item := range pageResult {
+			groupInfo := item["propertiesArr"].(primitive.A)
+			//	var asset = item["asset"].(string)
+			var tokenidArr []string
+			for _, pitem := range groupInfo {
+				it := pitem.(map[string]interface{})
+				tokenid := it["tokenid"].(string)
+				asset := it["asset"].(string)
+
+				nftlist = append(nftlist, struct {
+					Asset   h160.T
+					TokenId strval.T
+				}{Asset: h160.T(asset), TokenId: strval.T(tokenid)})
+				tokenidArr = append(tokenidArr, tokenid)
+			}
+
+		}
+
+		raw := make(map[string]interface{})
+		err = me.GetInfoByNFTList(struct {
+			NFT []struct {
+				Asset   h160.T
+				TokenId strval.T
+			}
+			Filter map[string]interface{}
+			Raw    *map[string]interface{}
+		}{NFT: nftlist, Raw: &raw}, ret)
+		if err != nil {
+			return err
+		}
+
 		for _, item := range pageResult {
 			if item["propertiesArr"] != nil {
 				groupInfo := item["propertiesArr"].(primitive.A)
-				//	var asset = item["asset"].(string)
-				var tokenidArr []string
-				for _, pitem := range groupInfo {
-					it := pitem.(map[string]interface{})
-					tokenid := it["tokenid"].(string)
-					asset := it["asset"].(string)
-
-					nftlist = append(nftlist, struct {
-						Asset   h160.T
-						TokenId strval.T
-					}{Asset: h160.T(asset), TokenId: strval.T(tokenid)})
-					tokenidArr = append(tokenidArr, tokenid)
-				}
-
-				raw := make(map[string]interface{})
-				err = me.GetInfoByNFTList(struct {
-					NFT []struct {
-						Asset   h160.T
-						TokenId strval.T
-					}
-					Filter map[string]interface{}
-					Raw    *map[string]interface{}
-				}{NFT: nftlist, Raw: &raw}, ret)
-				if err != nil {
-					return err
-				}
-
 				copygroup := make([]map[string]interface{}, 0)
 				for _, pitem := range groupInfo {
 					it := pitem.(map[string]interface{})
