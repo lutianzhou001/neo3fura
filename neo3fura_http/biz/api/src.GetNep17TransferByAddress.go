@@ -92,6 +92,44 @@ func (me *T) GetNep17TransferByAddress(args struct {
 		}
 	}
 
+	pipeline := []bson.M{
+		bson.M{"$match": filter},
+		bson.M{"$sort": bson.M{"timestamp": -1, "_id": -1}},
+		bson.M{"$lookup": bson.M{
+			"from": "Execution",
+			"let":  bson.M{"txid": "$txid", "blockhash": "$blockhash"},
+			"pipeline": []bson.M{
+				bson.M{"$match": bson.M{"$expr": bson.M{"$and": []interface{}{
+					bson.M{"$eq": []interface{}{"$txid", "$$txid"}},
+					bson.M{"$eq": []interface{}{"$blockhash", "$$blockhash"}},
+				}}}},
+				bson.M{"$project": bson.M{"vmstate": 1}},
+			},
+			"as": "execution"},
+		},
+
+		bson.M{"$lookup": bson.M{
+			"from": "Transaction",
+			"let":  bson.M{"hash": "$txid", "blockhash": "$blockhash"},
+			"pipeline": []bson.M{
+				bson.M{"$match": bson.M{"hash": bson.M{"$ne": "0x0000000000000000000000000000000000000000000000000000000000000000"}}},
+				bson.M{"$match": bson.M{"$expr": bson.M{"$and": []interface{}{
+					bson.M{"$eq": []interface{}{"$hash", "$$hash"}},
+					bson.M{"$eq": []interface{}{"$blockhash", "$$blockhash"}},
+				}}}},
+				bson.M{"$project": bson.M{"netfee": 1, "sysfee": 1}},
+			},
+			"as": "transaction"},
+		},
+
+		bson.M{"$skip": args.Skip},
+		//bson.M{"$limit": args.Limit},
+	}
+
+	if args.Limit != 0 {
+		pipeline = append(pipeline, bson.M{"$limit": args.Limit})
+	}
+
 	r1, err := me.Client.QueryAggregate(struct {
 		Collection string
 		Index      string
@@ -104,40 +142,8 @@ func (me *T) GetNep17TransferByAddress(args struct {
 		Index:      "GetNep17TransferByContractHash",
 		Sort:       bson.M{},
 		Filter:     bson.M{},
-		Pipeline: []bson.M{
-			bson.M{"$match": filter},
-			bson.M{"$sort": bson.M{"timestamp": -1, "_id": -1}},
-			bson.M{"$lookup": bson.M{
-				"from": "Execution",
-				"let":  bson.M{"txid": "$txid", "blockhash": "$blockhash"},
-				"pipeline": []bson.M{
-					bson.M{"$match": bson.M{"$expr": bson.M{"$and": []interface{}{
-						bson.M{"$eq": []interface{}{"$txid", "$$txid"}},
-						bson.M{"$eq": []interface{}{"$blockhash", "$$blockhash"}},
-					}}}},
-					bson.M{"$project": bson.M{"vmstate": 1}},
-				},
-				"as": "execution"},
-			},
-
-			bson.M{"$lookup": bson.M{
-				"from": "Transaction",
-				"let":  bson.M{"hash": "$txid", "blockhash": "$blockhash"},
-				"pipeline": []bson.M{
-					bson.M{"$match": bson.M{"hash": bson.M{"$ne": "0x0000000000000000000000000000000000000000000000000000000000000000"}}},
-					bson.M{"$match": bson.M{"$expr": bson.M{"$and": []interface{}{
-						bson.M{"$eq": []interface{}{"$hash", "$$hash"}},
-						bson.M{"$eq": []interface{}{"$blockhash", "$$blockhash"}},
-					}}}},
-					bson.M{"$project": bson.M{"netfee": 1, "sysfee": 1}},
-				},
-				"as": "transaction"},
-			},
-
-			bson.M{"$skip": args.Skip},
-			bson.M{"$limit": args.Limit},
-		},
-		Query: []string{},
+		Pipeline:   pipeline,
+		Query:      []string{},
 	}, ret)
 	if err != nil {
 		return err

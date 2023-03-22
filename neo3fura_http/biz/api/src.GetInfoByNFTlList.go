@@ -92,7 +92,7 @@ func (me *T) GetInfoByNFTList(args struct {
 		} else {
 			item["state"] = "list"
 		}
-		if (item["market"] == item["owner"] && ddl > currentTime) || (item["market"] == item["owner"] && ddl < currentTime && bidAmount == "0") { //上架
+		if (item["market"] == item["owner"] && ddl > currentTime) || (item["market"] == item["owner"] && ddl < currentTime && bidAmount == "0") { //上架过期（无人出价）   上架未过期
 			item["owner"] = item["auctor"]
 		}
 		if item["market"] == item["owner"] && ddl < currentTime && bidAmount != "0" { // 未领取
@@ -160,8 +160,17 @@ func (me *T) GetInfoByNFTList(args struct {
 			}
 		}
 
-		//获取Owner 地址的用户信息
-		//TODO
+		//获取Owner 设置的nns信息
+		owner := item["owner"].(string)
+		nns := ""
+		if owner != "" {
+			nns, err = GetNNSByAddress(owner)
+			if err != nil {
+				return err
+			}
+		}
+
+		item["nns"] = nns
 		delete(item, "eventlist")
 
 	}

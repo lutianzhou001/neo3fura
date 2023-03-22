@@ -370,14 +370,21 @@ func (me *T) GetNFTOwnedByAddress(args struct {
 
 			if amount > 0 && auctionType == 2 && item["owner"] == item["market"] && deadline > currentTime {
 				item["state"] = NFTstate.Auction.Val()
+				item["owner"] = item["auctor"]
 			} else if amount > 0 && auctionType == 1 && item["owner"] == item["market"] && deadline > currentTime {
 				item["state"] = NFTstate.Sale.Val()
+				item["owner"] = item["auctor"]
 			} else if amount > 0 && item["owner"] != item["market"] {
 				item["state"] = NFTstate.NotListed.Val()
-			} else if amount > 0 && bidAmount == "0" && deadline < currentTime && item["owner"] == item["market"] {
+			} else if amount > 0 && bidAmount == "0" && deadline < currentTime && item["owner"] == item["market"] { //上架过期（未出价）
 				item["state"] = NFTstate.Unclaimed.Val()
+				item["owner"] = item["auctor"]
+			} else if deadline < currentTime && item["owner"] == item["market"] && bidAmount != "0" {
+				item["state"] = NFTstate.Unclaimed.Val() //已出价并过期
+				item["owner"] = item["bidder"]           //上架过期
 			} else {
 				item["state"] = ""
+
 			}
 		}
 		//将未领取的价格都置为0
@@ -528,6 +535,18 @@ func (me *T) GetNFTOwnedByAddress(args struct {
 				}
 			}
 		}
+
+		//添加绑定 owner 的nns
+		owner := item["owner"].(string)
+		owner_nns := ""
+		if owner != "" {
+			owner_nns, err = GetNNSByAddress(owner)
+			if err != nil {
+				return err
+			}
+		}
+		item["nns"] = owner_nns
+
 	}
 
 	// 按上架时间排序
