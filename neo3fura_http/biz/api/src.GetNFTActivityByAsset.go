@@ -331,6 +331,26 @@ func (me *T) GetNFTActivityByAsset(args struct {
 				} else {
 					r2["state"] = NFTevent.Offer_Expired
 				}
+
+				fromAddress := r2["from"].(string)
+				toAddress := r2["to"].(string)
+				fromNNS := ""
+				toNNS := ""
+				if fromAddress != "" {
+					fromNNS, err = GetNNSByAddress(fromAddress)
+					if err != nil {
+						return err
+					}
+				}
+				if toAddress != "" {
+					toNNS, err = GetNNSByAddress(toAddress)
+					if err != nil {
+						return err
+					}
+				}
+				r2["from_nns"] = fromNNS
+				r2["to_nns"] = toNNS
+
 				result = append(result, r2)
 			}
 		}

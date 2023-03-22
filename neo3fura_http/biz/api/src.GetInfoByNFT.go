@@ -4,10 +4,13 @@ import (
 	"encoding/json"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"io/ioutil"
 	"math/big"
 	"neo3fura_http/lib/type/h160"
 	"neo3fura_http/lib/type/strval"
 	"neo3fura_http/var/stderr"
+	"net/http"
+	"os"
 	"strconv"
 	"time"
 )
@@ -117,7 +120,7 @@ func (me *T) GetInfoByNFT(args struct {
 			}
 		}
 		var finishTime int64
-		if item["eventlist"] != nil {
+		if item["eventlist"] != nil && len(item["eventlist"].(primitive.A)) > 0 {
 			eventlist := item["eventlist"].(primitive.A)
 			for _, it := range eventlist {
 				eventItem := it.(map[string]interface{})
@@ -183,8 +186,17 @@ func (me *T) GetInfoByNFT(args struct {
 			}
 		}
 
-		//获取Owner 地址的用户信息
-		//TODO
+		//获取Owner 地址的nns信息
+		owner := item["owner"].(string)
+		nns := ""
+		if owner != "" {
+			nns, err = GetNNSByAddress(owner)
+			if err != nil {
+				return err
+			}
+		}
+
+		item["nns"] = nns
 		delete(item, "eventlist")
 	}
 
@@ -203,4 +215,34 @@ func (me *T) GetInfoByNFT(args struct {
 	}
 	*ret = json.RawMessage(r)
 	return nil
+}
+
+func GetNNSByAddress(address string) (string, error) {
+	rt := os.ExpandEnv("${RUNTIME}")
+	url := "https://megaoasis.ngd.network:8889/profile/get?address="
+	if rt == "staging" {
+		url = "https://megaoasis.ngd.network:8893/profile/get?address="
+	} else if rt == "test" {
+		url = "https://megaoasis.ngd.network:8889/profile/get?address="
+	}
+
+	resp, err := http.Get(url + address)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	var nns string
+	if string(body) != "" && string(body) != "null" {
+		var data map[string]interface{}
+		err = json.Unmarshal(body, &data)
+		if err != nil {
+			return "", err
+		}
+		nns = data["nns"].(string)
+	} else {
+		nns = ""
+	}
+
+	return nns, nil
 }

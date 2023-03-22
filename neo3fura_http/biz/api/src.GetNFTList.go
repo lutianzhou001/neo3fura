@@ -291,6 +291,8 @@ func (me *T) GetNFTList(args struct {
 						it["offerAmount"] = value["offerAmount"]
 						it["offerAsset"] = value["offerAsset"]
 						it["order"] = value["order"]
+						it["owner"] = value["owner"]
+						it["nns"] = value["nns"]
 					}
 					copygroup = append(copygroup, it)
 
@@ -357,6 +359,7 @@ func (me *T) GetNFTList(args struct {
 				if delegateItem["image"] != nil || delegateItem["video"] != nil {
 					result = append(result, delegateItem)
 				}
+
 			}
 		}
 
