@@ -19,7 +19,7 @@ curl --location --request POST 'https://testneofura.ngd.network:444' \
 --data-raw '{  
     "jsonrpc": "2.0",
     "method": "GetNep11PropertiesByContractHashTokenId",
-    "params": {"ContractHash":"0x4f628a187e133fa98a5fd0795df3065f219e414e","TokenId":["QmxpbmQgQm94IDIxNQ"]},
+    "params": {"ContractHash":"0x4f628a187e133fa98a5fd0795df3065f219e414e","TokenIds":["QmxpbmQgQm94IDIxNQ"]},
     "id": 1
 }'
 ```
