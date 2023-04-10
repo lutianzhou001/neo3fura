@@ -226,8 +226,8 @@ func (me *T) GetCollectionsByAsset(args struct {
 					tokeniditem["image"] = it["image"]
 					tokeniditem["thumbnail"] = it["thumbnail"]
 					tokeniditem["name"] = it["name"]
-					tokeniditem["owner"] = it["owner"]
-					tokeniditem["nns"] = it["nns"]
+					//tokeniditem["owner"] = it["owner"]
+					//tokeniditem["nns"] = it["nns"]
 					if tokeniditem["name"] != nil && tokeniditem["name"].(string) == "Nuanced Floral Symphony" {
 						tokeniditem["video"] = tokeniditem["image"]
 						delete(tokeniditem, "image")
