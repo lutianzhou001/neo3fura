@@ -142,8 +142,15 @@ func (me *T) GetNFTRecordByContractHashTokenId(args struct {
 
 		if tobanlance != "0" {
 			//添加nns
-			fromAddress := rr["from"].(string)
-			toAddress := rr["to"].(string)
+			fromAddress := ""
+			toAddress := ""
+			if rr["from"] != nil {
+				fromAddress = rr["from"].(string)
+			}
+			if rr["to"] != nil {
+				toAddress = rr["to"].(string)
+			}
+
 			fromNNS := ""
 			toNNS := ""
 			if fromAddress != "" {
