@@ -1,7 +1,6 @@
 package api
 
 import (
-	"encoding/base64"
 	"encoding/json"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -147,41 +146,56 @@ func (me *T) GetNFTClass(args struct {
 		item["claimed"] = len(groupinfo) - count
 
 		asset := item["asset"].(string)
-		image := item["image"]
-		if image != nil {
-			item["image"] = ImagUrl(asset, item["image"].(string), "images")
-		} else {
-			item["image"] = ""
-		}
-		if item["thumbnail"] != nil && item["thumbnail"] != "" {
-			tb, err2 := base64.URLEncoding.DecodeString(item["thumbnail"].(string))
-			if err2 != nil {
-				return err2
+		tokenid := item["tokenid"].(string)
+
+		if item["properties"] != nil {
+			properties := item["properties"].(string)
+			if properties != "" {
+				jsonData := make(map[string]interface{})
+				err := json.Unmarshal([]byte(properties), &jsonData)
+				if err != nil {
+					return err
+				}
+				tokenURI, ok := jsonData["tokenURI"]
+				if ok {
+					//item["image"] = ImagUrl(item["asset"].(string), image.(string), "images")
+					//tokenUrl := item["tokenURI"].(string)
+					ppjson, err := GetImgFromTokenURL(tokenurl(tokenURI.(string)), asset, tokenid)
+					if err != nil {
+						return err
+					}
+					for key, value := range ppjson {
+						item[key] = value
+						if key == "image" {
+							img := value.(string)
+							item["thumbnail"] = ImagUrl(asset, img, "thumbnail")
+							item["image"] = ImagUrl(asset, img, "images")
+						}
+						if key == "name" {
+							item["name"] = value
+						}
+
+					}
+
+				} else {
+					item["image"] = ""
+				}
 			}
-			ss := string(tb[:])
-			if ss == "" {
-				item["thumbnail"] = ImagUrl(item["asset"].(string), item["image"].(string), "thumbnail")
-			} else {
-				item["thumbnail"] = ImagUrl(asset, string(tb[:]), "thumbnail")
-			}
-		} else {
-			item["thumbnail"] = ImagUrl(item["asset"].(string), image.(string), "thumbnail")
+
 		}
+
+		//if image != nil {
+		//	item["image"] = ImagUrl(asset, item["image"].(string), "images")
+		//} else {
+		//	item["image"] = ""
+		//}
+
 		if item["name"] != nil {
 			item["name"] = item["name"]
 		} else {
 			item["name"] = ""
 		}
 
-		if item["supply"] != nil {
-			series, err2 := base64.URLEncoding.DecodeString(item["supply"].(string))
-			if err2 != nil {
-				return err2
-			}
-			item["supply"] = string(series)
-		} else {
-			item["supply"] = ""
-		}
 		if item["name"] != nil && item["name"].(string) == "Nuanced Floral Symphony" {
 			item["video"] = item["image"]
 			delete(item, "image")
@@ -196,8 +210,8 @@ func (me *T) GetNFTClass(args struct {
 
 		item["count"] = item["supply"]
 		//处理排序 video优先
-		tokenid := item["tokenid"].(string)
-		if tokenid == "QUUyMDE4MDctMQ==" {
+		//tokenid := item["tokenid"].(string)
+		if tokenid == "AQ==" {
 			item["order"] = "00"
 		} else {
 			item["order"] = "11"
@@ -226,7 +240,7 @@ func (me *T) GetNFTClass(args struct {
 func GetNFTState(info map[string]interface{}, primarymarket interface{}) map[string]interface{} {
 	if len(info) > 0 {
 		market := info["market"]
-
+		currentTime := time.Now().UnixNano() / 1e6
 		if market == nil || market.(string) == primarymarket.(h160.T).Val() {
 			deadline := info["deadline"].(int64)
 			auctionType := info["auctionType"].(int32)
@@ -234,7 +248,7 @@ func GetNFTState(info map[string]interface{}, primarymarket interface{}) map[str
 
 			info["currentBidAmount"] = info["bidAmount"]
 			info["currentBidAmount"] = info["auctionAsset"]
-			currentTime := time.Now().UnixNano() / 1e6
+
 			if deadline > currentTime && market != nil && market.(string) == primarymarket.(h160.T).Val() {
 				if auctionType == 1 {
 					info["state"] = "sale" //
