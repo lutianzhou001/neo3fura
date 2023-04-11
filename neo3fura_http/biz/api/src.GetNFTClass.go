@@ -8,6 +8,7 @@ import (
 	"neo3fura_http/lib/type/NFTstate"
 	"neo3fura_http/lib/type/h160"
 	"neo3fura_http/var/stderr"
+	"strings"
 	"time"
 )
 
@@ -168,7 +169,12 @@ func (me *T) GetNFTClass(args struct {
 						item[key] = value
 						if key == "image" {
 							img := value.(string)
-							item["thumbnail"] = ImagUrl(asset, img, "thumbnail")
+							thumbnail := ImagUrl(asset, img, "thumbnail")
+							flag := strings.HasSuffix(thumbnail, ".mp4")
+							if flag {
+								thumbnail = strings.Replace(thumbnail, ".mp4", "mp4", -1)
+							}
+							item["thumbnail"] = thumbnail
 							item["image"] = ImagUrl(asset, img, "images")
 						}
 						if key == "name" {
@@ -189,11 +195,13 @@ func (me *T) GetNFTClass(args struct {
 		//} else {
 		//	item["image"] = ""
 		//}
+		name := item["name"].(string)
+		nameArr := strings.Split(name, "#")
 
-		if item["name"] != nil {
-			item["name"] = item["name"]
-		} else {
-			item["name"] = ""
+		if len(nameArr) > 1 {
+			item["series"] = strings.Trim(nameArr[0], " ")
+			item["number"] = nameArr[1]
+
 		}
 
 		if item["name"] != nil && item["name"].(string) == "Nuanced Floral Symphony" {
@@ -201,11 +209,20 @@ func (me *T) GetNFTClass(args struct {
 			delete(item, "image")
 
 		}
+
+		// 处理ilex genesis 以image 分类的特殊情况
+		class := item["class"].(string)
+		item["classname"] = class
+		if isHttp(class) {
+			item["class"] = item["series"]
+
+		}
+
 		delete(item, "_id")
 		delete(item, "itemList")
 		delete(item, "marketArr")
 		delete(item, "properties")
-		delete(item, "class")
+		//delete(item, "class")
 		delete(item, "marketNotification")
 
 		item["count"] = item["supply"]
