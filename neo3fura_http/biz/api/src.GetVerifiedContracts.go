@@ -74,7 +74,7 @@ func getDocumentByEnv(docname string) string {
 	case "staging":
 		docname = "main_" + docname
 	case "test":
-		docname = "test_" + docname
+		docname = "main_" + docname
 	case "test2":
 		docname = "magnet_" + docname
 	}

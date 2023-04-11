@@ -28,22 +28,22 @@ func (me *T) GetCollectionsByAsset(args struct {
 		list = append(list, item)
 	}
 	rt := os.ExpandEnv("${RUNTIME}")
-	var nns, genesis, polemen string
+	var nns, polemen, metapanacea string
 	if rt == "staging" {
 		nns = Contract.Main_NNS.Val()
-		//  metapanacea = Contract.Main_MetaPanacea.Val()
-		genesis = Contract.Main_ILEXGENESIS.Val()
+		metapanacea = Contract.Main_MetaPanacea.Val()
+		//genesis = Contract.Main_ILEXGENESIS.Val()
 		polemen = Contract.Main_ILEXPOLEMEN.Val()
 
 	} else if rt == "test2" {
 		nns = Contract.Test_NNS.Val()
-		//	metapanacea = Contract.Test_MetaPanacea.Val()
-		genesis = Contract.Test_ILEXGENESIS.Val()
+		metapanacea = Contract.Test_MetaPanacea.Val()
+		//genesis = Contract.Test_ILEXGENESIS.Val()
 		polemen = Contract.Test_ILEXPOLEMEN.Val()
 	} else {
 		nns = Contract.Test_NNS.Val()
-		//	metapanacea = Contract.Test_MetaPanacea.Val()
-		genesis = Contract.Test_ILEXGENESIS.Val()
+		metapanacea = Contract.Test_MetaPanacea.Val()
+		//genesis = Contract.Test_ILEXGENESIS.Val()
 		polemen = Contract.Test_ILEXPOLEMEN.Val()
 	}
 	//获取Collection基本信息
@@ -68,9 +68,9 @@ func (me *T) GetCollectionsByAsset(args struct {
 					"pipeline": []bson.M{
 						bson.M{"$match": bson.M{"$expr": bson.M{"$eq": []interface{}{"$asset", "$$asset"}}}},
 						bson.M{"$set": bson.M{"class": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", nns}}, "then": "$tokenid",
-							"else": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", genesis}}, "then": "$image",
+							"else": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", metapanacea}}, "then": "$name",
 								"else": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", polemen}}, "then": "$tokenid",
-									"else": "$name"}}}}}}}},
+									"else": "$image"}}}}}}}},
 						bson.M{"$group": bson.M{"_id": bson.M{"asset": "$asset", "class": "$class"}, "asset": bson.M{"$last": "$asset"}, "tokenid": bson.M{"$last": "$tokenid"}, "properties": bson.M{"$push": "$$ROOT"}}},
 						//bson.M{"$group": bson.M{"_id": "$asset","asset":bson.M{"$last":"$asset"}, "properities": bson.M{"$push": "$$ROOT"}}},
 					},
