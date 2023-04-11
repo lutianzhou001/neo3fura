@@ -8,6 +8,7 @@ import (
 	"neo3fura_http/lib/type/h160"
 	"neo3fura_http/var/stderr"
 	"os"
+	"strings"
 )
 
 func (me *T) GetNFTByAssetClass(args struct {
@@ -27,7 +28,7 @@ func (me *T) GetNFTByAssetClass(args struct {
 
 	}
 	rt := os.ExpandEnv("${RUNTIME}")
-	var nns, genesis, polemen, metapanacea string
+	var nns, polemen, metapanacea string
 	if rt == "staging" {
 		nns = Contract.Main_NNS.Val()
 		metapanacea = Contract.Main_MetaPanacea.Val()
@@ -97,7 +98,8 @@ func (me *T) GetNFTByAssetClass(args struct {
 			}
 
 		}
-		if item["image"] == nil {
+
+		if item["image"] == nil || (item["image"] != nil && !isHttp(item["image"].(string))) {
 			if item["properties"] != nil { //
 				jsonData := make(map[string]interface{})
 				properties := item["properties"].(string)
@@ -106,6 +108,33 @@ func (me *T) GetNFTByAssetClass(args struct {
 					if err != nil {
 						return err
 					}
+
+					tokenURI, ok := jsonData["tokenURI"]
+					if ok {
+						ppjson, err := GetImgFromTokenURL(tokenurl(tokenURI.(string)), asset, tokenid)
+						if err != nil {
+							return err
+						}
+						for key, value := range ppjson {
+							item[key] = value
+							if key == "image" {
+								img := value.(string)
+								thumbnail := ImagUrl(asset, img, "thumbnail")
+								flag := strings.HasSuffix(thumbnail, ".mp4")
+								if flag {
+									thumbnail = strings.Replace(thumbnail, ".mp4", "mp4", -1)
+								}
+								item["thumbnail"] = thumbnail
+								item["image"] = ImagUrl(asset, img, "images")
+							}
+							if key == "name" {
+								item["name"] = value
+							}
+
+						}
+
+					}
+
 					image, ok := jsonData["image"]
 					if ok {
 						item["image"] = ImagUrl(item["asset"].(string), image.(string), "images")
@@ -205,10 +234,10 @@ func (me *T) GetNFTByAssetClass(args struct {
 			Filter:     bson.M{},
 			Pipeline: []bson.M{
 				bson.M{"$set": bson.M{"class": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", nns}}, "then": "$asset",
-					"else": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", genesis}}, "then": "$image",
+					"else": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", metapanacea}}, "then": "$name",
 						"else": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", polemen}}, "then": "$tokenid",
-							"else": "$name"}}}}}}}},
-				bson.M{"$match": bson.M{"class": args.Class}},
+							"else": "$image"}}}}}}}},
+				bson.M{"$match": bson.M{"class": args.ClassName}},
 			},
 			Query: []string{},
 		}, ret)
