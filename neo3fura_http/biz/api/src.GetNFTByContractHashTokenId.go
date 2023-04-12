@@ -152,7 +152,7 @@ func (me *T) GetNFTByContractHashTokenId(args struct {
 		case int32:
 			auctionType = int64(at.(int32))
 		}
-
+		// NFT实际持有人
 		if amount > 0 && auctionType == 2 && item["owner"] == item["market"] && deadline > currentTime {
 			item["owner"] = item["auctor"]
 			item["state"] = NFTstate.Auction.Val()

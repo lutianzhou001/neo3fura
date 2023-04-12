@@ -77,7 +77,7 @@ func (me *T) GetNFTClass(args struct {
 					},
 					"as": "marketNotification"},
 				},
-				bson.M{"$set": bson.M{"class": "$image"}},
+				bson.M{"$set": bson.M{"class": "$name"}},
 				bson.M{"$group": bson.M{"_id": bson.M{"asset": "$asset", "class": "$class"}, "class": bson.M{"$last": "$class"}, "asset": bson.M{"$last": "$asset"}, "tokenid": bson.M{"$last": "$tokenid"},
 					"name": bson.M{"$last": "$name"}, "image": bson.M{"$last": "$image"}, "supply": bson.M{"$last": "$supply"}, "thumbnail": bson.M{"$last": "$thumbnail"}, "marketNotification": bson.M{"$last": "$marketNotification"},
 					"properties": bson.M{"$last": "$properties"}, "marketArr": bson.M{"$last": "$marketInfo"}, "itemList": bson.M{"$push": "$$ROOT"}}},
@@ -211,11 +211,13 @@ func (me *T) GetNFTClass(args struct {
 		}
 
 		// 处理ilex genesis 以image 分类的特殊情况
-		class := item["class"].(string)
+		class := item["class"]
 		item["classname"] = class
-		if isHttp(class) {
-			item["class"] = item["series"]
+		if class != nil {
+			if isHttp(class.(string)) {
+				item["class"] = item["series"]
 
+			}
 		}
 
 		delete(item, "_id")
@@ -225,7 +227,7 @@ func (me *T) GetNFTClass(args struct {
 		//delete(item, "class")
 		delete(item, "marketNotification")
 
-		item["count"] = item["supply"]
+		item["count"] = len(groupinfo)
 		//处理排序 video优先
 		//tokenid := item["tokenid"].(string)
 		if tokenid == "AQ==" {
