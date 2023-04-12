@@ -240,7 +240,12 @@ func (me *T) GetOffersByAddress(args struct {
 								properties[key] = value
 								if key == "image" {
 									img := value.(string)
-									item["thumbnail"] = ImagUrl(asset, img, "thumbnail")
+									tb := ImagUrl(asset, img, "thumbnail")
+									flag := strings.HasSuffix(tb, ".mp4")
+									if flag {
+										tb = strings.Replace(tb, ".mp4", "mp4", -1)
+									}
+									item["thumbnail"] = tb
 									item["image"] = ImagUrl(asset, img, "images")
 								}
 
@@ -592,7 +597,12 @@ func (me *T) GetOffersByAddress(args struct {
 
 														if key == "image" {
 															img := value.(string)
-															copyItem["thumbnail"] = ImagUrl(ppAsset, img, "thumbnail")
+															tb := ImagUrl(ppAsset, img, "thumbnail")
+															flag := strings.HasSuffix(tb, ".mp4")
+															if flag {
+																tb = strings.Replace(tb, ".mp4", "mp4", -1)
+															}
+															copyItem["thumbnail"] = tb
 															copyItem["image"] = ImagUrl(ppAsset, img, "images")
 														}
 														if key == "name" {

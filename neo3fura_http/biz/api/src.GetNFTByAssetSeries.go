@@ -179,7 +179,12 @@ func (me *T) GetNFTByAssetClass(args struct {
 				//item[key] = value
 				if key == "image" {
 					img := value.(string)
-					item["thumbnail"] = ImagUrl(asset, img, "thumbnail")
+					thumbnail := ImagUrl(asset, img, "thumbnail")
+					flag := strings.HasSuffix(thumbnail, ".mp4")
+					if flag {
+						thumbnail = strings.Replace(thumbnail, ".mp4", "mp4", -1)
+					}
+					item["thumbnail"] = thumbnail
 					item["image"] = ImagUrl(asset, img, "images")
 				}
 				if key == "name" {
