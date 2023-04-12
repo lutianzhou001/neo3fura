@@ -40,21 +40,21 @@ func (me *T) GetNFTList(args struct {
 	pipeline := []bson.M{}
 
 	rt := os.ExpandEnv("${RUNTIME}")
-	var nns, genesis, polemen string
+	var nns, polemen, genesis string
 	if rt == "staging" {
 		nns = Contract.Main_NNS.Val()
-		//  metapanacea = Contract.Main_MetaPanacea.Val()
+		//metapanacea = Contract.Main_MetaPanacea.Val()
 		genesis = Contract.Main_ILEXGENESIS.Val()
 		polemen = Contract.Main_ILEXPOLEMEN.Val()
 
 	} else if rt == "test2" {
 		nns = Contract.Test_NNS.Val()
-		//	metapanacea = Contract.Test_MetaPanacea.Val()
+		//metapanacea = Contract.Test_MetaPanacea.Val()
 		genesis = Contract.Test_ILEXGENESIS.Val()
 		polemen = Contract.Test_ILEXPOLEMEN.Val()
 	} else {
 		nns = Contract.Test_NNS.Val()
-		//	metapanacea = Contract.Test_MetaPanacea.Val()
+		//metapanacea = Contract.Test_MetaPanacea.Val()
 		genesis = Contract.Test_ILEXGENESIS.Val()
 		polemen = Contract.Test_ILEXPOLEMEN.Val()
 	}
@@ -393,6 +393,8 @@ func isHttp(class string) bool {
 }
 
 func ReSetProperties(p map[string]interface{}) (map[string]interface{}, error) {
+	asset := p["asset"].(string)
+	tokenid := p["tokenid"].(string)
 	if p["image"] == nil {
 		if p["properties"] != nil && p["tokenURI"] == nil {
 			pp := p["properties"].(string)
@@ -401,7 +403,32 @@ func ReSetProperties(p map[string]interface{}) (map[string]interface{}, error) {
 				if err1 := json.Unmarshal([]byte(pp), &data); err1 == nil {
 					for key, value := range data {
 						p[key] = value
+						if key == "tokenURI" {
+							tokenURI := value
+							ppjson, err := GetImgFromTokenURL(tokenurl(tokenURI.(string)), asset, tokenid)
+							if err != nil {
+								return nil, err
+							}
+							for key1, value1 := range ppjson {
+								p[key1] = value1
+								//if key1 == "image" {
+								//	img := value1.(string)
+								//	thumbnail := ImagUrl(asset, img, "thumbnail")
+								//	flag := strings.HasSuffix(thumbnail, ".mp4")
+								//	if flag {
+								//		thumbnail = strings.Replace(thumbnail, ".mp4", "mp4", -1)
+								//	}
+								//	p["thumbnail"] = thumbnail
+								//	p["image"] = ImagUrl(asset, img, "images")
+								//}
+								//if key == "name" {
+								//	p["name"] = value
+								//}
+
+							}
+						}
 					}
+
 				} else {
 					return nil, err1
 				}

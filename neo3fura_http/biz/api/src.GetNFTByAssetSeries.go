@@ -28,22 +28,22 @@ func (me *T) GetNFTByAssetClass(args struct {
 
 	}
 	rt := os.ExpandEnv("${RUNTIME}")
-	var nns, polemen, metapanacea string
+	var nns, polemen, genesis string
 	if rt == "staging" {
 		nns = Contract.Main_NNS.Val()
-		metapanacea = Contract.Main_MetaPanacea.Val()
-		//genesis = Contract.Main_ILEXGENESIS.Val()
+		//metapanacea = Contract.Main_MetaPanacea.Val()
+		genesis = Contract.Main_ILEXGENESIS.Val()
 		polemen = Contract.Main_ILEXPOLEMEN.Val()
 
 	} else if rt == "test2" {
 		nns = Contract.Test_NNS.Val()
-		metapanacea = Contract.Test_MetaPanacea.Val()
-		//genesis = Contract.Test_ILEXGENESIS.Val()
+		//metapanacea = Contract.Test_MetaPanacea.Val()
+		genesis = Contract.Test_ILEXGENESIS.Val()
 		polemen = Contract.Test_ILEXPOLEMEN.Val()
 	} else {
 		nns = Contract.Main_NNS.Val()
-		metapanacea = Contract.Test_MetaPanacea.Val()
-		//genesis = Contract.Main_ILEXGENESIS.Val()
+		//metapanacea = Contract.Test_MetaPanacea.Val()
+		genesis = Contract.Main_ILEXGENESIS.Val()
 		polemen = Contract.Main_ILEXPOLEMEN.Val()
 	}
 
@@ -63,9 +63,9 @@ func (me *T) GetNFTByAssetClass(args struct {
 			Pipeline: []bson.M{
 				bson.M{"$match": bson.M{"asset": args.Asset}},
 				bson.M{"$set": bson.M{"class": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", nns}}, "then": "$asset",
-					"else": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", metapanacea}}, "then": "$image",
+					"else": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", genesis}}, "then": "$image",
 						"else": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", polemen}}, "then": "$tokenid",
-							"else": "$image"}}}}}}}},
+							"else": "$name"}}}}}}}},
 				bson.M{"$match": bson.M{"class": args.ClassName}},
 				bson.M{"$skip": args.Skip},
 				bson.M{"$limit": args.Limit},
@@ -234,9 +234,9 @@ func (me *T) GetNFTByAssetClass(args struct {
 			Filter:     bson.M{},
 			Pipeline: []bson.M{
 				bson.M{"$set": bson.M{"class": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", nns}}, "then": "$asset",
-					"else": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", metapanacea}}, "then": "$name",
+					"else": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", genesis}}, "then": "$image",
 						"else": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", polemen}}, "then": "$tokenid",
-							"else": "$image"}}}}}}}},
+							"else": "$name"}}}}}}}},
 				bson.M{"$match": bson.M{"class": args.ClassName}},
 			},
 			Query: []string{},
