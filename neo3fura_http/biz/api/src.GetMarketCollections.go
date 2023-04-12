@@ -17,6 +17,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 )
 
 // 广告位NFT
@@ -195,7 +196,12 @@ func (me *T) GetMarketCollections(args struct {
 											//item[key] = value
 											if key == "image" {
 												img := value.(string)
-												proMap["thumbnail"] = ImagUrl(asset, img, "thumbnail")
+												tb := ImagUrl(asset, img, "thumbnail")
+												flag := strings.HasSuffix(tb, ".mp4")
+												if flag {
+													tb = strings.Replace(tb, ".mp4", "mp4", -1)
+												}
+												proMap["thumbnail"] = tb
 												proMap["image"] = ImagUrl(asset, img, "images")
 											}
 											if key == "name" {

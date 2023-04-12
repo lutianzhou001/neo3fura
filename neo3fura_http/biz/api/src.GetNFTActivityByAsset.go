@@ -10,6 +10,7 @@ import (
 	"neo3fura_http/lib/type/h160"
 	"neo3fura_http/var/stderr"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -178,7 +179,12 @@ func (me *T) GetNFTActivityByAsset(args struct {
 							r2[key] = value
 							if key == "image" {
 								img := value.(string)
-								r2["thumbnail"] = ImagUrl(item["asset"].(string), img, "thumbnail")
+								tb := ImagUrl(item["asset"].(string), img, "thumbnail")
+								flag := strings.HasSuffix(tb, ".mp4")
+								if flag {
+									tb = strings.Replace(tb, ".mp4", "mp4", -1)
+								}
+								r2["thumbnail"] = tb
 								r2["image"] = ImagUrl(item["asset"].(string), img, "images")
 							}
 						}

@@ -403,30 +403,6 @@ func ReSetProperties(p map[string]interface{}) (map[string]interface{}, error) {
 				if err1 := json.Unmarshal([]byte(pp), &data); err1 == nil {
 					for key, value := range data {
 						p[key] = value
-						if key == "tokenURI" {
-							tokenURI := value
-							ppjson, err := GetImgFromTokenURL(tokenurl(tokenURI.(string)), asset, tokenid)
-							if err != nil {
-								return nil, err
-							}
-							for key1, value1 := range ppjson {
-								p[key1] = value1
-								//if key1 == "image" {
-								//	img := value1.(string)
-								//	thumbnail := ImagUrl(asset, img, "thumbnail")
-								//	flag := strings.HasSuffix(thumbnail, ".mp4")
-								//	if flag {
-								//		thumbnail = strings.Replace(thumbnail, ".mp4", "mp4", -1)
-								//	}
-								//	p["thumbnail"] = thumbnail
-								//	p["image"] = ImagUrl(asset, img, "images")
-								//}
-								//if key == "name" {
-								//	p["name"] = value
-								//}
-
-							}
-						}
 					}
 
 				} else {
@@ -434,8 +410,6 @@ func ReSetProperties(p map[string]interface{}) (map[string]interface{}, error) {
 				}
 			}
 		} else if p["tokenURI"] != nil {
-			asset := p["asset"].(string)
-			tokenid := p["tokenid"].(string)
 			tokenuri := p["tokenURI"].(string)
 			ppjson, err := GetImgFromTokenURL(tokenurl(tokenuri), asset, tokenid)
 			if err != nil {
@@ -443,6 +417,16 @@ func ReSetProperties(p map[string]interface{}) (map[string]interface{}, error) {
 			}
 			for key, value := range ppjson {
 				p[key] = value
+				if key == "image" {
+					img := value.(string)
+					tb := ImagUrl(asset, img, "thumbnail")
+					flag := strings.HasSuffix(tb, ".mp4")
+					if flag {
+						tb = strings.Replace(tb, ".mp4", "mp4", -1)
+					}
+					p["thumbnail"] = tb
+					p["image"] = ImagUrl(asset, img, "images")
+				}
 			}
 		}
 	}

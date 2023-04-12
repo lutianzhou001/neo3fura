@@ -216,7 +216,12 @@ func (me *T) GetNFTByContractHashTokenId(args struct {
 							}
 							if key == "image" {
 								img := value.(string)
-								item["thumbnail"] = ImagUrl(asset, img, "thumbnail")
+								tb := ImagUrl(asset, img, "thumbnail")
+								flag := strings.HasSuffix(tb, ".mp4")
+								if flag {
+									tb = strings.Replace(tb, ".mp4", "mp4", -1)
+								}
+								item["thumbnail"] = tb
 								item["image"] = ImagUrl(asset, img, "images")
 							}
 
