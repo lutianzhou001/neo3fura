@@ -82,118 +82,118 @@ func (me *T) GetNFTByAssetClass(args struct {
 		tokenidArr := []string{tokenid}
 
 		//获取属性
-		if item["image"] != nil {
-			item["image"] = ImagUrl(item["asset"].(string), item["image"].(string), "images")
-		}
-		if item["thumbnail"] != nil && item["thumbnail"] != "" {
-			tb, err2 := base64.URLEncoding.DecodeString(item["thumbnail"].(string))
-			if err2 != nil {
-				return err2
-			}
-			ss := string(tb[:])
-			if ss == "" {
-				item["thumbnail"] = ImagUrl(item["asset"].(string), item["image"].(string), "thumbnail")
-			} else {
-				item["thumbnail"] = ImagUrl(asset, string(tb[:]), "thumbnail")
-			}
+		//if item["image"] != nil {
+		//	item["image"] = ImagUrl(item["asset"].(string), item["image"].(string), "images")
+		//}
+		//if item["thumbnail"] != nil && item["thumbnail"] != "" {
+		//	tb, err2 := base64.URLEncoding.DecodeString(item["thumbnail"].(string))
+		//	if err2 != nil {
+		//		return err2
+		//	}
+		//	ss := string(tb[:])
+		//	if ss == "" {
+		//		item["thumbnail"] = ImagUrl(item["asset"].(string), item["image"].(string), "thumbnail")
+		//	} else {
+		//		item["thumbnail"] = ImagUrl(asset, string(tb[:]), "thumbnail")
+		//	}
+		//
+		//}
 
-		}
-
-		if item["image"] == nil || (item["image"] != nil && !isHttp(item["image"].(string))) {
-			if item["properties"] != nil { //
-				jsonData := make(map[string]interface{})
-				properties := item["properties"].(string)
-				if properties != "" {
-					err := json.Unmarshal([]byte(properties), &jsonData)
-					if err != nil {
-						return err
-					}
-
-					tokenURI, ok := jsonData["tokenURI"]
-					if ok {
-						ppjson, err := GetImgFromTokenURL(tokenurl(tokenURI.(string)), asset, tokenid)
-						if err != nil {
-							return err
-						}
-						for key, value := range ppjson {
-							item[key] = value
-							if key == "image" {
-								img := value.(string)
-								thumbnail := ImagUrl(asset, img, "thumbnail")
-								flag := strings.HasSuffix(thumbnail, ".mp4")
-								if flag {
-									thumbnail = strings.Replace(thumbnail, ".mp4", "mp4", -1)
-								}
-								item["thumbnail"] = thumbnail
-								item["image"] = ImagUrl(asset, img, "images")
-							}
-							if key == "name" {
-								item["name"] = value
-							}
-
-						}
-
-					}
-
-					image, ok := jsonData["image"]
-					if ok {
-						item["image"] = ImagUrl(item["asset"].(string), image.(string), "images")
-					} else {
-						item["image"] = ""
-					}
-
-					thumbnail, ok1 := jsonData["thumbnail"]
-					if ok1 {
-						tb, err2 := base64.URLEncoding.DecodeString(thumbnail.(string))
-						if err2 != nil {
-							return err2
-						}
-						ss := string(tb[:])
-						if ss == "" {
-							item["thumbnail"] = ImagUrl(item["asset"].(string), item["image"].(string), "thumbnail")
-						} else {
-							item["thumbnail"] = ImagUrl(asset, string(tb[:]), "thumbnail")
-						}
-
-					} else {
-						if item["thumbnail"] == nil {
-							if item["image"] != nil && item["image"] != "" {
-								if image == nil {
-									item["thumbnail"] = item["image"]
-								} else {
-									item["thumbnail"] = ImagUrl(item["asset"].(string), image.(string), "thumbnail")
-								}
-							}
-						}
-					}
-				}
-
-			}
-			if item["tokenURI"] != nil {
-				tokenUrl := item["tokenURI"].(string)
-				ppjson, err := GetImgFromTokenURL(tokenurl(tokenUrl), asset, tokenid)
+		//if item["image"] == nil {
+		if item["properties"] != nil { //
+			jsonData := make(map[string]interface{})
+			properties := item["properties"].(string)
+			if properties != "" {
+				err := json.Unmarshal([]byte(properties), &jsonData)
 				if err != nil {
 					return err
 				}
-				for key, value := range ppjson {
-					//item[key] = value
-					if key == "image" {
-						img := value.(string)
-						item["thumbnail"] = ImagUrl(asset, img, "thumbnail")
-						item["image"] = ImagUrl(asset, img, "images")
+
+				tokenURI, ok := jsonData["tokenURI"]
+				if ok {
+					ppjson, err := GetImgFromTokenURL(tokenurl(tokenURI.(string)), asset, tokenid)
+					if err != nil {
+						return err
 					}
-					if key == "name" {
-						item["name"] = value
+					for key, value := range ppjson {
+						item[key] = value
+						if key == "image" {
+							img := value.(string)
+							thumbnail := ImagUrl(asset, img, "thumbnail")
+							flag := strings.HasSuffix(thumbnail, ".mp4")
+							if flag {
+								thumbnail = strings.Replace(thumbnail, ".mp4", "mp4", -1)
+							}
+							item["thumbnail"] = thumbnail
+							item["image"] = ImagUrl(asset, img, "images")
+						}
+						if key == "name" {
+							item["name"] = value
+						}
+
 					}
 
 				}
+
+				image, ok := jsonData["image"]
+				if ok {
+					item["image"] = ImagUrl(item["asset"].(string), image.(string), "images")
+				} else {
+					item["image"] = ""
+				}
+
+				thumbnail, ok1 := jsonData["thumbnail"]
+				if ok1 {
+					tb, err2 := base64.URLEncoding.DecodeString(thumbnail.(string))
+					if err2 != nil {
+						return err2
+					}
+					ss := string(tb[:])
+					if ss == "" {
+						item["thumbnail"] = ImagUrl(item["asset"].(string), item["image"].(string), "thumbnail")
+					} else {
+						item["thumbnail"] = ImagUrl(asset, string(tb[:]), "thumbnail")
+					}
+
+				} else {
+					if item["thumbnail"] == nil {
+						if item["image"] != nil && item["image"] != "" {
+							if image == nil {
+								item["thumbnail"] = item["image"]
+							} else {
+								item["thumbnail"] = ImagUrl(item["asset"].(string), image.(string), "thumbnail")
+							}
+						}
+					}
+				}
 			}
 
-			if item["name"] != nil && item["name"].(string) == "Nuanced Floral Symphony" {
-				item["video"] = item["image"]
-				delete(item, "image")
+		}
+		if item["tokenURI"] != nil {
+			tokenUrl := item["tokenURI"].(string)
+			ppjson, err := GetImgFromTokenURL(tokenurl(tokenUrl), asset, tokenid)
+			if err != nil {
+				return err
+			}
+			for key, value := range ppjson {
+				//item[key] = value
+				if key == "image" {
+					img := value.(string)
+					item["thumbnail"] = ImagUrl(asset, img, "thumbnail")
+					item["image"] = ImagUrl(asset, img, "images")
+				}
+				if key == "name" {
+					item["name"] = value
+				}
+
 			}
 		}
+
+		if item["name"] != nil && item["name"].(string) == "Nuanced Floral Symphony" {
+			item["video"] = item["image"]
+			delete(item, "image")
+		}
+		//}
 
 		re := map[string]interface{}{}
 		err := me.GetInfoByNFT(struct {
