@@ -451,8 +451,8 @@ func ReSetProperties(p map[string]interface{}) (map[string]interface{}, error) {
 					if flag {
 						tb = strings.Replace(tb, ".mp4", "mp4", -1)
 					}
-					p["thumbnail"] = tb
-					p["image"] = ImagUrl(asset, img, "images")
+					p["thumbnail"] = img
+					//p["image"] = ImagUrl(asset, img, "images")
 				}
 			}
 		}
