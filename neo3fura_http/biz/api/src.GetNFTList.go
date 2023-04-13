@@ -38,7 +38,9 @@ func (me *T) GetNFTList(args struct {
 }, ret *json.RawMessage) error {
 	currentTime := time.Now().UnixNano() / 1e6
 	pipeline := []bson.M{}
-
+	if args.Limit == 0 {
+		args.Limit = 12
+	}
 	rt := os.ExpandEnv("${RUNTIME}")
 	var nns, polemen, genesis string
 	if rt == "staging" {
@@ -192,7 +194,10 @@ func (me *T) GetNFTList(args struct {
 	}
 	setAndGroup = append(setAndGroup, sort)
 	pipeline = append(pipeline, setAndGroup...)
-
+	skip := bson.M{"$skip": args.Skip}
+	limit := bson.M{"$limit": args.Limit}
+	pipeline = append(pipeline, skip)
+	pipeline = append(pipeline, limit)
 	var r1, err = me.Client.QueryAggregate(
 		struct {
 			Collection string
@@ -313,7 +318,8 @@ func (me *T) GetNFTList(args struct {
 					continue
 				}
 				delegateItem["image"] = ImagUrl(newProperties["asset"].(string), newProperties["image"].(string), "images")
-				if newProperties["thumbnail"] != nil && newProperties["thumbnail"] != "" {
+				if newProperties["thumbnail"] != nil && newProperties["thumbnail"] != "" && !isHttp(newProperties["thumbnail"].(string)) {
+
 					tb, err2 := base64.URLEncoding.DecodeString(newProperties["thumbnail"].(string))
 					if err2 != nil {
 						return err2
