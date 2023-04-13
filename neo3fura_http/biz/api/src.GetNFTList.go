@@ -179,8 +179,6 @@ func (me *T) GetNFTList(args struct {
 		{"$sort": bson.M{"bidAmount": 1, "auctionAmount": 1}},
 		bson.M{"$group": bson.M{"_id": bson.M{"asset": "$asset", "class": "$properties.class"}, "asset": bson.M{"$last": "$asset"}, "tokenid": bson.M{"$last": "$tokenid"}, "deadline": bson.M{"$last": "$deadline"}, "auctionAmount": bson.M{"$last": "$auctionAmount"}, "timestamp": bson.M{"$last": "$timestamp"}, "propertiesArr": bson.M{"$push": "$$ROOT"}}},
 		bson.M{"$project": bson.M{"deadlineCond": deadlineCond, "auctionAmountCond": auctionAmountCond, "_id": 1, "properties": 1, "asset": 1, "tokenid": 1, "propertiesArr": 1, "auctionAmount": 1, "deadline": 1, "timestamp": 1}},
-
-		bson.M{"$sort": bson.M{"timestamp": -1}},
 	}
 	var sort bson.M
 	if args.Sort == "timestamp" { //上架时间
@@ -198,6 +196,7 @@ func (me *T) GetNFTList(args struct {
 	limit := bson.M{"$limit": args.Limit}
 	pipeline = append(pipeline, skip)
 	pipeline = append(pipeline, limit)
+
 	var r1, err = me.Client.QueryAggregate(
 		struct {
 			Collection string
@@ -220,24 +219,23 @@ func (me *T) GetNFTList(args struct {
 	}
 
 	result := make([]map[string]interface{}, 0)
-
 	//  分页
 	if args.Limit == 0 {
 		args.Limit = int64(math.Inf(1))
 	}
 
-	pageResult := make([]map[string]interface{}, 0)
-	for i, item := range r1 {
-		if int64(i) < args.Skip {
-			continue
-		} else if int64(i) > args.Skip+args.Limit-1 {
-			continue
-		} else {
-			pageResult = append(pageResult, item)
-		}
-	}
+	//pageResult := make([]map[string]interface{}, 0)
+	//for i, item := range r1 {
+	//	if int64(i) < args.Skip {
+	//		continue
+	//	} else if int64(i) > args.Skip+args.Limit-1 {
+	//		continue
+	//	} else {
+	//		pageResult = append(pageResult, item)
+	//	}
+	//}
 
-	if len(pageResult) > 0 {
+	if len(r1) > 0 {
 		//获取offer 价格
 		var nftlist = make([]struct {
 			Asset   h160.T
@@ -245,7 +243,7 @@ func (me *T) GetNFTList(args struct {
 		}, 0)
 
 		//获取GetInfoByNFTList 接口参数
-		for _, item := range pageResult {
+		for _, item := range r1 {
 			groupInfo := item["propertiesArr"].(primitive.A)
 			//	var asset = item["asset"].(string)
 			var tokenidArr []string
@@ -276,7 +274,7 @@ func (me *T) GetNFTList(args struct {
 			return err
 		}
 
-		for _, item := range pageResult {
+		for _, item := range r1 {
 			if item["propertiesArr"] != nil {
 				groupInfo := item["propertiesArr"].(primitive.A)
 				copygroup := make([]map[string]interface{}, 0)
@@ -371,7 +369,30 @@ func (me *T) GetNFTList(args struct {
 
 	}
 
-	r3, err := me.FilterAggragateAndAppendCount(result, len(r1), args.Filter)
+	length := len(pipeline)
+	pipeline2 := pipeline[:length-3]
+	var r11, err1 = me.Client.QueryAggregate(
+		struct {
+			Collection string
+			Index      string
+			Sort       bson.M
+			Filter     bson.M
+			Pipeline   []bson.M
+			Query      []string
+		}{
+			Collection: "Market",
+			Index:      "GetNFTMarket",
+			Sort:       bson.M{},
+			Filter:     bson.M{},
+			Pipeline:   pipeline2,
+			Query:      []string{},
+		}, ret)
+
+	if err1 != nil {
+		return err
+	}
+
+	r3, err := me.FilterAggragateAndAppendCount(result, len(r11), args.Filter)
 
 	if err != nil {
 		return err
