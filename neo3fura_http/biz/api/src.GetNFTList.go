@@ -445,14 +445,7 @@ func ReSetProperties(p map[string]interface{}) (map[string]interface{}, error) {
 			for key, value := range ppjson {
 				p[key] = value
 				if key == "image" {
-					img := value.(string)
-					tb := ImagUrl(asset, img, "thumbnail")
-					flag := strings.HasSuffix(tb, ".mp4")
-					if flag {
-						tb = strings.Replace(tb, ".mp4", "mp4", -1)
-					}
-					p["thumbnail"] = img
-					//p["image"] = ImagUrl(asset, img, "images")
+					p["thumbnail"] = value
 				}
 			}
 		}
