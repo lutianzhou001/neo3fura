@@ -800,7 +800,7 @@ func GetImgFromTokenURL(tokenurl string, asset string, tokenid string) (map[stri
 }
 func Imgname(asset string, url string) string {
 	imgname := strings.ReplaceAll(url, "/", "")
-
+	imgname = strings.ReplaceAll(imgname, "%20", "")
 	rt := os.ExpandEnv("${RUNTIME}")
 	const test = "0xaecbad96ccc77c8b147a52e45723a6b5886454e0"
 	const main = "0x9f344fe24c963d70f5dcf0cfdeb536dc9c0acb3a"
