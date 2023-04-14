@@ -306,7 +306,7 @@ func (me *T) GetNFTByContractHashTokenId(args struct {
 						}
 					}
 
-					if item["name"] != nil && item["name"].(string) == "Nuanced Floral Symphony" {
+					if item["name"] != nil && item["name"].(string) == "Nuanced Floral Symphony" || item["name"].(string) == "Sunshine #1" {
 						item["video"] = item["image"]
 						delete(item, "image")
 					}
