@@ -2,7 +2,6 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"io/ioutil"
@@ -31,7 +30,9 @@ func (me *T) GetInfoByNFT(args struct {
 	if rt == "staging" {
 		primaryMarket = Contract.Main_PrimaryMarket
 
-	} else if rt == "test" {
+	} else if rt == "test2" {
+		primaryMarket = Contract.Test_PrimaryMarket
+	} else {
 		primaryMarket = Contract.Test_PrimaryMarket
 	}
 
@@ -123,8 +124,6 @@ func (me *T) GetInfoByNFT(args struct {
 				item["lastSoldAsset"] = item["auctionAsset"]
 				item["lastSoldAmount"] = item["bidAmount"]
 			}
-			fmt.Println(item["market"].(string), primaryMarket.Val())
-			fmt.Println(item["market"].(string) == primaryMarket.Val(), item["owner"] == item["market"], bidAmount == "0")
 			if item["owner"] == item["market"] && item["market"].(string) == primaryMarket.Val() { //一级市场过期
 				if bidAmount == "0" {
 					item["lastSoldAsset"] = item["auctionAsset"]
