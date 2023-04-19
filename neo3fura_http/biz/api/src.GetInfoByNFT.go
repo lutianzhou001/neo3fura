@@ -6,6 +6,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"io/ioutil"
 	"math/big"
+	"neo3fura_http/lib/type/Contract"
 	"neo3fura_http/lib/type/h160"
 	"neo3fura_http/lib/type/strval"
 	"neo3fura_http/var/stderr"
@@ -23,6 +24,14 @@ func (me *T) GetInfoByNFT(args struct {
 }, ret *json.RawMessage) error {
 	if args.Asset.Valid() == false {
 		return stderr.ErrInvalidArgs
+	}
+	rt := os.ExpandEnv("${RUNTIME}")
+	primaryMarket := Contract.Main_PrimaryMarket
+	if rt == "staging" {
+		primaryMarket = Contract.Main_PrimaryMarket
+
+	} else if rt == "test" {
+		primaryMarket = Contract.Test_PrimaryMarket
 	}
 
 	//获取上架以及Owner信息
@@ -82,12 +91,7 @@ func (me *T) GetInfoByNFT(args struct {
 		} else {
 			item["state"] = "list"
 		}
-		if (item["market"] == item["owner"] && ddl > currentTime) || (item["market"] == item["owner"] && ddl < currentTime && bidAmount == "0") { //上架
-			item["owner"] = item["auctor"]
-		}
-		if item["market"] == item["owner"] && ddl < currentTime && bidAmount != "0" { // 未领取
-			item["owner"] = item["bidder"]
-		}
+
 		item["buyNowAsset"] = ""
 		item["buyNowAmount"] = "0"
 		item["lastSoldAsset"] = ""
@@ -117,6 +121,14 @@ func (me *T) GetInfoByNFT(args struct {
 			if auctionType == 2 && bidAmount != "0" {
 				item["lastSoldAsset"] = item["auctionAsset"]
 				item["lastSoldAmount"] = item["bidAmount"]
+			}
+
+			if item["owner"] == item["market"] && item["market"].(string) == primaryMarket.Val() { //一级市场过期
+				if bidAmount == "0" {
+					item["lastSoldAsset"] = item["auctionAsset"]
+					item["lastSoldAmount"] = item["auctionAmount"]
+				}
+
 			}
 		}
 		var finishTime int64
@@ -186,6 +198,12 @@ func (me *T) GetInfoByNFT(args struct {
 			}
 		}
 
+		if (item["market"] == item["owner"] && ddl > currentTime) || (item["market"] == item["owner"] && ddl < currentTime && bidAmount == "0") { //上架
+			item["owner"] = item["auctor"]
+		}
+		if item["market"] == item["owner"] && ddl < currentTime && bidAmount != "0" { // 未领取
+			item["owner"] = item["bidder"]
+		}
 		//获取Owner 地址的nns信息
 		owner := item["owner"].(string)
 		nns := ""

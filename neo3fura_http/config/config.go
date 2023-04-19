@@ -154,4 +154,7 @@ var Apis = []string{
 	"GetPrimaryMarketPreSaleWhitelist",
 	"GetAssetInfoByContracts",
 	"GetTagByAddresses",
+	"ScanNFTLatestTransaction",
+	"GetNFTByAssetClassPrimaryMarket",
+	"GetInfoByNFTPrimaryMarket",
 }
