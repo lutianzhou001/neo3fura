@@ -123,6 +123,7 @@ func (me *T) GetInfoByNFT(args struct {
 				item["lastSoldAsset"] = item["auctionAsset"]
 				item["lastSoldAmount"] = item["bidAmount"]
 			}
+			fmt.Println(item["market"].(string), primaryMarket.Val())
 			fmt.Println(item["market"].(string) == primaryMarket.Val(), item["owner"] == item["market"], bidAmount == "0")
 			if item["owner"] == item["market"] && item["market"].(string) == primaryMarket.Val() { //一级市场过期
 				if bidAmount == "0" {
