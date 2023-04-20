@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"neo3fura_http/lib/type/Contract"
 	"neo3fura_http/lib/type/h160"
 	"neo3fura_http/var/stderr"
@@ -28,23 +29,27 @@ func (me *T) GetNFTByAssetClass(args struct {
 
 	}
 	rt := os.ExpandEnv("${RUNTIME}")
-	var nns, polemen, genesis string
+
+	var primaryMarket, nns, polemen, genesis string
 	if rt == "staging" {
 		nns = Contract.Main_NNS.Val()
 		//metapanacea = Contract.Main_MetaPanacea.Val()
 		genesis = Contract.Main_ILEXGENESIS.Val()
 		polemen = Contract.Main_ILEXPOLEMEN.Val()
+		primaryMarket = Contract.Main_PrimaryMarket.Val()
 
 	} else if rt == "test2" {
 		nns = Contract.Test_NNS.Val()
 		//metapanacea = Contract.Test_MetaPanacea.Val()
 		genesis = Contract.Test_ILEXGENESIS.Val()
 		polemen = Contract.Test_ILEXPOLEMEN.Val()
+		primaryMarket = Contract.Test_PrimaryMarket.Val()
 	} else {
 		nns = Contract.Main_NNS.Val()
 		//metapanacea = Contract.Test_MetaPanacea.Val()
 		genesis = Contract.Main_ILEXGENESIS.Val()
 		polemen = Contract.Main_ILEXPOLEMEN.Val()
+		primaryMarket = Contract.Test_PrimaryMarket.Val()
 	}
 
 	r1, err := me.Client.QueryAggregate(
@@ -67,6 +72,19 @@ func (me *T) GetNFTByAssetClass(args struct {
 						"else": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", polemen}}, "then": "$tokenid",
 							"else": "$name"}}}}}}}},
 				bson.M{"$match": bson.M{"class": args.ClassName}},
+				bson.M{"$lookup": bson.M{
+					"from": "Market",
+					"let":  bson.M{"asset": "$asset", "tokenid": "$tokenid"},
+					"pipeline": []bson.M{
+						bson.M{"$match": bson.M{"amount": bson.M{"$gt": 0}, "market": bson.M{"$ne": primaryMarket}}},
+						bson.M{"$match": bson.M{"$expr": bson.M{"$and": []interface{}{
+							bson.M{"$eq": []interface{}{"$tokenid", "$$tokenid"}},
+							bson.M{"$eq": []interface{}{"$asset", "$$asset"}},
+						}}}},
+						//bson.M{"$project": bson.M{"asset": 1, "tokenid": 1, "properties": 1}},
+					},
+					"as": "market"},
+				},
 				bson.M{"$skip": args.Skip},
 				bson.M{"$limit": args.Limit},
 			},
@@ -76,29 +94,14 @@ func (me *T) GetNFTByAssetClass(args struct {
 		return err
 	}
 
+	result := make([]map[string]interface{}, 0)
 	for _, item := range r1 {
 		asset := item["asset"].(string)
 		tokenid := item["tokenid"].(string)
 		tokenidArr := []string{tokenid}
-
-		//获取属性
-		//if item["image"] != nil {
-		//	item["image"] = ImagUrl(item["asset"].(string), item["image"].(string), "images")
-		//}
-		//if item["thumbnail"] != nil && item["thumbnail"] != "" {
-		//	tb, err2 := base64.URLEncoding.DecodeString(item["thumbnail"].(string))
-		//	if err2 != nil {
-		//		return err2
-		//	}
-		//	ss := string(tb[:])
-		//	if ss == "" {
-		//		item["thumbnail"] = ImagUrl(item["asset"].(string), item["image"].(string), "thumbnail")
-		//	} else {
-		//		item["thumbnail"] = ImagUrl(asset, string(tb[:]), "thumbnail")
-		//	}
-		//
-		//}
-
+		if item["market"] == nil || len(item["market"].(primitive.A)) == 0 {
+			continue
+		}
 		//if item["image"] == nil {
 		if item["properties"] != nil { //
 			jsonData := make(map[string]interface{})
@@ -222,6 +225,7 @@ func (me *T) GetNFTByAssetClass(args struct {
 			delete(item, "properties")
 		}
 
+		result = append(result, item)
 	}
 	// totalcount
 	r2, err := me.Client.QueryAggregate(
@@ -250,7 +254,7 @@ func (me *T) GetNFTByAssetClass(args struct {
 		return err
 	}
 	count := len(r2)
-	r3, err := me.FilterAggragateAndAppendCount(r1, count, args.Filter)
+	r3, err := me.FilterAggragateAndAppendCount(result, count, args.Filter)
 
 	if err != nil {
 		return err
