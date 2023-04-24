@@ -361,6 +361,12 @@ func (me *T) GetNFTList(args struct {
 
 				delete(delegateItem, "properties")
 				if delegateItem["image"] != nil || delegateItem["video"] != nil {
+					tb := delegateItem["thumbnail"].(string)
+					flag := strings.HasSuffix(tb, ".mp4")
+					if flag {
+						tb = strings.Replace(tb, ".mp4", "mp4", -1)
+					}
+					delegateItem["thumbnail"] = tb
 					result = append(result, delegateItem)
 				}
 
