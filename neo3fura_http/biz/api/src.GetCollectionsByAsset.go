@@ -22,12 +22,7 @@ func (me *T) GetCollectionsByAsset(args struct {
 		return stderr.ErrInvalidArgs
 	}
 	var list []interface{}
-	for _, item := range args.Assets {
-		if item.Valid() == false {
-			return stderr.ErrInvalidArgs
-		}
-		list = append(list, item)
-	}
+
 	rt := os.ExpandEnv("${RUNTIME}")
 	var nns, polemen, genesis string
 	if rt == "staging" {
@@ -47,6 +42,28 @@ func (me *T) GetCollectionsByAsset(args struct {
 		genesis = Contract.Test_ILEXGENESIS.Val()
 		polemen = Contract.Test_ILEXPOLEMEN.Val()
 	}
+
+	for _, item := range args.Assets {
+		list = append(list, item)
+
+	}
+
+	result, err := me.Client.QueryLastJob(struct {
+		Collection string
+	}{Collection: "MarketCollectionWhitelist"})
+	if err != nil {
+		return err
+	}
+
+	for _, item := range args.Assets {
+		if result["CollectionWhitelist"] != nil || len(result["CollectionWhitelist"].(primitive.A)) > 0 {
+			if item.Valid() == false || !isIn(item.Val(), result["CollectionWhitelist"].(primitive.A)) {
+				return stderr.ErrInvalidArgs
+			}
+			list = append(list, item)
+		}
+	}
+
 	//获取Collection基本信息
 	r1, err := me.Client.QueryAggregate(
 		struct {
@@ -73,7 +90,6 @@ func (me *T) GetCollectionsByAsset(args struct {
 								"else": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", polemen}}, "then": "$tokenid",
 									"else": "$name"}}}}}}}},
 						bson.M{"$group": bson.M{"_id": bson.M{"asset": "$asset", "class": "$class"}, "asset": bson.M{"$last": "$asset"}, "tokenid": bson.M{"$last": "$tokenid"}, "properties": bson.M{"$push": "$$ROOT"}}},
-						//bson.M{"$group": bson.M{"_id": "$asset","asset":bson.M{"$last":"$asset"}, "properities": bson.M{"$push": "$$ROOT"}}},
 					},
 					"as": "properties"},
 				},
@@ -263,4 +279,13 @@ func (me *T) GetCollectionsByAsset(args struct {
 	}
 	*ret = json.RawMessage(r)
 	return nil
+}
+
+func isIn(target string, str_arr primitive.A) bool {
+	for _, element := range str_arr {
+		if target == element {
+			return true
+		}
+	}
+	return false
 }
