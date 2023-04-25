@@ -138,18 +138,18 @@ func (me *T) GetNFTList(args struct {
 		}
 		pipeline = append(pipeline, pipeline1...)
 	}
-	var deadlineCond bson.M
-	if args.Sort == "deadline" { //按截止时间排序
-		deadlineCond = bson.M{"$cond": bson.M{"if": bson.M{"$gt": []interface{}{"$deadline", currentTime}}, "then": bson.M{"$subtract": []interface{}{"$deadline", currentTime}}, "else": currentTime}}
-	}
-	var auctionAmountCond bson.M
-	if args.Sort == "price" { // 将过期和未领取的放在后面
-		if args.Order == -1 { //降序
-			auctionAmountCond = bson.M{"$cond": bson.M{"if": bson.M{"$gt": []interface{}{"$deadline", currentTime}}, "then": "$auctionAmount", "else": 0}}
-		} else { //升序（默认）
-			auctionAmountCond = bson.M{"$cond": bson.M{"if": bson.M{"$gt": []interface{}{"$deadline", currentTime}}, "then": "$auctionAmount", "else": 1e16}}
-		}
-	}
+	//var deadlineCond bson.M
+	//if args.Sort == "deadline" { //按截止时间排序
+	//	deadlineCond = bson.M{"$cond": bson.M{"if": bson.M{"$gt": []interface{}{"$deadline", currentTime}}, "then": bson.M{"$subtract": []interface{}{"$deadline", currentTime}}, "else": currentTime}}
+	//}
+	//var auctionAmountCond bson.M
+	//if args.Sort == "price" { // 将过期和未领取的放在后面
+	//	if args.Order == -1 { //降序
+	//		auctionAmountCond = bson.M{"$cond": bson.M{"if": bson.M{"$gt": []interface{}{"$deadline", currentTime}}, "then": "$auctionAmount", "else": 0}}
+	//	} else { //升序（默认）
+	//		auctionAmountCond = bson.M{"$cond": bson.M{"if": bson.M{"$gt": []interface{}{"$deadline", currentTime}}, "then": "$auctionAmount", "else": 1e16}}
+	//	}
+	//}
 
 	var nnsclass string
 	if args.ContractHash.Val() == nns {
@@ -178,19 +178,19 @@ func (me *T) GetNFTList(args struct {
 		},
 		{"$sort": bson.M{"bidAmount": 1, "auctionAmount": 1}},
 		bson.M{"$group": bson.M{"_id": bson.M{"asset": "$asset", "class": "$properties.class"}, "asset": bson.M{"$last": "$asset"}, "tokenid": bson.M{"$last": "$tokenid"}, "deadline": bson.M{"$last": "$deadline"}, "auctionAmount": bson.M{"$last": "$auctionAmount"}, "timestamp": bson.M{"$last": "$timestamp"}, "propertiesArr": bson.M{"$push": "$$ROOT"}}},
-		bson.M{"$project": bson.M{"deadlineCond": deadlineCond, "auctionAmountCond": auctionAmountCond, "_id": 1, "properties": 1, "asset": 1, "tokenid": 1, "propertiesArr": 1, "auctionAmount": 1, "deadline": 1, "timestamp": 1}},
+		bson.M{"$project": bson.M{"_id": 1, "properties": 1, "asset": 1, "tokenid": 1, "propertiesArr": 1, "auctionAmount": 1, "deadline": 1, "timestamp": 1}},
 	}
-	var sort bson.M
-	if args.Sort == "timestamp" { //上架时间
-		sort = bson.M{"$sort": bson.M{"timestamp": args.Order}}
-	} else if args.Sort == "price" { //价格
-		sort = bson.M{"$sort": bson.M{"auctionAmountCond": args.Order}}
-	} else if args.Sort == "deadline" { //截止时间
-		sort = bson.M{"$sort": bson.M{"deadlineCond": args.Order}}
-	} else {
-		sort = bson.M{"$sort": bson.M{"timestamp": -1}}
-	}
-	setAndGroup = append(setAndGroup, sort)
+	//var sort bson.M
+	//if args.Sort == "timestamp" { //上架时间
+	//	sort = bson.M{"$sort": bson.M{"timestamp": args.Order}}
+	//} else if args.Sort == "price" { //价格
+	//	sort = bson.M{"$sort": bson.M{"auctionAmountCond": args.Order}}
+	//} else if args.Sort == "deadline" { //截止时间
+	//	sort = bson.M{"$sort": bson.M{"deadlineCond": args.Order}}
+	//} else {
+	//	sort = bson.M{"$sort": bson.M{"timestamp": -1}}
+	//}
+	//setAndGroup = append(setAndGroup, sort)
 	pipeline = append(pipeline, setAndGroup...)
 	skip := bson.M{"$skip": args.Skip}
 	limit := bson.M{"$limit": args.Limit}
