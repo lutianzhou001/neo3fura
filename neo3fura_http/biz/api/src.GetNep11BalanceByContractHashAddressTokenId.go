@@ -35,7 +35,7 @@ func (me *T) GetNep11BalanceByContractHashAddressTokenId(args struct {
 		Collection: "Address-Asset",
 		Index:      "GetNep11BalanceByContractHashAddressTokenId",
 		Sort:       bson.M{"_id": -1},
-		Filter:     bson.M{"asset": args.ContractHash.Val(), "address": args.Address.TransferredVal(), "tokenid": args.TokenId},
+		Filter:     bson.M{"balance": bson.M{"$gt": 0}, "asset": args.ContractHash.Val(), "address": args.Address.TransferredVal(), "tokenid": args.TokenId},
 		Query:      []string{},
 	}, ret)
 	if err != nil {
