@@ -27,10 +27,10 @@ func (me *T) GetNep11OwnedByAddress(args struct {
 		Limit      int64
 		Skip       int64
 	}{
-		Collection: "Nep11TransferNotification",
+		Collection: "Address-Asset",
 		Index:      "GetNep11OwnedByAddress",
 		Sort:       bson.M{},
-		Filter:     bson.M{"to": args.Address.TransferredVal()},
+		Filter:     bson.M{"tokenid": bson.M{"$ne": ""}, "balance": bson.M{"$gt": 0}, "address": args.Address.TransferredVal()},
 		Query:      []string{},
 		Limit:      args.Limit,
 		Skip:       args.Skip,
@@ -38,8 +38,8 @@ func (me *T) GetNep11OwnedByAddress(args struct {
 	if err != nil {
 		return err
 	}
-	r2, err := me.Deduplicate(r1)
-	r3, err := me.FilterArrayAndAppendCount(r2, count, args.Filter)
+	//r2, err := me.Deduplicate(r1)
+	r3, err := me.FilterArrayAndAppendCount(r1, count, args.Filter)
 	if err != nil {
 		return err
 	}

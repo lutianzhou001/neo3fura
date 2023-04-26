@@ -7,7 +7,9 @@ Magnet supports all [Neo RPC APIs](https://docs.neo.org/docs/zh-cn/reference/rpc
 
 Magnet mainnet url:` https://neofura.ngd.network`
 
-Magnet testnet url:` https://testneofura.ngd.network:444`
+
+Neofura testnet url:` https://testmagnet.ngd.network`
+ 
 
 You can send a request like this
 ``` powershell
