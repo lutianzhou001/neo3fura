@@ -2,12 +2,14 @@
 
 ### Send a request with Neo RPC API
 
-Neofura supports all [Neo RPC APIs](https://docs.neo.org/docs/zh-cn/reference/rpc/latest-version/api.html). You can easily test them with Postman or any programming language you like.
+Magnet supports all [Neo RPC APIs](https://docs.neo.org/docs/zh-cn/reference/rpc/latest-version/api.html). You can easily test them with Postman or any programming language you like.
 
 
-Neofura mainnet url:` https://neofura.ngd.network`
+Magnet mainnet url:` https://neofura.ngd.network`
+
 
 Neofura testnet url:` https://testmagnet.ngd.network`
+ 
 
 You can send a request like this
 ``` powershell
@@ -158,7 +160,7 @@ Then you will easily get the following response:
 }
 ```
 
-### Send a request with Neofura API
+### Send a request with Magnet API
 
 Refer to later sections in this document to make a request by yourself!
 
