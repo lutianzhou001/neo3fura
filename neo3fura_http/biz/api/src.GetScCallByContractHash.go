@@ -29,7 +29,7 @@ func (me *T) GetScCallByContractHash(args struct {
 	}{
 		Collection: "ScCall",
 		Index:      "GetScCallByContractHash",
-		Sort:       bson.M{},
+		Sort:       bson.M{"_id": -1},
 		Filter:     bson.M{"contractHash": args.ContractHash.Val()},
 		Query:      []string{},
 		Limit:      args.Limit,
