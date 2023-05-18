@@ -135,7 +135,7 @@ func (me *T) GetNFTActivityByAsset(args struct {
 		r2["image"] = ""
 		r2["name"] = item["name"]
 		r2["txid"] = item["txid"]
-
+		market := item["market"]
 		if len(item["properties"].(primitive.A)) > 0 {
 			properties := item["properties"].(primitive.A)[0].(map[string]interface{})
 			if properties["properties"] != nil {
@@ -245,7 +245,7 @@ func (me *T) GetNFTActivityByAsset(args struct {
 					if err != nil {
 						return err
 					}
-					auctionInfo, err := me.GetAuction(nonce, args.Market.Val())
+					auctionInfo, err := me.GetAuction(nonce, market.(string))
 					if err != nil {
 						return err
 					}
@@ -400,7 +400,7 @@ func (me *T) GetNFTActivityByAsset(args struct {
 	return nil
 }
 
-//获取上架的数据 （）
+// 获取上架的数据 （）
 func (me T) GetAuction(nonce int64, market string) (map[string]interface{}, error) {
 	message := make(json.RawMessage, 0)
 	ret := &message
