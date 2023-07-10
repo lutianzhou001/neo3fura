@@ -85,6 +85,7 @@ func (me *T) GetNFTByAssetClass(args struct {
 					},
 					"as": "market"},
 				},
+				bson.M{"$sort": bson.M{"tokenid": 1}},
 				bson.M{"$skip": args.Skip},
 				bson.M{"$limit": args.Limit},
 			},

@@ -39,7 +39,7 @@ func (me *T) GetNFTList(args struct {
 	currentTime := time.Now().UnixNano() / 1e6
 	pipeline := []bson.M{}
 	if args.Limit == 0 {
-		args.Limit = 12
+		args.Limit = 50
 	}
 	rt := os.ExpandEnv("${RUNTIME}")
 	var nns, polemen, genesis string
@@ -176,7 +176,7 @@ func (me *T) GetNFTList(args struct {
 			},
 			"as": "properties"},
 		},
-		{"$sort": bson.M{"bidAmount": 1, "auctionAmount": 1}},
+		{"$sort": bson.M{"tokenid": 1, "bidAmount": 1, "auctionAmount": 1}},
 		bson.M{"$group": bson.M{"_id": bson.M{"asset": "$asset", "class": "$properties.class"}, "asset": bson.M{"$last": "$asset"}, "tokenid": bson.M{"$last": "$tokenid"}, "deadline": bson.M{"$last": "$deadline"}, "auctionAmount": bson.M{"$last": "$auctionAmount"}, "timestamp": bson.M{"$last": "$timestamp"}, "propertiesArr": bson.M{"$push": "$$ROOT"}}},
 		bson.M{"$project": bson.M{"_id": 1, "properties": 1, "asset": 1, "tokenid": 1, "propertiesArr": 1, "auctionAmount": 1, "deadline": 1, "timestamp": 1}},
 	}
@@ -418,6 +418,17 @@ func isHttp(class string) bool {
 	if len(class) > 4 {
 		str := class[:4]
 		if str == "http" {
+			return true
+		}
+	}
+
+	return false
+}
+
+func isIpfs(class string) bool {
+	if len(class) > 4 {
+		str := class[:4]
+		if str == "ipfs" {
 			return true
 		}
 	}

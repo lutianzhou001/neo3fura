@@ -73,7 +73,7 @@ func (me *T) GetNFTClass(args struct {
 							bson.M{"$eq": []interface{}{"$tokenid", "$$tokenid"}},
 							bson.M{"$eq": []interface{}{"$asset", "$$asset"}},
 						}}}},
-						//bson.M{"$sort":bson.M{"timestamp":1}},
+						bson.M{"$sort": bson.M{"timestamp": 1}},
 					},
 					"as": "marketNotification"},
 				},
@@ -144,7 +144,8 @@ func (me *T) GetNFTClass(args struct {
 				count++
 			}
 		}
-		item["claimed"] = len(groupinfo) - count
+
+		item["claimed"] = len(groupinfo) - count // 下次给可以改成 item["left]
 
 		asset := item["asset"].(string)
 		tokenid := item["tokenid"].(string)
@@ -268,13 +269,13 @@ func GetNFTState(info map[string]interface{}, primarymarket interface{}) map[str
 			info["currentBidAmount"] = info["bidAmount"]
 			info["currentBidAmount"] = info["auctionAsset"]
 
-			if deadline > currentTime && market != nil && market.(string) == primarymarket.(h160.T).Val() {
+			if deadline > currentTime && market != nil && market.(string) == primarymarket.(h160.T).Val() { //上架
 				if auctionType == 1 {
 					info["state"] = "sale" //
 				} else if auctionType == 2 {
 					info["state"] = "auction"
 				}
-			} else if deadline <= currentTime && market != nil && market.(string) == primarymarket.(h160.T).Val() {
+			} else if deadline <= currentTime && market != nil && market.(string) == primarymarket.(h160.T).Val() { //过期
 				if auctionType == 2 && bidAmount != "0" {
 					info["state"] = "soldout" //竞拍有人出价
 				} else {
@@ -288,7 +289,7 @@ func GetNFTState(info map[string]interface{}, primarymarket interface{}) map[str
 			info["state"] = ""
 		}
 	} else {
-		info["state"] = "no"
+		info["state"] = ""
 	}
 
 	//delete(info, "bidAmount")
