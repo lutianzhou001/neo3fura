@@ -318,8 +318,7 @@ func (me *T) GetNFTList(args struct {
 					continue
 				}
 				delegateItem["image"] = ImagUrl(newProperties["asset"].(string), newProperties["image"].(string), "images")
-				if newProperties["thumbnail"] != nil && newProperties["thumbnail"] != "" && !isHttp(newProperties["thumbnail"].(string)) {
-
+				if newProperties["thumbnail"] != nil && newProperties["thumbnail"] != "" && !isHttp(newProperties["thumbnail"].(string)) && !isIpfs(newProperties["thumbnail"].(string)) {
 					tb, err2 := base64.URLEncoding.DecodeString(newProperties["thumbnail"].(string))
 					if err2 != nil {
 						return err2
