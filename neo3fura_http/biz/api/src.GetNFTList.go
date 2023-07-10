@@ -176,9 +176,10 @@ func (me *T) GetNFTList(args struct {
 			},
 			"as": "properties"},
 		},
-		{"$sort": bson.M{"tokenid": 1, "bidAmount": 1, "auctionAmount": 1}},
+		{"$sort": bson.M{"bidAmount": 1, "auctionAmount": 1, "tokenid": 1}},
 		bson.M{"$group": bson.M{"_id": bson.M{"asset": "$asset", "class": "$properties.class"}, "asset": bson.M{"$last": "$asset"}, "tokenid": bson.M{"$last": "$tokenid"}, "deadline": bson.M{"$last": "$deadline"}, "auctionAmount": bson.M{"$last": "$auctionAmount"}, "timestamp": bson.M{"$last": "$timestamp"}, "propertiesArr": bson.M{"$push": "$$ROOT"}}},
 		bson.M{"$project": bson.M{"_id": 1, "properties": 1, "asset": 1, "tokenid": 1, "propertiesArr": 1, "auctionAmount": 1, "deadline": 1, "timestamp": 1}},
+		bson.M{"$sort": bson.M{"tokenid": 1}},
 	}
 	//var sort bson.M
 	//if args.Sort == "timestamp" { //上架时间
@@ -192,6 +193,7 @@ func (me *T) GetNFTList(args struct {
 	//}
 	//setAndGroup = append(setAndGroup, sort)
 	pipeline = append(pipeline, setAndGroup...)
+
 	skip := bson.M{"$skip": args.Skip}
 	limit := bson.M{"$limit": args.Limit}
 	pipeline = append(pipeline, skip)
