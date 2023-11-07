@@ -259,7 +259,7 @@ func GetNNSByAddress(address string) (string, string, error) {
 		if err != nil {
 			return "", "", err
 		}
-		nns = data["username"].(string)
+		nns = data["nns"].(string)
 		userName = data["username"].(string)
 	} else {
 		nns = ""
