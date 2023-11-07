@@ -298,6 +298,7 @@ func (me *T) GetNFTList(args struct {
 						it["order"] = value["order"]
 						it["owner"] = value["owner"]
 						it["nns"] = value["nns"]
+						it["userName"] = value["useName"]
 					}
 					copygroup = append(copygroup, it)
 
