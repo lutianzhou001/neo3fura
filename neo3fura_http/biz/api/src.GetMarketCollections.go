@@ -83,6 +83,20 @@ func (me *T) GetMarketCollections(args struct {
 								"else": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", polemen}}, "then": "$tokenid",
 									"else": "$name"}}}}}}}},
 						bson.M{"$group": bson.M{"_id": bson.M{"asset": "$asset", "class": "$class"}, "asset": bson.M{"$last": "$asset"}, "tokenid": bson.M{"$last": "$tokenid"}, "properties": bson.M{"$push": "$$ROOT"}}},
+						//需要将所有的nft 匹配完才能删选， 查询速度极慢
+						//bson.M{"$lookup": bson.M{
+						//	"from": "Market",
+						//	"let":  bson.M{"asset": "$asset", "tokenid": "$tokenid"},
+						//	"pipeline": []bson.M{
+						//		bson.M{"$match": bson.M{"amount": bson.M{"$gt": 0}, "market": bson.M{"$ne": Contract.Test_PrimaryMarket}}},
+						//		bson.M{"$match": bson.M{"$expr": bson.M{"$and": []interface{}{
+						//			bson.M{"$eq": []interface{}{"$tokenid", "$$tokenid"}},
+						//			bson.M{"$eq": []interface{}{"$asset", "$$asset"}},
+						//		}}}},
+						//		bson.M{"$project": bson.M{"asset": 1}},
+						//	},
+						//	"as": "market"},
+						//},
 					},
 					"as": "properties"},
 				},
@@ -93,7 +107,7 @@ func (me *T) GetMarketCollections(args struct {
 		return err
 	}
 
-	//	collectioResult := make([]map[string]interface{},0)
+	//collectioResult := make([]map[string]interface{},0)
 	for _, item := range r1 {
 		tokenidProperties := make([]map[string]interface{}, 0)
 		hash := item["hash"].(string)
@@ -125,7 +139,7 @@ func (me *T) GetMarketCollections(args struct {
 						if pitem["image"] != nil {
 							proMap["image"] = ImagUrl(pitem["asset"].(string), pitem["image"].(string), "images")
 						}
-						if pitem["thumbnail"] != nil && pitem["thumbnail"] != "" && !isHttp(pitem["thumbnail"].(string)) {
+						if pitem["thumbnail"] != nil && pitem["thumbnail"] != "" && !isHttp(pitem["thumbnail"].(string)) && !isIpfs(pitem["thumbnail"].(string)) {
 							tb, err2 := base64.URLEncoding.DecodeString(pitem["thumbnail"].(string))
 							if err2 != nil {
 								return err2
@@ -266,6 +280,7 @@ func (me *T) GetMarketCollections(args struct {
 		item["NFTList"] = tokenidList
 		delete(item, "properties")
 
+		//if collectioResult
 	}
 
 	count := len(r1)

@@ -257,7 +257,7 @@ func (me *T) GetNFTOwnedByAddress(args struct {
 				},
 				"as": "properties"},
 			},
-			bson.M{"$project": bson.M{"_id": 1, "deadlineCond": deadlineCond, "auctionAmountCond": auctionAmountCond, "properties": 1, "asset": 1, "tokenid": 1, "amount": 1, "owner": 1, "market": 1, "auctionType": 1, "auctor": 1, "auctionAsset": 1, "auctionAmount": 1, "deadline": 1, "bidder": 1, "bidAmount": 1, "timestamp": 1, "state": ""}},
+			//bson.M{"$project": bson.M{"_id": 1, "deadlineCond": deadlineCond, "auctionAmountCond": auctionAmountCond, "properties": 1, "asset": 1, "tokenid": 1, "amount": 1, "owner": 1, "market": 1, "auctionType": 1, "auctor": 1, "auctionAsset": 1, "auctionAmount": 1, "deadline": 1, "bidder": 1, "bidAmount": 1, "timestamp": 1, "state": ""}},
 		}
 		pipeline = append(pipeline, pipeline1...)
 	}
@@ -328,10 +328,10 @@ func (me *T) GetNFTOwnedByAddress(args struct {
 		}
 	}
 
-	skip := bson.M{"$skip": args.Skip}
-	limit := bson.M{"$limit": args.Limit}
-	pipeline = append(pipeline, skip)
-	pipeline = append(pipeline, limit)
+	//skip := bson.M{"$skip": args.Skip}
+	//limit := bson.M{"$limit": args.Limit}
+	//pipeline = append(pipeline, skip)
+	//pipeline = append(pipeline, limit)
 
 	var r1, err = me.Client.QueryAggregate(
 		struct {
@@ -543,15 +543,15 @@ func (me *T) GetNFTOwnedByAddress(args struct {
 
 		//添加绑定 owner 的nns
 		owner := item["owner"].(string)
-		owner_nns := ""
+		var owner_nns, owner_userName string
 		if owner != "" {
-			owner_nns, err = GetNNSByAddress(owner)
+			owner_nns, owner_userName, err = GetNNSByAddress(owner)
 			if err != nil {
 				return err
 			}
 		}
 		item["nns"] = owner_nns
-
+		item["userName"] = owner_userName
 	}
 
 	// 按上架时间排序

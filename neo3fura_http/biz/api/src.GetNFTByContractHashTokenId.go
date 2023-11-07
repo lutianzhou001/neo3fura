@@ -326,14 +326,15 @@ func (me *T) GetNFTByContractHashTokenId(args struct {
 		}
 
 		owner := item["owner"].(string)
-		nns := ""
+		var nns, userName string
 		if owner != "" {
-			nns, err = GetNNSByAddress(owner)
+			nns, userName, err = GetNNSByAddress(owner)
 			if err != nil {
 				return err
 			}
 		}
 		item["nns"] = nns
+		item["userName"] = userName
 
 	}
 
