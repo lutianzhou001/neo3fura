@@ -541,22 +541,24 @@ func (me *T) GetNFTRecordByAddress(args struct {
 					toAddress = rr["to"].(string)
 				}
 
-				fromNNS := ""
-				toNNS := ""
+				var fromNNS, fromUserName string
+				var toNNS, toUserName string
 				if fromAddress != "" {
-					fromNNS, err = GetNNSByAddress(fromAddress)
+					fromNNS, fromUserName, err = GetNNSByAddress(fromAddress)
 					if err != nil {
 						return err
 					}
 				}
 				if toAddress != "" {
-					toNNS, err = GetNNSByAddress(toAddress)
+					toNNS, toUserName, err = GetNNSByAddress(toAddress)
 					if err != nil {
 						return err
 					}
 				}
 				rr["from_nns"] = fromNNS
 				rr["to_nns"] = toNNS
+				rr["from_userName"] = fromUserName
+				rr["to_userName"] = toUserName
 
 				result = append(result, rr)
 			}

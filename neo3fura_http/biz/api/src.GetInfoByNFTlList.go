@@ -162,15 +162,16 @@ func (me *T) GetInfoByNFTList(args struct {
 
 		//获取Owner 设置的nns信息
 		owner := item["owner"].(string)
-		nns := ""
+		var nns, userName string
 		if owner != "" {
-			nns, err = GetNNSByAddress(owner)
+			nns, userName, err = GetNNSByAddress(owner)
 			if err != nil {
 				return err
 			}
 		}
 
 		item["nns"] = nns
+		item["userName"] = userName
 		delete(item, "eventlist")
 
 	}

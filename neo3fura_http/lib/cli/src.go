@@ -42,6 +42,13 @@ type SourceCode struct {
 	Code          string
 }
 
+func (me *T) GetCollection(args struct {
+	Collection string
+}) (*mongo.Collection, error) {
+	collection := me.C_online.Database(me.Db_online).Collection(args.Collection)
+	return collection, nil
+}
+
 func (me *T) QueryOne(args struct {
 	Collection string
 	Index      string
@@ -215,6 +222,9 @@ func (me *T) UpdateJob(args struct {
 	collection := me.C_local.Database("job").Collection(args.Collection)
 	var result map[string]interface{}
 	err := collection.FindOne(me.Ctx, args.Filter).Decode(&result)
+	if err != nil && err.Error() != "mongo: no documents in result" {
+		return false, stderr.ErrInsert
+	}
 	var filter bson.M
 	if len(result) > 0 {
 		id := result["_id"].(primitive.ObjectID)
@@ -233,9 +243,6 @@ func (me *T) UpdateJob(args struct {
 		}
 	}
 
-	if err != nil {
-		return false, stderr.ErrInsert
-	}
 	return true, nil
 }
 
@@ -244,6 +251,21 @@ func (me *T) QueryOneJob(args struct {
 	Filter     bson.M
 }) (map[string]interface{}, error) {
 	collection := me.C_local.Database("job").Collection(args.Collection)
+	var result map[string]interface{}
+	err := collection.FindOne(me.Ctx, args.Filter).Decode(&result)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+func (me *T) UpdateOneJob(args struct {
+	Collection string
+	Filter     bson.M
+}) (map[string]interface{}, error) {
+	collection := me.C_local.Database("job").Collection(args.Collection)
+
+	collection.Indexes().List(context.TODO())
 	var result map[string]interface{}
 	err := collection.FindOne(me.Ctx, args.Filter).Decode(&result)
 	if err != nil {

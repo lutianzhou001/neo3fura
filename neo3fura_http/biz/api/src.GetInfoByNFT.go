@@ -207,15 +207,16 @@ func (me *T) GetInfoByNFT(args struct {
 		}
 		//获取Owner 地址的nns信息
 		owner := item["owner"].(string)
-		nns := ""
+		var nns, userName string
 		if owner != "" {
-			nns, err = GetNNSByAddress(owner)
+			nns, userName, err = GetNNSByAddress(owner)
 			if err != nil {
 				return err
 			}
 		}
 
 		item["nns"] = nns
+		item["userName"] = userName
 		delete(item, "eventlist")
 	}
 
@@ -236,32 +237,34 @@ func (me *T) GetInfoByNFT(args struct {
 	return nil
 }
 
-func GetNNSByAddress(address string) (string, error) {
+func GetNNSByAddress(address string) (string, string, error) {
 	rt := os.ExpandEnv("${RUNTIME}")
 	url := "https://megaoasis.ngd.network:8889/profile/get?address="
-	if rt == "staging" {
+	if rt == "test" {
 		url = "https://megaoasis.ngd.network:8893/profile/get?address="
-	} else if rt == "test" {
+	} else if rt == "test1" {
 		url = "https://megaoasis.ngd.network:8889/profile/get?address="
 	}
 
 	resp, err := http.Get(url + address)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
-	var nns string
+	var nns, userName string
 	if string(body) != "" && string(body) != "null" {
 		var data map[string]interface{}
 		err = json.Unmarshal(body, &data)
 		if err != nil {
-			return "", err
+			return "", "", err
 		}
-		nns = data["nns"].(string)
+		nns = data["username"].(string)
+		userName = data["username"].(string)
 	} else {
 		nns = ""
+		userName = ""
 	}
 
-	return nns, nil
+	return nns, userName, nil
 }

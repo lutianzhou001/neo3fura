@@ -428,15 +428,16 @@ func (me *T) GetNFTInfoPrimaryMarket(Market string, Asset string, Tokenid string
 
 		//获取Owner 地址的nns信息
 		owner := item["owner"].(string)
-		nns := ""
+		var nns, userName string
 		if owner != "" {
-			nns, err = GetNNSByAddress(owner)
+			nns, userName, err = GetNNSByAddress(owner)
 			if err != nil {
 				return nil, err
 			}
 		}
 
 		item["nns"] = nns
+		item["userName"] = userName
 		delete(item, "eventlist")
 	}
 

@@ -345,22 +345,24 @@ func (me *T) GetNFTActivityByAsset(args struct {
 				if r2["to"] != nil {
 					toAddress = r2["to"].(string)
 				}
-				fromNNS := ""
-				toNNS := ""
+				var fromNNS, fromUserName string
+				var toNNS, toUserName string
 				if fromAddress != "" {
-					fromNNS, err = GetNNSByAddress(fromAddress)
+					fromNNS, fromUserName, err = GetNNSByAddress(fromAddress)
 					if err != nil {
 						return err
 					}
 				}
 				if toAddress != "" {
-					toNNS, err = GetNNSByAddress(toAddress)
+					toNNS, toUserName, err = GetNNSByAddress(toAddress)
 					if err != nil {
 						return err
 					}
 				}
 				r2["from_nns"] = fromNNS
 				r2["to_nns"] = toNNS
+				r2["from_userName"] = fromUserName
+				r2["to_userName"] = toUserName
 
 				result = append(result, r2)
 			}

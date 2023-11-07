@@ -141,7 +141,7 @@ func main() {
 	v := &verify.T{
 		Client: client,
 	}
-
+	go j.UpdateMarketNFTLatestTransaction()
 	// reset qps
 	go func() {
 		for {
@@ -184,8 +184,8 @@ func main() {
 			go j.GetMarketSupply()
 			go j.GetMarketTxAmount()
 			go j.GetMarketOwnerCount()
-			go j.GetNFTFloorPrice()
-			//go j.GetNFTIndex()
+			//go j.GetNFTFloorPrice()
+			go j.GetNFTIndex()
 		})
 		if err != nil {
 			log2.Fatal("add job function error:%s", err)
