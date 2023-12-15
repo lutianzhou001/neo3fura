@@ -31,23 +31,26 @@ func (me *T) GetMarketCollections(args struct {
 		return stderr.ErrInvalidArgs
 	}
 	rt := os.ExpandEnv("${RUNTIME}")
-	var nns, genesis, polemen string
+	var nns, genesis, polemen, tree string
 	if rt == "staging" {
 		nns = Contract.Main_NNS.Val()
 		//  metapanacea = Contract.Main_MetaPanacea.Val()
 		genesis = Contract.Main_ILEXGENESIS.Val()
 		polemen = Contract.Main_ILEXPOLEMEN.Val()
+		tree = Contract.Main_TREE.Val()
 
 	} else if rt == "test2" {
 		nns = Contract.Test_NNS.Val()
 		//	metapanacea = Contract.Test_MetaPanacea.Val()
 		genesis = Contract.Test_ILEXGENESIS.Val()
 		polemen = Contract.Test_ILEXPOLEMEN.Val()
+		tree = Contract.Test_TREE.Val()
 	} else {
 		nns = Contract.Test_NNS.Val()
 		//	metapanacea = Contract.Test_MetaPanacea.Val()
 		genesis = Contract.Test_ILEXGENESIS.Val()
 		polemen = Contract.Test_ILEXPOLEMEN.Val()
+		tree = Contract.Test_TREE.Val()
 	}
 
 	result, err := me.Client.QueryLastJob(struct {
@@ -81,7 +84,8 @@ func (me *T) GetMarketCollections(args struct {
 						bson.M{"$set": bson.M{"class": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", nns}}, "then": "$tokenid",
 							"else": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", genesis}}, "then": "$image",
 								"else": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", polemen}}, "then": "$tokenid",
-									"else": "$name"}}}}}}}},
+									"else": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", tree}}, "then": "$tokenid",
+										"else": "$name"}}}}}}}}}},
 						bson.M{"$group": bson.M{"_id": bson.M{"asset": "$asset", "class": "$class"}, "asset": bson.M{"$last": "$asset"}, "tokenid": bson.M{"$last": "$tokenid"}, "properties": bson.M{"$push": "$$ROOT"}}},
 						//需要将所有的nft 匹配完才能删选， 查询速度极慢
 						//bson.M{"$lookup": bson.M{
