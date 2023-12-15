@@ -156,7 +156,7 @@ func (me *T) GetMarketCollections(args struct {
 							}
 
 						}
-						if proMap["image"] == nil {
+						if proMap["image"] == nil || proMap["thumbnail"] == nil {
 
 							if pitem["properties"] != nil {
 								//
