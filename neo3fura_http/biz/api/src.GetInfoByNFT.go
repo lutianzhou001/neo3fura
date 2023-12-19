@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"io/ioutil"
@@ -245,7 +246,7 @@ func GetNNSByAddress(address string) (string, string, error) {
 	} else if rt == "test" {
 		url = "https://megaoasis.ngd.network:8889/profile/get?address=" //test
 	}
-
+	fmt.Println(url)
 	resp, err := http.Get(url + address)
 	if err != nil {
 		return "", "", err
@@ -253,6 +254,7 @@ func GetNNSByAddress(address string) (string, string, error) {
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	var nns, userName string
+	fmt.Println("body:", string(body))
 	if string(body) != "" && string(body) != "null" {
 		var data map[string]interface{}
 		err = json.Unmarshal(body, &data)
