@@ -146,7 +146,7 @@ func (me *T) GetCollectionsByAsset(args struct {
 							}
 
 						}
-						if proMap["image"] == nil {
+						if proMap["image"] == nil || proMap["thumbnail"] == nil {
 							if pitem["tokenURI"] != nil {
 								tokenUrl := pitem["tokenURI"].(string)
 								ppjson, err := GetImgFromTokenURL(tokenurl(tokenUrl), asset, tokenid)
