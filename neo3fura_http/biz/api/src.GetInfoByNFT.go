@@ -241,7 +241,7 @@ func (me *T) GetInfoByNFT(args struct {
 func GetNNSByAddress(address string) (string, string, error) {
 	rt := os.ExpandEnv("${RUNTIME}")
 	url := "https://megaoasis.ngd.network:8893/profile/get?address="
-	if rt == "test1" {
+	if rt == "test2" {
 		url = "https://megaoasis.ngd.network:8889/profile/get?address=" //staging
 	} else if rt == "test" {
 		url = "https://megaoasis.ngd.network:8889/profile/get?address=" //test
