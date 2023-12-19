@@ -2,9 +2,9 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"neo3fura_http/lib/log"
 	"neo3fura_http/lib/type/h160"
 	"neo3fura_http/lib/type/strval"
 	"neo3fura_http/var/stderr"
@@ -46,7 +46,7 @@ func (me *T) GetNFTRecordByContractHashTokenId(args struct {
 		Query:      []string{},
 	}, ret)
 	if err != nil {
-		log.Info("1", err)
+		fmt.Println("1", err)
 		return err
 	}
 
@@ -61,7 +61,7 @@ func (me *T) GetNFTRecordByContractHashTokenId(args struct {
 		Raw          *[]map[string]interface{}
 	}{ContractHash: args.ContractHash, TokenId: args.TokenId, Raw: &raw2}, ret)
 	if err3 != nil {
-		log.Info("2", err)
+		fmt.Println("2", err)
 		return err3
 	}
 
@@ -70,7 +70,7 @@ func (me *T) GetNFTRecordByContractHashTokenId(args struct {
 
 	var raw3 map[string]interface{}
 	err2 := getNFTProperties(strval.T(tokenid), h160.T(asset), me, ret, args.Filter, &raw3)
-	log.Info("3", err2)
+	fmt.Println("3", err2)
 	for _, item := range raw2 {
 		tobanlance := item["tobalance"].(primitive.Decimal128).String()
 
@@ -99,7 +99,7 @@ func (me *T) GetNFTRecordByContractHashTokenId(args struct {
 					if eventname == "Claim" {
 						bidAmount, err1 := strconv.ParseInt(dat["bidAmount"].(string), 10, 64)
 						if err1 != nil {
-							log.Info("4", err)
+							fmt.Println("4", err)
 							return err1
 						}
 						rr["from"] = item["from"]
@@ -111,7 +111,7 @@ func (me *T) GetNFTRecordByContractHashTokenId(args struct {
 					} else if eventname == "CompleteOffer" || eventname == "CompleteOfferCollection" {
 						offerAmount, err1 := strconv.ParseInt(dat["offerAmount"].(string), 10, 64)
 						if err1 != nil {
-							log.Info("5", err)
+							fmt.Println("5", err)
 							return err1
 						}
 						rr["offerAsset"] = dat["offerAsset"]
@@ -122,7 +122,7 @@ func (me *T) GetNFTRecordByContractHashTokenId(args struct {
 					}
 
 				} else {
-					log.Info("6", err)
+					fmt.Println("6", err)
 					return err2
 				}
 
@@ -162,14 +162,14 @@ func (me *T) GetNFTRecordByContractHashTokenId(args struct {
 			if fromAddress != "" {
 				fromNNS, fromUserName, err = GetNNSByAddress(fromAddress)
 				if err != nil {
-					log.Info("7", err)
+					fmt.Println("7", err)
 					return err
 				}
 			}
 			if toAddress != "" {
 				toNNS, toUserName, err = GetNNSByAddress(toAddress)
 				if err != nil {
-					log.Info("8", err)
+					fmt.Println("8", err)
 					return err
 				}
 			}
@@ -185,14 +185,17 @@ func (me *T) GetNFTRecordByContractHashTokenId(args struct {
 
 	num, err := strconv.ParseInt(strconv.Itoa(len(result)), 10, 64)
 	if err != nil {
+		fmt.Println("num", err)
 		return err
 	}
 	r2, err := me.FilterArrayAndAppendCount(result, num, args.Filter)
 	if err != nil {
+		fmt.Println("r2", err)
 		return err
 	}
 	r, err := json.Marshal(r2)
 	if err != nil {
+		fmt.Println("r", err)
 		return err
 	}
 
