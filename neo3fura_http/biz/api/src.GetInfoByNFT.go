@@ -246,7 +246,7 @@ func GetNNSByAddress(address string) (string, string, error) {
 	} else if rt == "test" {
 		url = "https://megaoasis.ngd.network:8889/profile/get?address=" //test
 	}
-	fmt.Println(url)
+	fmt.Println(url + address)
 	resp, err := http.Get(url + address)
 	if err != nil {
 		return "", "", err
