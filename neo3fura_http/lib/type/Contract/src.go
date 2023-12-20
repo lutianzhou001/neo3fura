@@ -16,7 +16,7 @@ const (
 	Test_ILEXGENESIS     T = "0x6a2893f97401e2b58b757f59d71238d91339856a"
 	Main_NNS             T = "0x50ac1c37690cc2cfc594472833cf57505d5f46de"
 	Test_NNS             T = "0x50ac1c37690cc2cfc594472833cf57505d5f46de"
-	Main_TREE            T = "0x50ac1c37690cc2cfc594472833cf57505d5f46de"
+	Main_TREE            T = "0x583eb8830def6a4ba1ddd7a1fd0c2522a2076cbb"
 	Test_TREE            T = "0xf6b4d6b3af093c15ff64cfc68a03faf31ad5ae92"
 	Main_SecondaryMarket T = "0xd2e7cf18ee0d9b509fac02457f54b63e47b25e29"
 	Main_PrimaryMarket   T = "0xa41600dec34741b143c66f2d3448d15c7d79a0b7"
