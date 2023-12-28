@@ -42,26 +42,26 @@ func (me *T) GetNFTList(args struct {
 		args.Limit = 50
 	}
 	rt := os.ExpandEnv("${RUNTIME}")
-	var nns, polemen, genesis, tree string
+	var nns, polemen, genesis string
 	if rt == "staging" {
 		nns = Contract.Main_NNS.Val()
 		//metapanacea = Contract.Main_MetaPanacea.Val()
 		genesis = Contract.Main_ILEXGENESIS.Val()
 		polemen = Contract.Main_ILEXPOLEMEN.Val()
-		tree = Contract.Main_TREE.Val()
+		//tree = Contract.Main_TREE.Val()
 
 	} else if rt == "test2" {
 		nns = Contract.Test_NNS.Val()
 		//metapanacea = Contract.Test_MetaPanacea.Val()
 		genesis = Contract.Test_ILEXGENESIS.Val()
 		polemen = Contract.Test_ILEXPOLEMEN.Val()
-		tree = Contract.Test_TREE.Val()
+		//tree = Contract.Test_TREE.Val()
 	} else {
 		nns = Contract.Test_NNS.Val()
 		//metapanacea = Contract.Test_MetaPanacea.Val()
 		genesis = Contract.Test_ILEXGENESIS.Val()
 		polemen = Contract.Test_ILEXPOLEMEN.Val()
-		tree = Contract.Test_TREE.Val()
+		//tree = Contract.Test_TREE.Val()
 	}
 
 	if len(args.PrimaryMarket) > 0 && args.PrimaryMarket != "" {
@@ -203,8 +203,7 @@ func (me *T) GetNFTList(args struct {
 					bson.M{"$set": bson.M{"class": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", nns}}, "then": nnsclass,
 						"else": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", genesis}}, "then": "$image",
 							"else": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", polemen}}, "then": "$tokenid",
-								"else": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", tree}}, "then": "$tokenid",
-									"else": "$name"}}}}}}}}}},
+								"else": "$name"}}}}}}}},
 				},
 				"as": "properties"},
 			},
