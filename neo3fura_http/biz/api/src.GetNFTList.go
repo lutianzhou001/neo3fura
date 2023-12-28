@@ -42,23 +42,26 @@ func (me *T) GetNFTList(args struct {
 		args.Limit = 50
 	}
 	rt := os.ExpandEnv("${RUNTIME}")
-	var nns, polemen, genesis string
+	var nns, polemen, genesis, tree string
 	if rt == "staging" {
 		nns = Contract.Main_NNS.Val()
 		//metapanacea = Contract.Main_MetaPanacea.Val()
 		genesis = Contract.Main_ILEXGENESIS.Val()
 		polemen = Contract.Main_ILEXPOLEMEN.Val()
+		tree = Contract.Main_TREE.Val()
 
 	} else if rt == "test2" {
 		nns = Contract.Test_NNS.Val()
 		//metapanacea = Contract.Test_MetaPanacea.Val()
 		genesis = Contract.Test_ILEXGENESIS.Val()
 		polemen = Contract.Test_ILEXPOLEMEN.Val()
+		tree = Contract.Test_TREE.Val()
 	} else {
 		nns = Contract.Test_NNS.Val()
 		//metapanacea = Contract.Test_MetaPanacea.Val()
 		genesis = Contract.Test_ILEXGENESIS.Val()
 		polemen = Contract.Test_ILEXPOLEMEN.Val()
+		tree = Contract.Test_TREE.Val()
 	}
 
 	if len(args.PrimaryMarket) > 0 && args.PrimaryMarket != "" {
@@ -158,29 +161,60 @@ func (me *T) GetNFTList(args struct {
 		nnsclass = "$asset"
 	}
 	//group
-	setAndGroup := []bson.M{
 
-		bson.M{"$lookup": bson.M{
-			"from": "SelfControlNep11Properties",
-			"let":  bson.M{"asset": "$asset", "tokenid": "$tokenid"},
-			"pipeline": []bson.M{
-				bson.M{"$match": bson.M{"$expr": bson.M{"$and": []interface{}{
-					bson.M{"$eq": []interface{}{"$tokenid", "$$tokenid"}},
-					bson.M{"$eq": []interface{}{"$asset", "$$asset"}},
-				}}}},
-
-				bson.M{"$set": bson.M{"class": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", nns}}, "then": nnsclass,
-					"else": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", genesis}}, "then": "$image",
-						"else": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", polemen}}, "then": "$tokenid",
-							"else": "$name"}}}}}}}},
+	var setAndGroup []bson.M
+	if args.NFTState.Val() == NFTstate.Auction.Val() || args.NFTState.Val() == NFTstate.Sale.Val() {
+		setAndGroup = []bson.M{
+			bson.M{"$lookup": bson.M{
+				"from": "SelfControlNep11Properties",
+				"let":  bson.M{"asset": "$asset", "tokenid": "$tokenid"},
+				"pipeline": []bson.M{
+					bson.M{"$match": bson.M{"$expr": bson.M{"$and": []interface{}{
+						bson.M{"$eq": []interface{}{"$tokenid", "$$tokenid"}},
+						bson.M{"$eq": []interface{}{"$asset", "$$asset"}},
+					}}}},
+					//
+					//bson.M{"$set": bson.M{"class": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", nns}}, "then": nnsclass,
+					//	"else": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", genesis}}, "then": "$image",
+					//		"else": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", polemen}}, "then": "$tokenid",
+					//			"else": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", tree}}, "then": "$tokenid",
+					//				"else": "$name"}}}}}}}}}},
+				},
+				"as": "properties"},
 			},
-			"as": "properties"},
-		},
-		{"$sort": bson.M{"bidAmount": 1, "auctionAmount": 1, "tokenid": 1}},
-		bson.M{"$group": bson.M{"_id": bson.M{"asset": "$asset", "class": "$properties.class"}, "asset": bson.M{"$last": "$asset"}, "tokenid": bson.M{"$last": "$tokenid"}, "deadline": bson.M{"$last": "$deadline"}, "auctionAmount": bson.M{"$last": "$auctionAmount"}, "timestamp": bson.M{"$last": "$timestamp"}, "propertiesArr": bson.M{"$push": "$$ROOT"}}},
-		bson.M{"$project": bson.M{"_id": 1, "properties": 1, "asset": 1, "tokenid": 1, "propertiesArr": 1, "auctionAmount": 1, "deadline": 1, "timestamp": 1}},
-		bson.M{"$sort": bson.M{"tokenid": 1}},
+			{"$sort": bson.M{"bidAmount": 1, "auctionAmount": 1, "tokenid": 1}},
+			//bson.M{"$group": bson.M{"_id": bson.M{"asset": "$asset", "class": "$properties.class"}, "asset": bson.M{"$last": "$asset"}, "tokenid": bson.M{"$last": "$tokenid"}, "deadline": bson.M{"$last": "$deadline"}, "auctionAmount": bson.M{"$last": "$auctionAmount"}, "timestamp": bson.M{"$last": "$timestamp"}, "propertiesArr": bson.M{"$push": "$$ROOT"}}},
+			//bson.M{"$group": bson.M{"_id": "_id", "propertiesArr": bson.M{"$push": "$$ROOT"}}},
+			//bson.M{"$project": bson.M{"_id": 1, "properties": 1, "asset": 1, "tokenid": 1, "propertiesArr": 1, "auctionAmount": 1, "deadline": 1, "timestamp": 1}},
+			//bson.M{"$sort": bson.M{"tokenid": 1}},
+		}
+
+	} else {
+		setAndGroup = []bson.M{
+			bson.M{"$lookup": bson.M{
+				"from": "SelfControlNep11Properties",
+				"let":  bson.M{"asset": "$asset", "tokenid": "$tokenid"},
+				"pipeline": []bson.M{
+					bson.M{"$match": bson.M{"$expr": bson.M{"$and": []interface{}{
+						bson.M{"$eq": []interface{}{"$tokenid", "$$tokenid"}},
+						bson.M{"$eq": []interface{}{"$asset", "$$asset"}},
+					}}}},
+
+					bson.M{"$set": bson.M{"class": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", nns}}, "then": nnsclass,
+						"else": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", genesis}}, "then": "$image",
+							"else": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", polemen}}, "then": "$tokenid",
+								"else": bson.M{"$cond": bson.M{"if": bson.M{"$eq": []interface{}{"$asset", tree}}, "then": "$tokenid",
+									"else": "$name"}}}}}}}}}},
+				},
+				"as": "properties"},
+			},
+			{"$sort": bson.M{"bidAmount": 1, "auctionAmount": 1, "tokenid": 1}},
+			bson.M{"$group": bson.M{"_id": bson.M{"asset": "$asset", "class": "$properties.class"}, "asset": bson.M{"$last": "$asset"}, "tokenid": bson.M{"$last": "$tokenid"}, "deadline": bson.M{"$last": "$deadline"}, "auctionAmount": bson.M{"$last": "$auctionAmount"}, "timestamp": bson.M{"$last": "$timestamp"}, "propertiesArr": bson.M{"$push": "$$ROOT"}}},
+			bson.M{"$project": bson.M{"_id": 1, "properties": 1, "asset": 1, "tokenid": 1, "propertiesArr": 1, "auctionAmount": 1, "deadline": 1, "timestamp": 1}},
+			bson.M{"$sort": bson.M{"tokenid": 1}},
+		}
 	}
+	//
 	//var sort bson.M
 	//if args.Sort == "timestamp" { //上架时间
 	//	sort = bson.M{"$sort": bson.M{"timestamp": args.Order}}
@@ -237,144 +271,241 @@ func (me *T) GetNFTList(args struct {
 	//	}
 	//}
 
-	if len(r1) > 0 {
-		//获取offer 价格
-		var nftlist = make([]struct {
-			Asset   h160.T
-			TokenId strval.T
-		}, 0)
-
-		//获取GetInfoByNFTList 接口参数
+	if args.NFTState.Val() == NFTstate.Auction.Val() || args.NFTState.Val() == NFTstate.Sale.Val() { //选择上架的NFT 全部one-one展示
 		for _, item := range r1 {
-			groupInfo := item["propertiesArr"].(primitive.A)
-			//	var asset = item["asset"].(string)
-			var tokenidArr []string
-			for _, pitem := range groupInfo {
-				it := pitem.(map[string]interface{})
-				tokenid := it["tokenid"].(string)
-				asset := it["asset"].(string)
-
-				nftlist = append(nftlist, struct {
-					Asset   h160.T
-					TokenId strval.T
-				}{Asset: h160.T(asset), TokenId: strval.T(tokenid)})
-				tokenidArr = append(tokenidArr, tokenid)
-			}
-
-		}
-
-		raw := make(map[string]interface{})
-		err = me.GetInfoByNFTList(struct {
-			NFT []struct {
+			tokenid := item["tokenid"].(string)
+			asset := item["asset"].(string)
+			var nftlist = make([]struct {
 				Asset   h160.T
 				TokenId strval.T
+			}, 0)
+			nftlist = append(nftlist, struct {
+				Asset   h160.T
+				TokenId strval.T
+			}{Asset: h160.T(asset), TokenId: strval.T(tokenid)})
+
+			raw := make(map[string]interface{})
+			err = me.GetInfoByNFTList(struct {
+				NFT []struct {
+					Asset   h160.T
+					TokenId strval.T
+				}
+				Filter map[string]interface{}
+				Raw    *map[string]interface{}
+			}{NFT: nftlist, Raw: &raw}, ret)
+			if err != nil {
+				return err
 			}
-			Filter map[string]interface{}
-			Raw    *map[string]interface{}
-		}{NFT: nftlist, Raw: &raw}, ret)
-		if err != nil {
-			return err
+
+			key := asset + tokenid
+			if raw[key] != nil {
+				value := raw[key].(map[string]interface{})
+				item["buyNowAmount"] = value["buyNowAmount"]
+				item["buyNowAsset"] = value["buyNowAsset"]
+				item["currentBidAmount"] = value["currentBidAmount"]
+				item["currentBidAsset"] = value["currentBidAsset"]
+				item["lastSoldAmount"] = value["lastSoldAmount"]
+				item["lastSoldAsset"] = value["lastSoldAsset"]
+				item["offerAmount"] = value["offerAmount"]
+				item["offerAsset"] = value["offerAsset"]
+				item["order"] = value["order"]
+				item["owner"] = value["owner"]
+				item["nns"] = value["nns"]
+				item["userName"] = value["userName"]
+			}
+			properties := item["properties"].(primitive.A)
+			pp := properties[0].(map[string]interface{})
+			newProperties, err1 := ReSetProperties(pp)
+			if err1 != nil {
+				continue
+			}
+
+			if newProperties["image"] == nil {
+				continue
+			}
+			item["image"] = ImagUrl(newProperties["asset"].(string), newProperties["image"].(string), "images")
+			if newProperties["thumbnail"] != nil && newProperties["thumbnail"] != "" && !isHttp(newProperties["thumbnail"].(string)) && !isIpfs(newProperties["thumbnail"].(string)) {
+				tb, err2 := base64.URLEncoding.DecodeString(newProperties["thumbnail"].(string))
+				if err2 != nil {
+					return err2
+				}
+				ss := string(tb[:])
+				if ss == "" {
+					item["thumbnail"] = ImagUrl(newProperties["asset"].(string), newProperties["image"].(string), "thumbnail")
+				} else {
+					item["thumbnail"] = ImagUrl(newProperties["asset"].(string), string(tb[:]), "thumbnail")
+				}
+
+			} else {
+				item["thumbnail"] = ImagUrl(newProperties["asset"].(string), newProperties["image"].(string), "thumbnail")
+			}
+
+			item["name"] = newProperties["name"]
+			if newProperties["name"] != nil && newProperties["name"].(string) == "Nuanced Floral Symphony" {
+				item["video"] = item["image"]
+				delete(item, "image")
+			}
+			item["number"] = newProperties["number"]
+			//dst["properties"] = newProperties
+			item["class"] = newProperties["class"]
+			item["count"] = 1
+			classname := newProperties["name"].(string)
+			classname = strings.Split(classname, " ")[0]
+			item["classname"] = classname
+			item["class"] = classname
+
+			delete(item, "properties")
+			if item["image"] != nil || item["video"] != nil {
+				tb := item["thumbnail"].(string)
+				flag := strings.HasSuffix(tb, ".mp4")
+				if flag {
+					tb = strings.Replace(tb, ".mp4", "mp4", -1)
+				}
+				item["thumbnail"] = tb
+				result = append(result, item)
+			}
 		}
 
-		for _, item := range r1 {
-			if item["propertiesArr"] != nil {
+	} else {
+		if len(r1) > 0 {
+			//获取offer 价格
+			var nftlist = make([]struct {
+				Asset   h160.T
+				TokenId strval.T
+			}, 0)
+
+			//获取GetInfoByNFTList 接口参数
+			for _, item := range r1 {
 				groupInfo := item["propertiesArr"].(primitive.A)
-				copygroup := make([]map[string]interface{}, 0)
+				//	var asset = item["asset"].(string)
+				var tokenidArr []string
 				for _, pitem := range groupInfo {
 					it := pitem.(map[string]interface{})
 					tokenid := it["tokenid"].(string)
 					asset := it["asset"].(string)
-					key := asset + tokenid
-					if raw[key] != nil {
-						value := raw[key].(map[string]interface{})
-						it["buyNowAmount"] = value["buyNowAmount"]
-						it["buyNowAsset"] = value["buyNowAsset"]
-						it["currentBidAmount"] = value["currentBidAmount"]
-						it["currentBidAsset"] = value["currentBidAsset"]
-						it["lastSoldAmount"] = value["lastSoldAmount"]
-						it["lastSoldAsset"] = value["lastSoldAsset"]
-						it["offerAmount"] = value["offerAmount"]
-						it["offerAsset"] = value["offerAsset"]
-						it["order"] = value["order"]
-						it["owner"] = value["owner"]
-						it["nns"] = value["nns"]
-						it["userName"] = value["userName"]
-					}
-					copygroup = append(copygroup, it)
 
-				}
-				mapsort.MapSort(copygroup, "order")
-				//// 排序之后的第一个元素
-				delegateItem := make(map[string]interface{})
-				//delegateItem := groupInfo[len(groupInfo)-1].(map[string]interface{})
-				delegateItem = CopyMap(delegateItem, copygroup[0])
-				properties := delegateItem["properties"].(primitive.A)
-				pp := properties[0].(map[string]interface{})
-				newProperties, err1 := ReSetProperties(pp)
-				if err1 != nil {
-					continue
-				}
-
-				if newProperties["image"] == nil {
-					continue
-				}
-				delegateItem["image"] = ImagUrl(newProperties["asset"].(string), newProperties["image"].(string), "images")
-				if newProperties["thumbnail"] != nil && newProperties["thumbnail"] != "" && !isHttp(newProperties["thumbnail"].(string)) && !isIpfs(newProperties["thumbnail"].(string)) {
-					tb, err2 := base64.URLEncoding.DecodeString(newProperties["thumbnail"].(string))
-					if err2 != nil {
-						return err2
-					}
-					ss := string(tb[:])
-					if ss == "" {
-						delegateItem["thumbnail"] = ImagUrl(newProperties["asset"].(string), newProperties["image"].(string), "thumbnail")
-					} else {
-						delegateItem["thumbnail"] = ImagUrl(newProperties["asset"].(string), string(tb[:]), "thumbnail")
-					}
-
-				} else {
-					delegateItem["thumbnail"] = ImagUrl(newProperties["asset"].(string), newProperties["image"].(string), "thumbnail")
-				}
-				delegateItem["name"] = newProperties["name"]
-				if newProperties["name"] != nil && newProperties["name"].(string) == "Nuanced Floral Symphony" {
-					delegateItem["video"] = delegateItem["image"]
-					delete(delegateItem, "image")
-				}
-				delegateItem["number"] = newProperties["number"]
-				//dst["properties"] = newProperties
-				delegateItem["class"] = newProperties["class"]
-				delegateItem["count"] = len(groupInfo)
-
-				//处理 class 字段统一用 nft name 去展示 （避免直接使用image的url）
-				if len(groupInfo) > 1 {
-					// 处理ilex genesis 以image 分类的特殊情况
-					class := newProperties["class"].(string)
-					if isHttp(class) {
-						classname := newProperties["name"].(string)
-						classname = strings.Split(classname, " ")[0]
-						delegateItem["classname"] = class
-						delegateItem["class"] = classname
-
-					} else {
-						delegateItem["classname"] = class
-					}
-				} else {
-					delegateItem["classname"] = newProperties["class"]
-				}
-
-				delete(delegateItem, "properties")
-				if delegateItem["image"] != nil || delegateItem["video"] != nil {
-					tb := delegateItem["thumbnail"].(string)
-					flag := strings.HasSuffix(tb, ".mp4")
-					if flag {
-						tb = strings.Replace(tb, ".mp4", "mp4", -1)
-					}
-					delegateItem["thumbnail"] = tb
-					result = append(result, delegateItem)
+					nftlist = append(nftlist, struct {
+						Asset   h160.T
+						TokenId strval.T
+					}{Asset: h160.T(asset), TokenId: strval.T(tokenid)})
+					tokenidArr = append(tokenidArr, tokenid)
 				}
 
 			}
-		}
 
+			raw := make(map[string]interface{})
+			err = me.GetInfoByNFTList(struct {
+				NFT []struct {
+					Asset   h160.T
+					TokenId strval.T
+				}
+				Filter map[string]interface{}
+				Raw    *map[string]interface{}
+			}{NFT: nftlist, Raw: &raw}, ret)
+			if err != nil {
+				return err
+			}
+
+			for _, item := range r1 {
+				if item["propertiesArr"] != nil {
+					groupInfo := item["propertiesArr"].(primitive.A)
+					copygroup := make([]map[string]interface{}, 0)
+					for _, pitem := range groupInfo {
+						it := pitem.(map[string]interface{})
+						tokenid := it["tokenid"].(string)
+						asset := it["asset"].(string)
+						key := asset + tokenid
+						if raw[key] != nil {
+							value := raw[key].(map[string]interface{})
+							it["buyNowAmount"] = value["buyNowAmount"]
+							it["buyNowAsset"] = value["buyNowAsset"]
+							it["currentBidAmount"] = value["currentBidAmount"]
+							it["currentBidAsset"] = value["currentBidAsset"]
+							it["lastSoldAmount"] = value["lastSoldAmount"]
+							it["lastSoldAsset"] = value["lastSoldAsset"]
+							it["offerAmount"] = value["offerAmount"]
+							it["offerAsset"] = value["offerAsset"]
+							it["order"] = value["order"]
+							it["owner"] = value["owner"]
+							it["nns"] = value["nns"]
+							it["userName"] = value["userName"]
+						}
+						copygroup = append(copygroup, it)
+
+					}
+					mapsort.MapSort(copygroup, "order")
+					//// 排序之后的第一个元素
+					delegateItem := make(map[string]interface{})
+					//delegateItem := groupInfo[len(groupInfo)-1].(map[string]interface{})
+					delegateItem = CopyMap(delegateItem, copygroup[0])
+					properties := delegateItem["properties"].(primitive.A)
+					pp := properties[0].(map[string]interface{})
+					newProperties, err1 := ReSetProperties(pp)
+					if err1 != nil {
+						continue
+					}
+
+					if newProperties["image"] == nil {
+						continue
+					}
+					delegateItem["image"] = ImagUrl(newProperties["asset"].(string), newProperties["image"].(string), "images")
+					if newProperties["thumbnail"] != nil && newProperties["thumbnail"] != "" && !isHttp(newProperties["thumbnail"].(string)) && !isIpfs(newProperties["thumbnail"].(string)) {
+						tb, err2 := base64.URLEncoding.DecodeString(newProperties["thumbnail"].(string))
+						if err2 != nil {
+							return err2
+						}
+						ss := string(tb[:])
+						if ss == "" {
+							delegateItem["thumbnail"] = ImagUrl(newProperties["asset"].(string), newProperties["image"].(string), "thumbnail")
+						} else {
+							delegateItem["thumbnail"] = ImagUrl(newProperties["asset"].(string), string(tb[:]), "thumbnail")
+						}
+
+					} else {
+						delegateItem["thumbnail"] = ImagUrl(newProperties["asset"].(string), newProperties["image"].(string), "thumbnail")
+					}
+					delegateItem["name"] = newProperties["name"]
+					if newProperties["name"] != nil && newProperties["name"].(string) == "Nuanced Floral Symphony" {
+						delegateItem["video"] = delegateItem["image"]
+						delete(delegateItem, "image")
+					}
+					delegateItem["number"] = newProperties["number"]
+					//dst["properties"] = newProperties
+					delegateItem["class"] = newProperties["class"]
+					delegateItem["count"] = len(groupInfo)
+
+					//处理 class 字段统一用 nft name 去展示 （避免直接使用image的url）
+					if len(groupInfo) > 1 {
+						// 处理ilex genesis 以image 分类的特殊情况
+						class := newProperties["class"].(string)
+						if isHttp(class) {
+							classname := newProperties["name"].(string)
+							classname = strings.Split(classname, " ")[0]
+							delegateItem["classname"] = class
+							delegateItem["class"] = classname
+
+						} else {
+							delegateItem["classname"] = class
+						}
+					} else {
+						delegateItem["classname"] = newProperties["class"]
+					}
+
+					delete(delegateItem, "properties")
+					if delegateItem["image"] != nil || delegateItem["video"] != nil {
+						tb := delegateItem["thumbnail"].(string)
+						flag := strings.HasSuffix(tb, ".mp4")
+						if flag {
+							tb = strings.Replace(tb, ".mp4", "mp4", -1)
+						}
+						delegateItem["thumbnail"] = tb
+						result = append(result, delegateItem)
+					}
+
+				}
+			}
+
+		}
 	}
 
 	length := len(pipeline)
