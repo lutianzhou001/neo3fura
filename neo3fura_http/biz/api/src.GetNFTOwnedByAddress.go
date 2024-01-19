@@ -531,6 +531,13 @@ func (me *T) GetNFTOwnedByAddress(args struct {
 						delete(properties, "image")
 					}
 
+					if item["name"] != nil && item["name"].(string) == "Virtual Visions #1" {
+						item["video"] = item["image"]
+						delete(item, "image")
+						properties["video"] = properties["image"]
+						delete(properties, "image")
+					}
+
 					item["properties"] = properties
 				} else {
 					item["image"] = ""

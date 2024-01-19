@@ -203,7 +203,10 @@ func (me *T) GetNFTByAssetClass(args struct {
 			delete(item, "image")
 		}
 		//}
-
+		if item["name"] != nil && item["name"].(string) == "Virtual Visions #1" {
+			item["video"] = item["image"]
+			delete(item, "image")
+		}
 		re := map[string]interface{}{}
 		err := me.GetInfoByNFT(struct {
 			Asset   h160.T
