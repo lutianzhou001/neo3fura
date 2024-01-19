@@ -240,6 +240,10 @@ func (me *T) GetMarketCollections(args struct {
 							proMap["video"] = proMap["image"]
 							delete(proMap, "image")
 						}
+						if proMap["name"] != nil && proMap["name"].(string) == "Virtual Visions #1" {
+							proMap["video"] = proMap["image"]
+							delete(proMap, "image")
+						}
 
 						if proMap["image"] == "" && proMap["video"] == "" {
 							count++
@@ -273,6 +277,10 @@ func (me *T) GetMarketCollections(args struct {
 					tokeniditem["thumbnail"] = it["thumbnail"]
 					tokeniditem["name"] = it["name"]
 					if tokeniditem["name"] != nil && tokeniditem["name"].(string) == "Nuanced Floral Symphony" {
+						tokeniditem["video"] = tokeniditem["image"]
+						delete(tokeniditem, "image")
+					}
+					if tokeniditem["name"] != nil && tokeniditem["name"].(string) == "Virtual Visions #1" {
 						tokeniditem["video"] = tokeniditem["image"]
 						delete(tokeniditem, "image")
 					}

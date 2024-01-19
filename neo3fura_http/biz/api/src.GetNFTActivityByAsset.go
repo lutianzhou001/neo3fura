@@ -200,6 +200,10 @@ func (me *T) GetNFTActivityByAsset(args struct {
 						r2["video"] = r2["image"]
 						delete(r2, "image")
 					}
+					if r2["name"] == nil && r2["name"].(string) == "Virtual Visions #1" {
+						r2["video"] = r2["image"]
+						delete(r2, "image")
+					}
 
 				} else {
 					return err

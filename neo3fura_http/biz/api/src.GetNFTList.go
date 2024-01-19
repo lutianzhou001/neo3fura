@@ -344,6 +344,10 @@ func (me *T) GetNFTList(args struct {
 				item["video"] = item["image"]
 				delete(item, "image")
 			}
+			if newProperties["name"] != nil && newProperties["name"].(string) == "Virtual Visions #1" {
+				item["video"] = item["image"]
+				delete(item, "image")
+			}
 			item["number"] = newProperties["number"]
 			//dst["properties"] = newProperties
 			item["class"] = newProperties["class"]
@@ -465,6 +469,10 @@ func (me *T) GetNFTList(args struct {
 					}
 					delegateItem["name"] = newProperties["name"]
 					if newProperties["name"] != nil && newProperties["name"].(string) == "Nuanced Floral Symphony" {
+						delegateItem["video"] = delegateItem["image"]
+						delete(delegateItem, "image")
+					}
+					if newProperties["name"] != nil && newProperties["name"].(string) == "Virtual Visions #1" {
 						delegateItem["video"] = delegateItem["image"]
 						delete(delegateItem, "image")
 					}

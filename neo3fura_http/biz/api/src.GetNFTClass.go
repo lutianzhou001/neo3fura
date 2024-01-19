@@ -211,6 +211,12 @@ func (me *T) GetNFTClass(args struct {
 
 		}
 
+		if item["name"] != nil && item["name"].(string) == "Virtual Visions #1" {
+			item["video"] = item["image"]
+			delete(item, "image")
+
+		}
+
 		// 处理ilex genesis 以image 分类的特殊情况
 		class := item["class"]
 		item["classname"] = class

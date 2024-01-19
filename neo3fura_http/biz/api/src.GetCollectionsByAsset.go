@@ -217,6 +217,11 @@ func (me *T) GetCollectionsByAsset(args struct {
 							delete(proMap, "image")
 						}
 
+						if proMap["name"] != nil && proMap["name"].(string) == "Virtual Visions #1" {
+							proMap["video"] = proMap["image"]
+							delete(proMap, "image")
+						}
+
 						if proMap["image"] == "" && proMap["video"] == "" {
 							count++
 							continue
@@ -251,6 +256,10 @@ func (me *T) GetCollectionsByAsset(args struct {
 					//tokeniditem["owner"] = it["owner"]
 					//tokeniditem["nns"] = it["nns"]
 					if tokeniditem["name"] != nil && tokeniditem["name"].(string) == "Nuanced Floral Symphony" {
+						tokeniditem["video"] = tokeniditem["image"]
+						delete(tokeniditem, "image")
+					}
+					if tokeniditem["name"] != nil && tokeniditem["name"].(string) == "Virtual Visions #1" {
 						tokeniditem["video"] = tokeniditem["image"]
 						delete(tokeniditem, "image")
 					}
