@@ -22,23 +22,19 @@ RUN  dpkg -i packages-microsoft-prod.deb
 
 RUN  rm packages-microsoft-prod.deb
 
-RUN  apt-get update
+RUN  apt-get clean && \
+     apt-get update
 
 RUN  apt-get install -y apt-transport-https
 
-RUN  apt-get update
-
-RUN  apt-get install -y dotnet-sdk-5.0
-
-RUN  apt-get install -y aspnetcore-runtime-5.0
+RUN  apt-get install -y dotnet-sdk-5.0 && \
+     apt-get install -y aspnetcore-runtime-5.0
 
 RUN  tar -xvf compiler.tar.gz
 
-RUN  chmod 777 compiler/a/nccs
-
-RUN  chmod 777 compiler/c/nccs
-
-RUN  chmod 777 compiler/b/nccs
+RUN  chmod 777 compiler/a/nccs && \
+     chmod 777 compiler/c/nccs && \
+     chmod 777 compiler/b/nccs
 
 RUN  go build -o main app/neo3fura/src.go
 
