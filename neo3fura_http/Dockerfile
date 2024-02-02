@@ -23,7 +23,8 @@ RUN  dpkg -i packages-microsoft-prod.deb
 RUN  rm packages-microsoft-prod.deb
 
 RUN  apt-get clean && \
-     apt-get update
+     apt-get update && \
+     apt-get install libssl1.1
 
 RUN  apt-get install -y apt-transport-https
 
