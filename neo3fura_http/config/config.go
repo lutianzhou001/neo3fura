@@ -158,4 +158,5 @@ var Apis = []string{
 	"GetNFTByAssetClassPrimaryMarket",
 	"GetInfoByNFTPrimaryMarket",
 	"GetMarketCollectionWhitelist",
+	"GetRedEnvelopeUsers",
 }
