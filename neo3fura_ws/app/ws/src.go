@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"flag"
-	"fmt"
 	"neo3fura_ws/home"
 	"neo3fura_ws/lib/cli"
 	log2 "neo3fura_ws/lib/log"
@@ -148,19 +147,12 @@ func bridgepage(w http.ResponseWriter, r *http.Request) {
 	params := r.URL.Query()
 	contract := params.Get("contract")
 	nonceStr := params.Get("nonce")
-	to := params.Get("to")
-	amountStr := params.Get("amount")
 
-	nonce, err := strconv.ParseInt(nonceStr, 10, 32)
-	if err != nil {
-		log2.Fatalf("Failed to convert string to int:%s", err)
-	}
-	amount, err := strconv.Atoi(amountStr)
+	nonce, err := strconv.Atoi(nonceStr)
 	if err != nil {
 		log2.Fatalf("Failed to convert string to int:%s", err)
 	}
 
-	fmt.Println(contract, nonce, to, amount)
 	wsc, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log2.Fatalf("upgrade error:%s", err)

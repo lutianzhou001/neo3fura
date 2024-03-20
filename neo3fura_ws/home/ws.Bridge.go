@@ -43,7 +43,8 @@ func (me *T) GetBridge(contract string, nonce int32, ch *chan map[string]interfa
 			if eventName == "Withdrawal" || eventName == "Claimable" {
 				state := fullDocument["state"].(map[string]interface{})
 				stateValue := state["value"].(primitive.A)
-				eventNonce := stateValue[0].(int32)
+				event := stateValue[0].(map[string]interface{})
+				eventNonce := event["value"].(int32)
 				if nonce == eventNonce {
 					*ch <- fullDocument
 				}
