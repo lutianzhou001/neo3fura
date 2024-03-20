@@ -4,12 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"flag"
+	"fmt"
 	"neo3fura_ws/home"
 	"neo3fura_ws/lib/cli"
 	log2 "neo3fura_ws/lib/log"
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 
 	"github.com/gorilla/websocket"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -140,6 +142,40 @@ func mainpage(w http.ResponseWriter, r *http.Request) {
 	go ResponseController(mt, wsc, &responseChannel)
 }
 
+func bridgepage(w http.ResponseWriter, r *http.Request) {
+	log2.Infof("DETECT CONNECTION")
+
+	params := r.URL.Query()
+	contract := params.Get("contract")
+	nonceStr := params.Get("nonce")
+	to := params.Get("to")
+	amountStr := params.Get("amount")
+
+	nonce, err := strconv.ParseInt(nonceStr, 10, 32)
+	if err != nil {
+		log2.Fatalf("Failed to convert string to int:%s", err)
+	}
+	amount, err := strconv.Atoi(amountStr)
+	if err != nil {
+		log2.Fatalf("Failed to convert string to int:%s", err)
+	}
+
+	fmt.Println(contract, nonce, to, amount)
+	wsc, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log2.Fatalf("upgrade error:%s", err)
+	}
+	mt, _, err := wsc.ReadMessage()
+	if err != nil {
+		log2.Fatalf("read message error:%s", err)
+	}
+
+	var responseChannel = make(chan map[string]interface{}, 20)
+
+	go c.GetBridge(contract, int32(nonce), &responseChannel)
+	go ResponseController(mt, wsc, &responseChannel)
+}
+
 func ResponseController(mt int, wsc *websocket.Conn, ch *chan map[string]interface{}) {
 	str := "hello neo3fura"
 	err := wsc.WriteMessage(mt, []byte(str))
@@ -180,6 +216,7 @@ func init() {
 }
 
 func main() {
-	http.HandleFunc("/home", mainpage)
+	go http.HandleFunc("/home", mainpage)
+	go http.HandleFunc("/bridge", bridgepage)
 	log2.Fatal(http.ListenAndServe(*add, nil))
 }
