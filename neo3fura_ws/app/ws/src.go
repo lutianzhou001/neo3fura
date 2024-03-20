@@ -142,6 +142,7 @@ func mainpage(w http.ResponseWriter, r *http.Request) {
 }
 
 func bridgepage(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	log2.Infof("DETECT CONNECTION")
 
 	params := r.URL.Query()
